@@ -9,10 +9,12 @@ export function VenueSection({ name, address, lat, lng }: Props) {
     lat != null && lng != null ? { lat, lng } : null
   );
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "fail">("idle");
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
   async function geocode() {
     if (!addr) return;
     setStatus("loading");
+    setDebugInfo([]);
     const r = await fetch(`/api/geocode?q=${encodeURIComponent(addr)}`);
     const json = await r.json();
     if (json.ok) {
@@ -21,6 +23,8 @@ export function VenueSection({ name, address, lat, lng }: Props) {
     } else {
       setCoord(null);
       setStatus("fail");
+      if (Array.isArray(json.debug)) setDebugInfo(json.debug);
+      else if (json.reason) setDebugInfo([json.reason]);
     }
   }
 
@@ -52,9 +56,16 @@ export function VenueSection({ name, address, lat, lng }: Props) {
           </p>
         )}
         {status === "fail" && (
-          <p className="text-xs text-red-600 mt-1">
-            위치를 찾지 못했습니다. 식장명이나 도로명 주소(예: &quot;강남구 테헤란로 123&quot;)로 다시 시도해주세요.
-          </p>
+          <div className="mt-1 space-y-1">
+            <p className="text-xs text-red-600">
+              위치를 찾지 못했습니다. 식장명이나 도로명 주소(예: &quot;강남구 테헤란로 123&quot;)로 다시 시도해주세요.
+            </p>
+            {debugInfo.length > 0 && (
+              <p className="text-[10px] text-muted font-mono">
+                debug: {debugInfo.join(" | ")}
+              </p>
+            )}
+          </div>
         )}
       </label>
       <input type="hidden" name="venue_lat" value={coord?.lat ?? ""} />
