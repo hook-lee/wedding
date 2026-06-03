@@ -35,13 +35,13 @@ export function HomeTab({ site }: { site: Tables<"wedding_sites"> }) {
         <ParentsLine
           father={parents.groom_father}
           mother={parents.groom_mother}
-          childLabel="장남"
+          childLabel={site.groom_birth_order ?? "장남"}
           childName={site.groom_name}
         />
         <ParentsLine
           father={parents.bride_father}
           mother={parents.bride_mother}
-          childLabel="장녀"
+          childLabel={site.bride_birth_order ?? "장녀"}
           childName={site.bride_name}
         />
       </div>

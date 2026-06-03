@@ -104,6 +104,9 @@ export async function saveAdminForm(
 
   const published = formData.get("published") === "on";
 
+  const groom_birth_order = (String(formData.get("groom_birth_order") ?? "").trim()) || "장남";
+  const bride_birth_order = (String(formData.get("bride_birth_order") ?? "").trim()) || "장녀";
+
   const v = validateSlug(slug);
   if (!v.ok) return { error: v.reason };
   if (!(await isSlugAvailable(slug, user.id))) {
@@ -132,6 +135,8 @@ export async function saveAdminForm(
       account_info,
       theme,
       sections_enabled,
+      groom_birth_order,
+      bride_birth_order,
       published,
     })
     .eq("owner_id", user.id);

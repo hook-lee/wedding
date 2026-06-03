@@ -27,6 +27,8 @@ export type Database = {
           theme: "ivory" | "sage" | "pink" | "cobalt" | "mocha" | "ash";
           name_joiner: string;
           sections_enabled: Json;
+          groom_birth_order: string;
+          bride_birth_order: string;
           published: boolean;
           created_at: string;
           updated_at: string;
@@ -54,6 +56,8 @@ export type Database = {
           theme?: "ivory" | "sage" | "pink" | "cobalt" | "mocha" | "ash";
           name_joiner?: string;
           sections_enabled?: Json;
+          groom_birth_order?: string;
+          bride_birth_order?: string;
           published?: boolean;
           created_at?: string;
           updated_at?: string;

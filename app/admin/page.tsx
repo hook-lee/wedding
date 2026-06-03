@@ -61,7 +61,11 @@ export default async function AdminHome() {
 
       <AdminForm>
         <BasicInfoSection site={site} />
-        <ParentsSection parents={(site.parents as ParentsBlock) ?? {}} />
+        <ParentsSection
+          parents={(site.parents as ParentsBlock) ?? {}}
+          groomBirthOrder={site.groom_birth_order ?? "장남"}
+          brideBirthOrder={site.bride_birth_order ?? "장녀"}
+        />
         <VenueSection
           name={site.venue_name}
           address={site.venue_address}
