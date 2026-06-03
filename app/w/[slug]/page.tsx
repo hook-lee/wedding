@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { loadSite } from "./_lib/load-site";
 import { Splash } from "./_components/Splash";
 import { TabShell } from "./_components/TabShell";
@@ -10,6 +11,29 @@ import { InfoTab } from "./_components/InfoTab";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const VALID: TabKey[] = ["home", "story", "gallery", "guestbook", "info"];
+
+export async function generateMetadata({
+  params,
+}: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  try {
+    const site = await loadSite(slug);
+    const title = `${site.groom_name}${site.name_joiner}${site.bride_name} 결혼식`;
+    const description = (site.greeting?.slice(0, 80) || "결혼식에 초대합니다") + (site.greeting && site.greeting.length > 80 ? "..." : "");
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        images: site.main_photo_url ? [site.main_photo_url] : [],
+        type: "website",
+      },
+    };
+  } catch {
+    return { title: "wedding-zip" };
+  }
+}
 
 export default async function PublicPage({
   params,

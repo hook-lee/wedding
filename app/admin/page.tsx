@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/auth/require-user";
 import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
 import { BasicInfoSection } from "./_components/BasicInfoSection";
@@ -30,9 +31,13 @@ export default async function AdminHome() {
     <main className="min-h-screen p-6 max-w-3xl mx-auto space-y-6 bg-bg">
       <header className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">내 청첩장 편집</h1>
-        <form action="/admin/logout" method="POST">
-          <button className="text-sm text-secondary underline">로그아웃</button>
-        </form>
+        <div className="flex gap-3 items-center">
+          <Link href="/admin/guestbook" className="text-sm underline text-secondary">일촌평</Link>
+          <Link href="/admin/rsvp" className="text-sm underline text-secondary">RSVP</Link>
+          <form action="/admin/logout" method="POST">
+            <button className="text-sm text-secondary underline">로그아웃</button>
+          </form>
+        </div>
       </header>
       <p className="text-sm text-secondary">
         로그인됨: <strong className="text-ink">{user.email}</strong>
