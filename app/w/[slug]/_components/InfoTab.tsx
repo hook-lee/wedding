@@ -48,10 +48,18 @@ export function InfoTab({
       </nav>
       {active === "venue" && (
         <VenueView
-          name={site.venue_name}
-          address={site.venue_address}
-          lat={site.venue_lat}
-          lng={site.venue_lng}
+          venue={{
+            name: site.venue_name,
+            address: site.venue_address,
+            lat: site.venue_lat,
+            lng: site.venue_lng,
+          }}
+          parking={{
+            name: site.parking_name ?? "",
+            address: site.parking_address ?? "",
+            lat: site.parking_lat ?? null,
+            lng: site.parking_lng ?? null,
+          }}
         />
       )}
       {active === "rsvp" && <RsvpView siteId={site.id} />}

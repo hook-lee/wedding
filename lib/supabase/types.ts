@@ -16,6 +16,10 @@ export type Database = {
           venue_address: string;
           venue_lat: number | null;
           venue_lng: number | null;
+          parking_name: string;
+          parking_address: string;
+          parking_lat: number | null;
+          parking_lng: number | null;
           greeting: string;
           groom_profile: Json;
           bride_profile: Json;
@@ -45,6 +49,10 @@ export type Database = {
           venue_address?: string;
           venue_lat?: number | null;
           venue_lng?: number | null;
+          parking_name?: string;
+          parking_address?: string;
+          parking_lat?: number | null;
+          parking_lng?: number | null;
           greeting?: string;
           groom_profile?: Json;
           bride_profile?: Json;

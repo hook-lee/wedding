@@ -49,10 +49,17 @@ export async function saveAdminForm(
 
   const venue_name = String(formData.get("venue_name") ?? "").trim();
   const venue_address = String(formData.get("venue_address") ?? "").trim();
-  const latStr = String(formData.get("venue_lat") ?? "");
-  const lngStr = String(formData.get("venue_lng") ?? "");
-  const venue_lat = latStr ? Number(latStr) : null;
-  const venue_lng = lngStr ? Number(lngStr) : null;
+  const venueLatStr = String(formData.get("venue_lat") ?? "");
+  const venueLngStr = String(formData.get("venue_lng") ?? "");
+  const venue_lat = venueLatStr ? Number(venueLatStr) : null;
+  const venue_lng = venueLngStr ? Number(venueLngStr) : null;
+
+  const parking_name = String(formData.get("parking_name") ?? "").trim();
+  const parking_address = String(formData.get("parking_address") ?? "").trim();
+  const parkingLatStr = String(formData.get("parking_lat") ?? "");
+  const parkingLngStr = String(formData.get("parking_lng") ?? "");
+  const parking_lat = parkingLatStr ? Number(parkingLatStr) : null;
+  const parking_lng = parkingLngStr ? Number(parkingLngStr) : null;
 
   const greeting = String(formData.get("greeting") ?? "").trim();
 
@@ -128,6 +135,10 @@ export async function saveAdminForm(
       venue_address,
       venue_lat,
       venue_lng,
+      parking_name,
+      parking_address,
+      parking_lat,
+      parking_lng,
       greeting,
       groom_profile,
       bride_profile,

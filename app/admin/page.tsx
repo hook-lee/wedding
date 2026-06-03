@@ -67,10 +67,14 @@ export default async function AdminHome() {
           brideBirthOrder={site.bride_birth_order ?? "장녀"}
         />
         <VenueSection
-          name={site.venue_name}
-          address={site.venue_address}
-          lat={site.venue_lat}
-          lng={site.venue_lng}
+          venueName={site.venue_name}
+          venueAddress={site.venue_address}
+          venueLat={site.venue_lat}
+          venueLng={site.venue_lng}
+          parkingName={site.parking_name ?? ""}
+          parkingAddress={site.parking_address ?? ""}
+          parkingLat={site.parking_lat ?? null}
+          parkingLng={site.parking_lng ?? null}
         />
         <GreetingSection site={site} />
         <ProfileSection

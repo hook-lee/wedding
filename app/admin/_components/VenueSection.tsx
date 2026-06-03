@@ -1,12 +1,26 @@
 "use client";
 import { useState } from "react";
 
-type Props = { name: string; address: string; lat: number | null; lng: number | null };
+type PlaceProps = {
+  prefix: "venue" | "parking";
+  title: string;
+  initialName: string;
+  initialAddress: string;
+  initialLat: number | null;
+  initialLng: number | null;
+};
 
-export function VenueSection({ name, address, lat, lng }: Props) {
-  const [addr, setAddr] = useState(address);
+function PlaceFields({
+  prefix,
+  title,
+  initialName,
+  initialAddress,
+  initialLat,
+  initialLng,
+}: PlaceProps) {
+  const [addr, setAddr] = useState(initialAddress);
   const [coord, setCoord] = useState<{ lat: number; lng: number } | null>(
-    lat != null && lng != null ? { lat, lng } : null
+    initialLat != null && initialLng != null ? { lat: initialLat, lng: initialLng } : null
   );
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "fail">("idle");
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
@@ -29,24 +43,25 @@ export function VenueSection({ name, address, lat, lng }: Props) {
   }
 
   return (
-    <section className="bg-surface border border-border rounded-md p-6 space-y-4 shadow-card">
-      <h2 className="text-lg font-semibold">식장</h2>
+    <div className="space-y-3">
+      <h3 className="text-sm font-semibold">{title}</h3>
       <label className="block">
-        <span className="text-sm text-secondary">식장 이름</span>
+        <span className="text-xs text-secondary">이름</span>
         <input
-          name="venue_name"
-          defaultValue={name}
+          name={`${prefix}_name`}
+          defaultValue={initialName}
+          placeholder={prefix === "venue" ? "예: OO웨딩홀 그랜드볼룸" : "예: OO웨딩홀 지하 주차장"}
           className="w-full mt-1 p-2 rounded-sm border border-border bg-surface"
         />
       </label>
       <label className="block">
-        <span className="text-sm text-secondary">주소 또는 식장명</span>
+        <span className="text-xs text-secondary">주소 또는 장소명</span>
         <input
-          name="venue_address"
+          name={`${prefix}_address`}
           value={addr}
           onChange={(e) => setAddr(e.target.value)}
           onBlur={geocode}
-          placeholder="예: 서울시 강남구 OO로 123 / 또는 OO웨딩홀"
+          placeholder="예: 서울시 강남구 OO로 123 / 또는 건물명"
           className="w-full mt-1 p-2 rounded-sm border border-border bg-surface"
         />
         {status === "loading" && <p className="text-xs text-muted mt-1">위치 확인 중…</p>}
@@ -58,18 +73,55 @@ export function VenueSection({ name, address, lat, lng }: Props) {
         {status === "fail" && (
           <div className="mt-1 space-y-1">
             <p className="text-xs text-red-600">
-              위치를 찾지 못했습니다. 식장명이나 도로명 주소(예: &quot;강남구 테헤란로 123&quot;)로 다시 시도해주세요.
+              위치를 찾지 못했습니다. 장소명이나 도로명 주소로 다시 시도해주세요.
             </p>
             {debugInfo.length > 0 && (
-              <p className="text-[10px] text-muted font-mono">
-                debug: {debugInfo.join(" | ")}
-              </p>
+              <p className="text-[10px] text-muted font-mono">debug: {debugInfo.join(" | ")}</p>
             )}
           </div>
         )}
       </label>
-      <input type="hidden" name="venue_lat" value={coord?.lat ?? ""} />
-      <input type="hidden" name="venue_lng" value={coord?.lng ?? ""} />
+      <input type="hidden" name={`${prefix}_lat`} value={coord?.lat ?? ""} />
+      <input type="hidden" name={`${prefix}_lng`} value={coord?.lng ?? ""} />
+    </div>
+  );
+}
+
+type Props = {
+  venueName: string;
+  venueAddress: string;
+  venueLat: number | null;
+  venueLng: number | null;
+  parkingName: string;
+  parkingAddress: string;
+  parkingLat: number | null;
+  parkingLng: number | null;
+};
+
+export function VenueSection(p: Props) {
+  return (
+    <section className="bg-surface border border-border rounded-md p-6 space-y-5 shadow-card">
+      <h2 className="text-lg font-semibold">식장 · 주차장</h2>
+
+      <PlaceFields
+        prefix="venue"
+        title="🎂 예식장"
+        initialName={p.venueName}
+        initialAddress={p.venueAddress}
+        initialLat={p.venueLat}
+        initialLng={p.venueLng}
+      />
+
+      <div className="border-t border-border pt-4">
+        <PlaceFields
+          prefix="parking"
+          title="🅿️ 주차장 (선택 — 비워두면 손님 화면에서 숨김)"
+          initialName={p.parkingName}
+          initialAddress={p.parkingAddress}
+          initialLat={p.parkingLat}
+          initialLng={p.parkingLng}
+        />
+      </div>
     </section>
   );
 }
