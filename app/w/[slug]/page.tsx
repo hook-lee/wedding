@@ -4,6 +4,10 @@ import { TabShell } from "./_components/TabShell";
 import { visibleTabs, type TabKey } from "./_lib/tabs";
 import { HomeTab } from "./_components/HomeTab";
 import { StoryTab } from "./_components/StoryTab";
+import { GalleryTab } from "./_components/GalleryTab";
+import { GuestbookTab } from "./_components/GuestbookTab";
+import { InfoTab } from "./_components/InfoTab";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const VALID: TabKey[] = ["home", "story", "gallery", "guestbook", "info"];
 
@@ -12,10 +16,10 @@ export default async function PublicPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; sub?: string }>;
 }) {
   const { slug } = await params;
-  const { tab } = await searchParams;
+  const { tab, sub } = await searchParams;
   const site = await loadSite(slug);
 
   if (!tab) {
@@ -39,6 +43,17 @@ export default async function PublicPage({
   const requested = (VALID.includes(tab as TabKey) ? tab : "home") as TabKey;
   const active: TabKey = tabs.includes(requested) ? requested : "home";
 
+  const supabase = await createSupabaseServerClient();
+  const { data: initialGuestbook } =
+    active === "guestbook"
+      ? await supabase
+          .from("guestbook")
+          .select("*")
+          .eq("site_id", site.id)
+          .order("created_at", { ascending: false })
+          .limit(50)
+      : { data: null };
+
   return (
     <TabShell slug={site.slug} tabs={tabs} active={active}>
       {active === "home" && <HomeTab site={site} />}
@@ -54,13 +69,22 @@ export default async function PublicPage({
         />
       )}
       {active === "gallery" && (
-        <div className="text-center text-muted py-8">사진첩 (Chunk B)</div>
+        <GalleryTab urls={site.gallery_urls ?? []} />
       )}
       {active === "guestbook" && (
-        <div className="text-center text-muted py-8">일촌평 (Chunk B)</div>
+        <GuestbookTab
+          siteId={site.id}
+          initial={initialGuestbook ?? []}
+        />
       )}
       {active === "info" && (
-        <div className="text-center text-muted py-8">더보기 (Chunk B)</div>
+        <InfoTab
+          site={site}
+          sub={
+            (sub as "venue" | "rsvp" | "account" | "profile" | undefined) ??
+            null
+          }
+        />
       )}
     </TabShell>
   );
