@@ -14,26 +14,28 @@ function Row({
   value: Acc | undefined;
 }) {
   return (
-    <div className="grid grid-cols-[80px_1fr_1.5fr_1fr] gap-2 items-center">
-      <span className="text-xs text-secondary">{label}</span>
-      <input
-        name={`${prefix}_bank`}
-        defaultValue={value?.bank ?? ""}
-        placeholder="은행"
-        className="p-2 rounded-sm border border-border bg-surface text-sm"
-      />
-      <input
-        name={`${prefix}_account`}
-        defaultValue={value?.account ?? ""}
-        placeholder="계좌번호"
-        className="p-2 rounded-sm border border-border bg-surface text-sm"
-      />
-      <input
-        name={`${prefix}_holder`}
-        defaultValue={value?.holder ?? ""}
-        placeholder="예금주"
-        className="p-2 rounded-sm border border-border bg-surface text-sm"
-      />
+    <div className="space-y-2 pb-2 border-b border-border last:border-0">
+      <span className="text-xs text-secondary font-semibold">{label}</span>
+      <div className="grid grid-cols-[100px_1fr_100px] gap-2 items-center">
+        <input
+          name={`${prefix}_bank`}
+          defaultValue={value?.bank ?? ""}
+          placeholder="은행"
+          className="w-full min-w-0 p-2 rounded-sm border border-border bg-surface text-sm"
+        />
+        <input
+          name={`${prefix}_account`}
+          defaultValue={value?.account ?? ""}
+          placeholder="계좌번호"
+          className="w-full min-w-0 p-2 rounded-sm border border-border bg-surface text-sm"
+        />
+        <input
+          name={`${prefix}_holder`}
+          defaultValue={value?.holder ?? ""}
+          placeholder="예금주"
+          className="w-full min-w-0 p-2 rounded-sm border border-border bg-surface text-sm"
+        />
+      </div>
     </div>
   );
 }

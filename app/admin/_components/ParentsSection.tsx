@@ -14,18 +14,18 @@ function Row({
   const baseName = `${side}_${role}`;
   const isMother = role === "mother";
   return (
-    <div className="grid grid-cols-[100px_1fr_auto] gap-3 items-center">
+    <div className="grid grid-cols-[100px_1fr_90px] gap-2 items-center">
       <span className="text-sm text-secondary">{label}</span>
       <input
         name={`${baseName}_name`}
         defaultValue={value?.name ?? ""}
         placeholder="이름"
-        className="p-2 rounded-sm border border-border bg-surface"
+        className="w-full min-w-0 p-2 rounded-sm border border-border bg-surface"
       />
       <select
         name={`${baseName}_status`}
         defaultValue={value?.status ?? "alive"}
-        className="p-2 rounded-sm border border-border bg-surface"
+        className="w-full min-w-0 p-2 rounded-sm border border-border bg-surface text-sm"
       >
         <option value="alive">생존</option>
         <option value="go">故</option>
