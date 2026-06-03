@@ -4,19 +4,22 @@ import { useRouter } from "next/navigation";
 
 type Props = { mainUrl: string | null; galleryUrls: string[] };
 
+const MAX_GALLERY = 20;
+
 export function PhotoSection({ mainUrl, galleryUrls }: Props) {
   const [busy, setBusy] = useState(false);
   const [mainFile, setMainFile] = useState<File | null>(null);
-  const [galleryFile, setGalleryFile] = useState<File | null>(null);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   const mainInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  async function upload(file: File, kind: "main" | "gallery") {
+  async function uploadMain(file: File) {
     setBusy(true);
     const fd = new FormData();
     fd.append("file", file);
-    fd.append("kind", kind);
+    fd.append("kind", "main");
     const r = await fetch("/api/admin/upload-photo", { method: "POST", body: fd });
     setBusy(false);
     if (!r.ok) {
@@ -24,13 +27,39 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
       alert(`업로드 실패: ${text || r.status}`);
       return;
     }
-    if (kind === "main") {
-      setMainFile(null);
-      if (mainInputRef.current) mainInputRef.current.value = "";
-    } else {
-      setGalleryFile(null);
-      if (galleryInputRef.current) galleryInputRef.current.value = "";
+    setMainFile(null);
+    if (mainInputRef.current) mainInputRef.current.value = "";
+    router.refresh();
+  }
+
+  async function uploadGallery(files: File[]) {
+    if (files.length === 0) return;
+    setBusy(true);
+    setProgress({ current: 0, total: files.length });
+    let failed = 0;
+    let stopReason: string | null = null;
+    for (let i = 0; i < files.length; i++) {
+      setProgress({ current: i + 1, total: files.length });
+      const fd = new FormData();
+      fd.append("file", files[i]);
+      fd.append("kind", "gallery");
+      const r = await fetch("/api/admin/upload-photo", { method: "POST", body: fd });
+      if (!r.ok) {
+        failed++;
+        const text = await r.text().catch(() => "");
+        // Stop early if server says max reached
+        if (text.includes("최대")) {
+          stopReason = text;
+          break;
+        }
+      }
     }
+    setBusy(false);
+    setProgress(null);
+    setGalleryFiles([]);
+    if (galleryInputRef.current) galleryInputRef.current.value = "";
+    if (stopReason) alert(`업로드 중단: ${stopReason}`);
+    else if (failed > 0) alert(`${failed}장 업로드 실패`);
     router.refresh();
   }
 
@@ -44,6 +73,8 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
     setBusy(false);
     router.refresh();
   }
+
+  const remainingSlots = MAX_GALLERY - galleryUrls.length;
 
   return (
     <section className="bg-surface border border-border rounded-md p-6 space-y-6 shadow-card">
@@ -83,7 +114,7 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
           <button
             type="button"
             disabled={busy || !mainFile}
-            onClick={() => mainFile && upload(mainFile, "main")}
+            onClick={() => mainFile && uploadMain(mainFile)}
             className="px-4 py-2 bg-ink text-bg rounded-pill text-sm disabled:opacity-50"
           >
             {busy ? "업로드 중..." : "업로드"}
@@ -93,7 +124,7 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
 
       {/* Gallery */}
       <div className="space-y-2">
-        <p className="text-sm text-secondary">갤러리 ({galleryUrls.length}/20장)</p>
+        <p className="text-sm text-secondary">갤러리 ({galleryUrls.length}/{MAX_GALLERY}장)</p>
         {galleryUrls.length > 0 && (
           <div className="grid grid-cols-4 gap-2">
             {galleryUrls.map((u) => (
@@ -112,31 +143,53 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
             ))}
           </div>
         )}
-        {galleryUrls.length >= 20 ? (
-          <p className="text-xs text-muted">최대 20장에 도달했어요. 추가하려면 기존 사진을 먼저 삭제해주세요.</p>
+        {remainingSlots <= 0 ? (
+          <p className="text-xs text-muted">
+            최대 {MAX_GALLERY}장에 도달했어요. 추가하려면 기존 사진을 먼저 삭제해주세요.
+          </p>
         ) : (
-          <div className="flex items-center gap-2">
-            <label className="flex-1 cursor-pointer text-sm">
-              <span className="inline-block px-3 py-2 border border-border bg-bg rounded-sm">
-                {galleryFile ? galleryFile.name : "파일 선택"}
-              </span>
-              <input
-                ref={galleryInputRef}
-                type="file"
-                accept="image/*"
-                hidden
-                disabled={busy}
-                onChange={(e) => setGalleryFile(e.target.files?.[0] ?? null)}
-              />
-            </label>
-            <button
-              type="button"
-              disabled={busy || !galleryFile}
-              onClick={() => galleryFile && upload(galleryFile, "gallery")}
-              className="px-4 py-2 bg-ink text-bg rounded-pill text-sm disabled:opacity-50"
-            >
-              {busy ? "업로드 중..." : "업로드"}
-            </button>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <label className="flex-1 cursor-pointer text-sm">
+                <span className="inline-block px-3 py-2 border border-border bg-bg rounded-sm">
+                  {galleryFiles.length > 0
+                    ? `${galleryFiles.length}개 파일 선택됨`
+                    : "파일 선택 (여러 장 가능)"}
+                </span>
+                <input
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  multiple
+                  disabled={busy}
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files ?? []);
+                    if (files.length > remainingSlots) {
+                      alert(`남은 슬롯이 ${remainingSlots}장이라 처음 ${remainingSlots}장만 사용해요.`);
+                      setGalleryFiles(files.slice(0, remainingSlots));
+                    } else {
+                      setGalleryFiles(files);
+                    }
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                disabled={busy || galleryFiles.length === 0}
+                onClick={() => uploadGallery(galleryFiles)}
+                className="px-4 py-2 bg-ink text-bg rounded-pill text-sm disabled:opacity-50 whitespace-nowrap"
+              >
+                {busy && progress
+                  ? `${progress.current}/${progress.total} 업로드 중`
+                  : galleryFiles.length > 0
+                  ? `${galleryFiles.length}장 업로드`
+                  : "업로드"}
+              </button>
+            </div>
+            <p className="text-xs text-muted">
+              남은 슬롯: {remainingSlots}장 · Ctrl/⌘ 또는 Shift로 여러 장 선택 가능
+            </p>
           </div>
         )}
       </div>
