@@ -1,10 +1,12 @@
 import { ParentsLine } from "./ParentsLine";
 import { daysUntil } from "@/lib/date/dday";
+import { formatKstDateTime } from "@/lib/date/kst";
 import type { Tables } from "@/lib/supabase/types";
 import type { ParentsBlock } from "@/lib/parents/types";
 
 export function HomeTab({ site }: { site: Tables<"wedding_sites"> }) {
   const dday = site.wedding_at ? daysUntil(site.wedding_at) : null;
+  const dateText = site.wedding_at ? formatKstDateTime(site.wedding_at) : "";
   const parents = (site.parents as unknown as ParentsBlock) ?? {};
   return (
     <div className="text-center space-y-4 pt-4">
@@ -26,8 +28,18 @@ export function HomeTab({ site }: { site: Tables<"wedding_sites"> }) {
         {site.name_joiner}
         {site.bride_name}
       </h1>
+      {dateText && (
+        <p className="text-sm text-muted tracking-widest">{dateText}</p>
+      )}
+      {(site.venue_name || site.venue_address) && (
+        <p className="text-sm text-secondary">
+          📍 {site.venue_name}
+          {site.venue_name && site.venue_address && " · "}
+          {site.venue_address}
+        </p>
+      )}
       {site.greeting && (
-        <p className="text-sm text-secondary whitespace-pre-line max-w-xs mx-auto leading-relaxed">
+        <p className="text-sm text-secondary whitespace-pre-line max-w-xs mx-auto leading-relaxed pt-2">
           {site.greeting}
         </p>
       )}
