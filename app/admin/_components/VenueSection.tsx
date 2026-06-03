@@ -36,15 +36,16 @@ export function VenueSection({ name, address, lat, lng }: Props) {
         />
       </label>
       <label className="block">
-        <span className="text-sm text-secondary">주소</span>
+        <span className="text-sm text-secondary">주소 또는 식장명</span>
         <input
           name="venue_address"
           value={addr}
           onChange={(e) => setAddr(e.target.value)}
           onBlur={geocode}
+          placeholder="예: 서울시 강남구 OO로 123 / 또는 OO웨딩홀"
           className="w-full mt-1 p-2 rounded-sm border border-border bg-surface"
         />
-        {status === "loading" && <p className="text-xs text-muted mt-1">주소 확인 중…</p>}
+        {status === "loading" && <p className="text-xs text-muted mt-1">위치 확인 중…</p>}
         {status === "ok" && coord && (
           <p className="text-xs text-green-700 mt-1">
             좌표 확인됨 ({coord.lat.toFixed(4)}, {coord.lng.toFixed(4)})
@@ -52,7 +53,7 @@ export function VenueSection({ name, address, lat, lng }: Props) {
         )}
         {status === "fail" && (
           <p className="text-xs text-red-600 mt-1">
-            주소를 찾지 못했습니다. 다시 입력하거나 더 정확한 주소를 적어주세요.
+            위치를 찾지 못했습니다. 식장명이나 도로명 주소(예: &quot;강남구 테헤란로 123&quot;)로 다시 시도해주세요.
           </p>
         )}
       </label>

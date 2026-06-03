@@ -1,7 +1,15 @@
+"use client";
+import { useState } from "react";
 import { SlugField } from "./SlugField";
 import type { Tables } from "@/lib/supabase/types";
 
 export function BasicInfoSection({ site }: { site: Tables<"wedding_sites"> }) {
+  const [groomName, setGroomName] = useState(site.groom_name ?? "");
+  const [brideName, setBrideName] = useState(site.bride_name ?? "");
+
+  const groomDisplay = groomName.trim() || "신랑";
+  const brideDisplay = brideName.trim() || "신부";
+
   return (
     <section className="bg-surface border border-border rounded-md p-6 space-y-4 shadow-card">
       <h2 className="text-lg font-semibold">기본 정보</h2>
@@ -11,7 +19,8 @@ export function BasicInfoSection({ site }: { site: Tables<"wedding_sites"> }) {
         <span className="text-sm text-secondary">신랑 이름</span>
         <input
           name="groom_name"
-          defaultValue={site.groom_name ?? ""}
+          value={groomName}
+          onChange={(e) => setGroomName(e.target.value)}
           className="w-full mt-1 p-2 rounded-sm border border-border bg-surface"
         />
       </label>
@@ -20,7 +29,8 @@ export function BasicInfoSection({ site }: { site: Tables<"wedding_sites"> }) {
         <span className="text-sm text-secondary">신부 이름</span>
         <input
           name="bride_name"
-          defaultValue={site.bride_name ?? ""}
+          value={brideName}
+          onChange={(e) => setBrideName(e.target.value)}
           className="w-full mt-1 p-2 rounded-sm border border-border bg-surface"
         />
       </label>
@@ -42,10 +52,10 @@ export function BasicInfoSection({ site }: { site: Tables<"wedding_sites"> }) {
           defaultValue={site.name_joiner}
           className="w-full mt-1 p-2 rounded-sm border border-border bg-surface"
         >
-          <option value=" ♡ ">창환 ♡ 지영</option>
-          <option value=" · ">창환 · 지영</option>
-          <option value=" & ">창환 &amp; 지영</option>
-          <option value="  ">창환  지영 (공백)</option>
+          <option value=" ♡ ">{groomDisplay} ♡ {brideDisplay}</option>
+          <option value=" · ">{groomDisplay} · {brideDisplay}</option>
+          <option value=" & ">{groomDisplay} & {brideDisplay}</option>
+          <option value="  ">{groomDisplay}  {brideDisplay} (공백)</option>
         </select>
       </label>
     </section>
