@@ -7,10 +7,14 @@ export async function GET(req: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ ok: false }, { status: 401 });
+  if (!user) return NextResponse.json({ ok: false, reason: "unauthorized" }, { status: 401 });
 
   const address = new URL(req.url).searchParams.get("q") ?? "";
-  if (!address) return NextResponse.json({ ok: false });
-  const point = await geocodeAddress(address);
-  return NextResponse.json(point ? { ok: true, ...point } : { ok: false });
+  if (!address) return NextResponse.json({ ok: false, reason: "empty" });
+
+  const { point, debug } = await geocodeAddress(address);
+  console.log(`[geocode] query=${address} debug=${debug.join(" | ")}`);
+
+  if (point) return NextResponse.json({ ok: true, ...point });
+  return NextResponse.json({ ok: false, reason: "not-found", debug });
 }
