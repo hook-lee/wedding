@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/require-user";
 import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
+import { AdminForm } from "./_components/AdminForm";
 import { BasicInfoSection } from "./_components/BasicInfoSection";
 import { ParentsSection } from "./_components/ParentsSection";
 import { VenueSection } from "./_components/VenueSection";
@@ -11,7 +12,6 @@ import { ProfileSection } from "./_components/ProfileSection";
 import { StorySection } from "./_components/StorySection";
 import { AccountSection } from "./_components/AccountSection";
 import { ThemeSection } from "./_components/ThemeSection";
-import { saveAdminForm } from "./actions";
 import type { ParentsBlock } from "@/lib/parents/types";
 
 type Track = { order: number; url: string; title: string; artist: string | null };
@@ -59,13 +59,7 @@ export default async function AdminHome() {
         </div>
       )}
 
-      <form
-        action={async (formData) => {
-          "use server";
-          await saveAdminForm(formData);
-        }}
-        className="space-y-6"
-      >
+      <AdminForm>
         <BasicInfoSection site={site} />
         <ParentsSection parents={(site.parents as ParentsBlock) ?? {}} />
         <VenueSection
@@ -86,10 +80,7 @@ export default async function AdminHome() {
           sectionsEnabled={(site.sections_enabled as unknown as Record<string, boolean>) ?? {}}
           published={site.published}
         />
-        <button type="submit" className="w-full p-3 bg-ink text-bg rounded-pill">
-          내 청첩장 저장
-        </button>
-      </form>
+      </AdminForm>
 
       <PhotoSection mainUrl={site.main_photo_url} galleryUrls={site.gallery_urls ?? []} />
       <BgmSection tracks={(site.bgm_tracks as unknown as Track[]) ?? []} />

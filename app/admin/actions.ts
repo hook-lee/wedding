@@ -31,7 +31,12 @@ function readAccount(formData: FormData, prefix: string) {
   return { bank, account, holder };
 }
 
-export async function saveAdminForm(formData: FormData) {
+export type SaveResult = { ok?: true; error?: string };
+
+export async function saveAdminForm(
+  _prevState: SaveResult | null,
+  formData: FormData,
+): Promise<SaveResult> {
   const user = await requireUser();
   const supabase = await createSupabaseServerClient();
 
