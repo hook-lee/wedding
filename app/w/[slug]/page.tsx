@@ -67,16 +67,17 @@ export default async function PublicPage({
   const requested = (VALID.includes(tab as TabKey) ? tab : "home") as TabKey;
   const active: TabKey = tabs.includes(requested) ? requested : "home";
 
+  // Home page now stacks all sections, so always preload guestbook.
   const supabase = await createSupabaseServerClient();
-  const { data: initialGuestbook } =
-    active === "guestbook"
-      ? await supabase
-          .from("guestbook")
-          .select("*")
-          .eq("site_id", site.id)
-          .order("created_at", { ascending: false })
-          .limit(50)
-      : { data: null };
+  const needsGuestbook = active === "home" || active === "guestbook";
+  const { data: initialGuestbook } = needsGuestbook
+    ? await supabase
+        .from("guestbook")
+        .select("*")
+        .eq("site_id", site.id)
+        .order("created_at", { ascending: false })
+        .limit(50)
+    : { data: null };
 
   return (
     <TabShell
@@ -87,7 +88,7 @@ export default async function PublicPage({
         (site.bgm_tracks as unknown as Parameters<typeof TabShell>[0]["bgmTracks"]) ?? []
       }
     >
-      {active === "home" && <HomeTab site={site} />}
+      {active === "home" && <HomeTab site={site} initialGuestbook={initialGuestbook ?? []} />}
       {active === "story" && (
         <StoryTab
           items={

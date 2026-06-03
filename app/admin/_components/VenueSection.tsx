@@ -10,6 +10,15 @@ type PlaceProps = {
   initialLng: number | null;
 };
 
+function MiniMapLink({ lat, lng, label }: { lat: number; lng: number; label: string }) {
+  const href = `https://map.kakao.com/link/map/${encodeURIComponent(label || "도착지")},${lat},${lng}`;
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="text-xs underline text-accent">
+      📍 카카오맵에서 위치 확인 ↗
+    </a>
+  );
+}
+
 function PlaceFields({
   prefix,
   title,
@@ -22,6 +31,7 @@ function PlaceFields({
   const [coord, setCoord] = useState<{ lat: number; lng: number } | null>(
     initialLat != null && initialLng != null ? { lat: initialLat, lng: initialLng } : null
   );
+  const [matched, setMatched] = useState<{ place_name?: string; address_name?: string } | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "fail">("idle");
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
@@ -29,10 +39,12 @@ function PlaceFields({
     if (!addr) return;
     setStatus("loading");
     setDebugInfo([]);
+    setMatched(null);
     const r = await fetch(`/api/geocode?q=${encodeURIComponent(addr)}`);
     const json = await r.json();
     if (json.ok) {
       setCoord({ lat: json.lat, lng: json.lng });
+      setMatched({ place_name: json.place_name, address_name: json.address_name });
       setStatus("ok");
     } else {
       setCoord(null);
@@ -66,9 +78,28 @@ function PlaceFields({
         />
         {status === "loading" && <p className="text-xs text-muted mt-1">위치 확인 중…</p>}
         {status === "ok" && coord && (
-          <p className="text-xs text-green-700 mt-1">
-            좌표 확인됨 ({coord.lat.toFixed(4)}, {coord.lng.toFixed(4)})
-          </p>
+          <div className="mt-2 p-2 bg-bg border border-border rounded-sm text-xs space-y-1">
+            <p className="text-green-700">✓ 좌표 확인됨</p>
+            {matched?.place_name && (
+              <p>
+                <span className="text-muted">카카오 매칭: </span>
+                <strong>{matched.place_name}</strong>
+              </p>
+            )}
+            {matched?.address_name && (
+              <p>
+                <span className="text-muted">주소: </span>
+                {matched.address_name}
+              </p>
+            )}
+            <p className="text-muted">
+              좌표 ({coord.lat.toFixed(5)}, {coord.lng.toFixed(5)})
+            </p>
+            <MiniMapLink lat={coord.lat} lng={coord.lng} label={matched?.place_name || addr} />
+            <p className="text-[10px] text-muted pt-1">
+              💡 잘못 잡혔으면 더 구체적인 이름으로 재입력 (예: &quot;서울시립대 자작마루&quot; → &quot;자작마루 (서울시립대)&quot;)
+            </p>
+          </div>
         )}
         {status === "fail" && (
           <div className="mt-1 space-y-1">
@@ -79,6 +110,19 @@ function PlaceFields({
               <p className="text-[10px] text-muted font-mono">debug: {debugInfo.join(" | ")}</p>
             )}
           </div>
+        )}
+        {status === "idle" && coord && (
+          <p className="text-xs text-muted mt-1">
+            저장된 좌표 ({coord.lat.toFixed(5)}, {coord.lng.toFixed(5)}) ·{" "}
+            <a
+              href={`https://map.kakao.com/link/map/${encodeURIComponent(initialName || "도착지")},${coord.lat},${coord.lng}`}
+              target="_blank"
+              rel="noreferrer"
+              className="underline text-accent"
+            >
+              지도에서 확인 ↗
+            </a>
+          </p>
         )}
       </label>
       <input type="hidden" name={`${prefix}_lat`} value={coord?.lat ?? ""} />

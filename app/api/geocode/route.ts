@@ -15,6 +15,14 @@ export async function GET(req: Request) {
   const { point, debug } = await geocodeAddress(address);
   console.log(`[geocode] query=${address} debug=${debug.join(" | ")}`);
 
-  if (point) return NextResponse.json({ ok: true, ...point });
+  if (point) {
+    return NextResponse.json({
+      ok: true,
+      lat: point.lat,
+      lng: point.lng,
+      place_name: point.place_name ?? null,
+      address_name: point.address_name ?? null,
+    });
+  }
   return NextResponse.json({ ok: false, reason: "not-found", debug });
 }
