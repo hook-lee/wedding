@@ -34,6 +34,13 @@ export async function saveAdminForm(formData: FormData) {
   const name_joiner = String(formData.get("name_joiner") ?? " ♡ ");
   const parents = readParentsFromForm(formData);
 
+  const venue_name = String(formData.get("venue_name") ?? "").trim();
+  const venue_address = String(formData.get("venue_address") ?? "").trim();
+  const latStr = String(formData.get("venue_lat") ?? "");
+  const lngStr = String(formData.get("venue_lng") ?? "");
+  const venue_lat = latStr ? Number(latStr) : null;
+  const venue_lng = lngStr ? Number(lngStr) : null;
+
   const v = validateSlug(slug);
   if (!v.ok) return { error: v.reason };
   if (!(await isSlugAvailable(slug, user.id))) {
@@ -44,7 +51,18 @@ export async function saveAdminForm(formData: FormData) {
 
   const { error } = await supabase
     .from("wedding_sites")
-    .update({ slug, groom_name, bride_name, wedding_at, name_joiner, parents } as never)
+    .update({
+      slug,
+      groom_name,
+      bride_name,
+      wedding_at,
+      name_joiner,
+      parents,
+      venue_name,
+      venue_address,
+      venue_lat,
+      venue_lng,
+    })
     .eq("owner_id", user.id);
   if (error) return { error: error.message };
 

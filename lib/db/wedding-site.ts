@@ -14,11 +14,11 @@ export async function getOrCreateSiteForOwner(ownerId: string): Promise<Tables<"
   const tempSlug = `draft-${ownerId.slice(0, 8)}`;
   const { data: created, error } = await supabase
     .from("wedding_sites")
-    .insert({ owner_id: ownerId, slug: tempSlug } as never)
+    .insert({ owner_id: ownerId, slug: tempSlug })
     .select("*")
     .single();
   if (error) throw error;
-  return created as Tables<"wedding_sites">;
+  return created;
 }
 
 /** Service-role check — bypasses RLS so we can see ALL slugs (drafts + published).

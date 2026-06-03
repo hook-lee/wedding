@@ -59,6 +59,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["wedding_sites"]["Insert"]>;
+        Relationships: [];
       };
       guestbook: {
         Row: {
@@ -76,6 +77,7 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["guestbook"]["Insert"]>;
+        Relationships: [];
       };
       rsvp: {
         Row: {
@@ -99,6 +101,7 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["rsvp"]["Insert"]>;
+        Relationships: [];
       };
     };
     Views: { [_ in never]: never };
