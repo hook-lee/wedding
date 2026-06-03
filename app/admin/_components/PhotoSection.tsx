@@ -93,7 +93,7 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
 
       {/* Gallery */}
       <div className="space-y-2">
-        <p className="text-sm text-secondary">갤러리 ({galleryUrls.length}장)</p>
+        <p className="text-sm text-secondary">갤러리 ({galleryUrls.length}/20장)</p>
         {galleryUrls.length > 0 && (
           <div className="grid grid-cols-4 gap-2">
             {galleryUrls.map((u) => (
@@ -112,29 +112,33 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
             ))}
           </div>
         )}
-        <div className="flex items-center gap-2">
-          <label className="flex-1 cursor-pointer text-sm">
-            <span className="inline-block px-3 py-2 border border-border bg-bg rounded-sm">
-              {galleryFile ? galleryFile.name : "파일 선택"}
-            </span>
-            <input
-              ref={galleryInputRef}
-              type="file"
-              accept="image/*"
-              hidden
-              disabled={busy}
-              onChange={(e) => setGalleryFile(e.target.files?.[0] ?? null)}
-            />
-          </label>
-          <button
-            type="button"
-            disabled={busy || !galleryFile}
-            onClick={() => galleryFile && upload(galleryFile, "gallery")}
-            className="px-4 py-2 bg-ink text-bg rounded-pill text-sm disabled:opacity-50"
-          >
-            {busy ? "업로드 중..." : "업로드"}
-          </button>
-        </div>
+        {galleryUrls.length >= 20 ? (
+          <p className="text-xs text-muted">최대 20장에 도달했어요. 추가하려면 기존 사진을 먼저 삭제해주세요.</p>
+        ) : (
+          <div className="flex items-center gap-2">
+            <label className="flex-1 cursor-pointer text-sm">
+              <span className="inline-block px-3 py-2 border border-border bg-bg rounded-sm">
+                {galleryFile ? galleryFile.name : "파일 선택"}
+              </span>
+              <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/*"
+                hidden
+                disabled={busy}
+                onChange={(e) => setGalleryFile(e.target.files?.[0] ?? null)}
+              />
+            </label>
+            <button
+              type="button"
+              disabled={busy || !galleryFile}
+              onClick={() => galleryFile && upload(galleryFile, "gallery")}
+              className="px-4 py-2 bg-ink text-bg rounded-pill text-sm disabled:opacity-50"
+            >
+              {busy ? "업로드 중..." : "업로드"}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

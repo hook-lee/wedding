@@ -6,6 +6,8 @@ import crypto from "node:crypto";
 
 export const runtime = "nodejs";
 
+const MAX_GALLERY = 20;
+
 export async function POST(req: Request) {
   const user = await requireUser();
   const site = await getOrCreateSiteForOwner(user.id);
@@ -17,6 +19,10 @@ export async function POST(req: Request) {
   if (!file) return NextResponse.json({ error: "파일이 없습니다." }, { status: 400 });
   if (file.size > 8 * 1024 * 1024) return NextResponse.json({ error: "8MB 초과" }, { status: 400 });
   if (!file.type.startsWith("image/")) return NextResponse.json({ error: "이미지만" }, { status: 400 });
+
+  if (kind === "gallery" && (site.gallery_urls?.length ?? 0) >= MAX_GALLERY) {
+    return NextResponse.json({ error: `갤러리는 최대 ${MAX_GALLERY}장까지 업로드할 수 있습니다.` }, { status: 400 });
+  }
 
   const supabase = await createSupabaseServerClient();
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
