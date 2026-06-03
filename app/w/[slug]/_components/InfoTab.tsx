@@ -1,6 +1,9 @@
 import Link from "next/link";
 import type { Tables } from "@/lib/supabase/types";
 import { VenueView } from "./VenueView";
+import { RsvpView } from "./RsvpView";
+import { AccountView } from "./AccountView";
+import { ProfileView } from "./ProfileView";
 
 type SubKey = "venue" | "rsvp" | "account" | "profile";
 const SUB_LABELS: Record<SubKey, string> = {
@@ -51,14 +54,33 @@ export function InfoTab({
           lng={site.venue_lng}
         />
       )}
-      {active === "rsvp" && (
-        <div className="text-center text-muted py-8">RSVP (Chunk C)</div>
-      )}
+      {active === "rsvp" && <RsvpView siteId={site.id} />}
       {active === "account" && (
-        <div className="text-center text-muted py-8">마음전하기 (Chunk C)</div>
+        <AccountView
+          info={
+            (site.account_info as unknown as Parameters<
+              typeof AccountView
+            >[0]["info"]) ?? {}
+          }
+        />
       )}
       {active === "profile" && (
-        <div className="text-center text-muted py-8">프로필 (Chunk C)</div>
+        <ProfileView
+          groom={
+            (site.groom_profile as unknown as {
+              mbti?: string;
+              intro?: string;
+            }) ?? {}
+          }
+          groomName={site.groom_name}
+          bride={
+            (site.bride_profile as unknown as {
+              mbti?: string;
+              intro?: string;
+            }) ?? {}
+          }
+          brideName={site.bride_name}
+        />
       )}
     </div>
   );

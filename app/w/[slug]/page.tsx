@@ -54,8 +54,31 @@ export default async function PublicPage({
           .limit(50)
       : { data: null };
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const shareUrl = `${baseUrl}/w/${site.slug}`;
+  const shareTitle = `${site.groom_name}${site.name_joiner}${site.bride_name} 결혼식에 초대합니다`;
+  const shareDescription = site.wedding_at
+    ? new Date(site.wedding_at).toLocaleDateString("ko-KR")
+    : "";
+
   return (
-    <TabShell slug={site.slug} tabs={tabs} active={active}>
+    <TabShell
+      slug={site.slug}
+      tabs={tabs}
+      active={active}
+      bgmTracks={
+        (site.bgm_tracks as unknown as {
+          order: number;
+          url: string;
+          title: string;
+          artist: string | null;
+        }[]) ?? []
+      }
+      shareUrl={shareUrl}
+      shareTitle={shareTitle}
+      shareDescription={shareDescription}
+      shareImage={site.main_photo_url}
+    >
       {active === "home" && <HomeTab site={site} />}
       {active === "story" && (
         <StoryTab
