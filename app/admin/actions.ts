@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { validateSlug } from "@/lib/slug/validate";
 import { isSlugAvailable } from "@/lib/db/wedding-site";
+import { kstDateTimeLocalToUtcIso } from "@/lib/date/kst";
 import { revalidatePath } from "next/cache";
 import type { ParentsBlock, ParentStatus } from "@/lib/parents/types";
 
@@ -120,7 +121,10 @@ export async function saveAdminForm(
     return { error: "이미 사용 중인 슬러그입니다." };
   }
 
-  const wedding_at = wedding_at_raw ? new Date(wedding_at_raw).toISOString() : null;
+  // Treat the datetime-local input as KST regardless of where the server runs.
+  // Without this, Vercel (UTC) would misread "2026-10-10T16:00" as UTC and the
+  // displayed time would shift by +9 hours.
+  const wedding_at = wedding_at_raw ? kstDateTimeLocalToUtcIso(wedding_at_raw) : null;
 
   const { error } = await supabase
     .from("wedding_sites")

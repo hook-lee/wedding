@@ -102,7 +102,7 @@ export function GuestbookTab({
               {e.message}
             </p>
             <p className="text-xs text-muted mt-1">
-              {new Date(e.created_at).toLocaleString("ko-KR")}
+              {new Date(e.created_at).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
             </p>
           </li>
         ))}

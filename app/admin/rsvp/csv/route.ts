@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth/require-user";
 import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { formatKstDateTime } from "@/lib/date/kst";
 
 function escape(s: string) { return `"${(s ?? "").replace(/"/g, '""')}"`; }
 
@@ -19,7 +20,7 @@ export async function GET() {
     String(r.party_size),
     r.phone ?? "",
     r.message ?? "",
-    new Date(r.created_at).toLocaleString("ko-KR"),
+    formatKstDateTime(r.created_at),
   ].map(escape).join(",")).join("\n");
 
   // UTF-8 BOM so Excel auto-detects encoding for Korean

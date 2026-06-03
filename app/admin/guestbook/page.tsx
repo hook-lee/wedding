@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth/require-user";
 import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { formatKstDateTime } from "@/lib/date/kst";
 import { deleteGuestbookEntry } from "./actions";
 import Link from "next/link";
 
@@ -28,7 +29,7 @@ export default async function GuestbookAdmin() {
             <div className="flex-1">
               <p className="text-sm font-semibold">{e.guest_name}</p>
               <p className="text-sm text-secondary whitespace-pre-line">{e.message}</p>
-              <p className="text-xs text-muted mt-1">{new Date(e.created_at).toLocaleString("ko-KR")}</p>
+              <p className="text-xs text-muted mt-1">{formatKstDateTime(e.created_at)}</p>
             </div>
             <form action={deleteGuestbookEntry.bind(null, e.id)}>
               <button className="text-xs text-red-600 self-start">삭제</button>

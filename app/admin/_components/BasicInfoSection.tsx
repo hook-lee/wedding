@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { SlugField } from "./SlugField";
+import { utcIsoToKstDateTimeLocal } from "@/lib/date/kst";
 import type { Tables } from "@/lib/supabase/types";
 
 export function BasicInfoSection({ site }: { site: Tables<"wedding_sites"> }) {
@@ -36,11 +37,11 @@ export function BasicInfoSection({ site }: { site: Tables<"wedding_sites"> }) {
       </label>
 
       <label className="block">
-        <span className="text-sm text-secondary">결혼식 일시</span>
+        <span className="text-sm text-secondary">결혼식 일시 (한국 시간)</span>
         <input
           name="wedding_at"
           type="datetime-local"
-          defaultValue={site.wedding_at ? new Date(site.wedding_at).toISOString().slice(0, 16) : ""}
+          defaultValue={site.wedding_at ? utcIsoToKstDateTimeLocal(site.wedding_at) : ""}
           className="w-full mt-1 p-2 rounded-sm border border-border bg-surface"
         />
       </label>
