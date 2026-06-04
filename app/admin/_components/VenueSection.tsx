@@ -1,6 +1,13 @@
 "use client";
 import { useState } from "react";
 
+type Candidate = {
+  lat: number;
+  lng: number;
+  place_name: string;
+  address_name: string;
+};
+
 type PlaceProps = {
   prefix: "venue" | "parking";
   title: string;
@@ -9,15 +16,6 @@ type PlaceProps = {
   initialLat: number | null;
   initialLng: number | null;
 };
-
-function MiniMapLink({ lat, lng, label }: { lat: number; lng: number; label: string }) {
-  const href = `https://map.kakao.com/link/map/${encodeURIComponent(label || "도착지")},${lat},${lng}`;
-  return (
-    <a href={href} target="_blank" rel="noreferrer" className="text-xs underline text-accent">
-      📍 카카오맵에서 위치 확인 ↗
-    </a>
-  );
-}
 
 function PlaceFields({
   prefix,
@@ -28,30 +26,37 @@ function PlaceFields({
   initialLng,
 }: PlaceProps) {
   const [addr, setAddr] = useState(initialAddress);
-  const [coord, setCoord] = useState<{ lat: number; lng: number } | null>(
-    initialLat != null && initialLng != null ? { lat: initialLat, lng: initialLng } : null
+  const [picked, setPicked] = useState<{ lat: number; lng: number; label?: string } | null>(
+    initialLat != null && initialLng != null
+      ? { lat: initialLat, lng: initialLng, label: initialName || initialAddress }
+      : null,
   );
-  const [matched, setMatched] = useState<{ place_name?: string; address_name?: string } | null>(null);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "fail">("idle");
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
-  async function geocode() {
+  async function search() {
     if (!addr) return;
     setStatus("loading");
     setDebugInfo([]);
-    setMatched(null);
+    setCandidates([]);
     const r = await fetch(`/api/geocode?q=${encodeURIComponent(addr)}`);
     const json = await r.json();
-    if (json.ok) {
-      setCoord({ lat: json.lat, lng: json.lng });
-      setMatched({ place_name: json.place_name, address_name: json.address_name });
+    if (json.ok && Array.isArray(json.candidates) && json.candidates.length > 0) {
+      setCandidates(json.candidates);
+      // Auto-pick the first candidate but allow the user to override
+      const top = json.candidates[0];
+      setPicked({ lat: top.lat, lng: top.lng, label: top.place_name });
       setStatus("ok");
     } else {
-      setCoord(null);
       setStatus("fail");
       if (Array.isArray(json.debug)) setDebugInfo(json.debug);
       else if (json.reason) setDebugInfo([json.reason]);
     }
+  }
+
+  function pick(c: Candidate) {
+    setPicked({ lat: c.lat, lng: c.lng, label: c.place_name });
   }
 
   return (
@@ -66,56 +71,66 @@ function PlaceFields({
           className="w-full mt-1 p-2 rounded-sm border border-border bg-surface"
         />
       </label>
-      <label className="block">
-        <span className="text-xs text-secondary">주소 또는 장소명</span>
-        <input
-          name={`${prefix}_address`}
-          value={addr}
-          onChange={(e) => setAddr(e.target.value)}
-          onBlur={geocode}
-          placeholder="예: 서울시 강남구 OO로 123 / 또는 건물명"
-          className="w-full mt-1 p-2 rounded-sm border border-border bg-surface"
-        />
-        {status === "loading" && <p className="text-xs text-muted mt-1">위치 확인 중…</p>}
-        {status === "ok" && coord && (
-          <div className="mt-2 p-2 bg-bg border border-border rounded-sm text-xs space-y-1">
-            <p className="text-green-700">✓ 좌표 확인됨</p>
-            {matched?.place_name && (
-              <p>
-                <span className="text-muted">카카오 매칭: </span>
-                <strong>{matched.place_name}</strong>
-              </p>
-            )}
-            {matched?.address_name && (
-              <p>
-                <span className="text-muted">주소: </span>
-                {matched.address_name}
-              </p>
-            )}
-            <p className="text-muted">
-              좌표 ({coord.lat.toFixed(5)}, {coord.lng.toFixed(5)})
-            </p>
-            <MiniMapLink lat={coord.lat} lng={coord.lng} label={matched?.place_name || addr} />
-            <p className="text-[10px] text-muted pt-1">
-              💡 잘못 잡혔으면 더 구체적인 이름으로 재입력 (예: &quot;서울시립대 자작마루&quot; → &quot;자작마루 (서울시립대)&quot;)
-            </p>
+      <div className="space-y-1">
+        <label className="block">
+          <span className="text-xs text-secondary">주소 또는 장소명</span>
+          <div className="flex gap-2 mt-1">
+            <input
+              name={`${prefix}_address`}
+              value={addr}
+              onChange={(e) => setAddr(e.target.value)}
+              placeholder="예: 자작마루 / 100주년기념관 / 서울시립대로 163"
+              className="flex-1 min-w-0 p-2 rounded-sm border border-border bg-surface"
+            />
+            <button
+              type="button"
+              onClick={search}
+              disabled={status === "loading"}
+              className="px-3 py-2 bg-ink text-bg rounded-pill text-sm whitespace-nowrap disabled:opacity-50"
+            >
+              {status === "loading" ? "검색 중..." : "검색"}
+            </button>
+          </div>
+        </label>
+
+        {/* 후보 리스트 */}
+        {candidates.length > 0 && (
+          <div className="mt-2 space-y-1 p-2 bg-bg border border-border rounded-sm">
+            <p className="text-xs text-muted mb-1">검색 결과 ({candidates.length}개) — 정확한 위치를 선택하세요</p>
+            {candidates.map((c, i) => {
+              const isPicked = picked?.lat === c.lat && picked?.lng === c.lng;
+              return (
+                <button
+                  key={`${c.lat}-${c.lng}-${i}`}
+                  type="button"
+                  onClick={() => pick(c)}
+                  className={`block w-full text-left p-2 rounded-sm border text-xs ${
+                    isPicked
+                      ? "bg-ink text-bg border-ink"
+                      : "bg-surface border-border hover:bg-bg"
+                  }`}
+                >
+                  <div className="font-semibold">
+                    {isPicked && "✓ "}
+                    {c.place_name}
+                  </div>
+                  {c.address_name && (
+                    <div className={isPicked ? "opacity-80" : "text-muted"}>
+                      {c.address_name}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
-        {status === "fail" && (
-          <div className="mt-1 space-y-1">
-            <p className="text-xs text-red-600">
-              위치를 찾지 못했습니다. 장소명이나 도로명 주소로 다시 시도해주세요.
-            </p>
-            {debugInfo.length > 0 && (
-              <p className="text-[10px] text-muted font-mono">debug: {debugInfo.join(" | ")}</p>
-            )}
-          </div>
-        )}
-        {status === "idle" && coord && (
-          <p className="text-xs text-muted mt-1">
-            저장된 좌표 ({coord.lat.toFixed(5)}, {coord.lng.toFixed(5)}) ·{" "}
+
+        {/* 현재 선택된 위치 표시 */}
+        {picked && status !== "loading" && (
+          <p className="text-xs text-muted mt-2">
+            선택된 좌표: ({picked.lat.toFixed(5)}, {picked.lng.toFixed(5)}) ·{" "}
             <a
-              href={`https://map.kakao.com/link/map/${encodeURIComponent(initialName || "도착지")},${coord.lat},${coord.lng}`}
+              href={`https://map.kakao.com/link/map/${encodeURIComponent(picked.label || "도착지")},${picked.lat},${picked.lng}`}
               target="_blank"
               rel="noreferrer"
               className="underline text-accent"
@@ -124,9 +139,20 @@ function PlaceFields({
             </a>
           </p>
         )}
-      </label>
-      <input type="hidden" name={`${prefix}_lat`} value={coord?.lat ?? ""} />
-      <input type="hidden" name={`${prefix}_lng`} value={coord?.lng ?? ""} />
+
+        {status === "fail" && (
+          <div className="mt-1 space-y-1">
+            <p className="text-xs text-red-600">
+              위치를 찾지 못했습니다. 더 구체적인 이름이나 도로명 주소로 다시 시도해주세요.
+            </p>
+            {debugInfo.length > 0 && (
+              <p className="text-[10px] text-muted font-mono">debug: {debugInfo.join(" | ")}</p>
+            )}
+          </div>
+        )}
+      </div>
+      <input type="hidden" name={`${prefix}_lat`} value={picked?.lat ?? ""} />
+      <input type="hidden" name={`${prefix}_lng`} value={picked?.lng ?? ""} />
     </div>
   );
 }
@@ -146,6 +172,9 @@ export function VenueSection(p: Props) {
   return (
     <section className="bg-surface border border-border rounded-md p-6 space-y-5 shadow-card">
       <h2 className="text-lg font-semibold">식장 · 주차장</h2>
+      <p className="text-xs text-muted">
+        💡 주소·장소명 입력 후 <strong>검색</strong> 버튼 → 검색 결과 중 정확한 위치 선택. 같은 캠퍼스 안의 다른 건물도 골라 잡을 수 있습니다.
+      </p>
 
       <PlaceFields
         prefix="venue"

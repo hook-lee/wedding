@@ -12,16 +12,13 @@ export async function GET(req: Request) {
   const address = new URL(req.url).searchParams.get("q") ?? "";
   if (!address) return NextResponse.json({ ok: false, reason: "empty" });
 
-  const { point, debug } = await geocodeAddress(address);
-  console.log(`[geocode] query=${address} debug=${debug.join(" | ")}`);
+  const { candidates, debug } = await geocodeAddress(address);
+  console.log(`[geocode] query=${address} candidates=${candidates.length} debug=${debug.join(" | ")}`);
 
-  if (point) {
+  if (candidates.length > 0) {
     return NextResponse.json({
       ok: true,
-      lat: point.lat,
-      lng: point.lng,
-      place_name: point.place_name ?? null,
-      address_name: point.address_name ?? null,
+      candidates,
     });
   }
   return NextResponse.json({ ok: false, reason: "not-found", debug });
