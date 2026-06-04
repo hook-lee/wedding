@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { MapPicker } from "./MapPicker";
 
 type Candidate = {
   lat: number;
@@ -34,6 +35,7 @@ function PlaceFields({
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "fail">("idle");
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const [showMap, setShowMap] = useState(false);
 
   async function search() {
     if (!addr) return;
@@ -150,6 +152,37 @@ function PlaceFields({
             )}
           </div>
         )}
+
+        {/* 지도에서 직접 선택 (검색 결과로 못 찾는 케이스용) */}
+        <div className="mt-2">
+          {!showMap && (
+            <button
+              type="button"
+              onClick={() => setShowMap(true)}
+              className="text-xs underline text-accent"
+            >
+              🗺 지도에서 직접 위치 클릭해서 정확하게 잡기
+            </button>
+          )}
+          {showMap && (
+            <div className="mt-2 space-y-1">
+              <MapPicker
+                lat={picked?.lat ?? null}
+                lng={picked?.lng ?? null}
+                onChange={(lat, lng) =>
+                  setPicked({ lat, lng, label: picked?.label ?? addr })
+                }
+              />
+              <button
+                type="button"
+                onClick={() => setShowMap(false)}
+                className="text-[10px] underline text-muted"
+              >
+                지도 닫기
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       <input type="hidden" name={`${prefix}_lat`} value={picked?.lat ?? ""} />
       <input type="hidden" name={`${prefix}_lng`} value={picked?.lng ?? ""} />
