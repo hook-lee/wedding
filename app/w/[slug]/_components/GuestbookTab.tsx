@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { formatKstDateTime } from "@/lib/date/kst";
 import { postGuestbook } from "../_actions/guestbook";
 
 type Entry = {
@@ -102,7 +103,7 @@ export function GuestbookTab({
               {e.message}
             </p>
             <p className="text-xs text-muted mt-1">
-              {new Date(e.created_at).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
+              {formatKstDateTime(e.created_at)}
             </p>
           </li>
         ))}
