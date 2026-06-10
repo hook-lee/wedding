@@ -14,7 +14,10 @@ type IconName =
   | "user"
   | "arrowDown"
   | "play"
-  | "calendarPlus";
+  | "calendarPlus"
+  | "volume"
+  | "volumeOff"
+  | "skipForward";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: (
@@ -73,6 +76,25 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <rect x="3" y="4" width="18" height="18" rx="2" />
       <path d="M16 2v4M8 2v4M3 10h18M12 14v6M9 17h6" />
+    </>
+  ),
+  volume: (
+    <>
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </>
+  ),
+  volumeOff: (
+    <>
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <line x1="22" y1="9" x2="16" y2="15" />
+      <line x1="16" y1="9" x2="22" y2="15" />
+    </>
+  ),
+  skipForward: (
+    <>
+      <polygon points="5 4 15 12 5 20 5 4" />
+      <line x1="19" y1="5" x2="19" y2="19" />
     </>
   ),
 };

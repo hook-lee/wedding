@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Icon } from "./Icon";
 
 type BaseTrack = {
   order: number;
@@ -35,6 +36,30 @@ export function BgmPlayer({ tracks }: { tracks: Track[] }) {
     if (tracks.length === 0) return;
     setIdx((i) => (i + 1) % tracks.length);
   }, [tracks.length]);
+
+  // Listen for splash button click — start BGM playback within the same user gesture window
+  useEffect(() => {
+    function onSplashEnter() {
+      if (!current) return;
+      if (isYoutube(current)) {
+        iframeRef.current?.contentWindow?.postMessage(
+          JSON.stringify({ event: "command", func: "playVideo", args: "" }),
+          "*",
+        );
+        setPlaying(true);
+      } else if (audioRef.current) {
+        audioRef.current
+          .play()
+          .then(() => setPlaying(true))
+          .catch(() => {
+            /* policy blocked — user can tap the volume icon manually */
+          });
+      }
+      setPulse(false);
+    }
+    window.addEventListener("wedding-bgm-start", onSplashEnter);
+    return () => window.removeEventListener("wedding-bgm-start", onSplashEnter);
+  }, [current]);
 
   // Listen for YouTube iframe API messages (player ended → advance)
   useEffect(() => {
@@ -152,19 +177,19 @@ export function BgmPlayer({ tracks }: { tracks: Track[] }) {
       <button
         type="button"
         onClick={playing ? pause : start}
-        className={`text-base ${pulse && !playing ? "animate-pulse" : ""}`}
+        className={`p-1 ${pulse && !playing ? "animate-pulse" : ""}`}
         aria-label={playing ? "BGM 정지" : "BGM 재생"}
       >
-        {playing ? "🔊" : "🔇"}
+        <Icon name={playing ? "volume" : "volumeOff"} className="w-4 h-4" />
       </button>
       {tracks.length > 1 && playing && (
         <button
           type="button"
           onClick={next}
           aria-label="다음 곡"
-          className="text-sm"
+          className="p-1"
         >
-          ⏭
+          <Icon name="skipForward" className="w-4 h-4" />
         </button>
       )}
     </div>
