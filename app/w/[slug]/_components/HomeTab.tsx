@@ -16,7 +16,7 @@ import type { Tables } from "@/lib/supabase/types";
 import type { ParentsBlock } from "@/lib/parents/types";
 
 type Profile = { mbti?: string; intro?: string };
-type StoryItem = { date: string; title: string; body: string };
+type StoryItem = { date: string; title: string; body: string; photo_url?: string };
 type GuestbookEntry = { id: string; guest_name: string; message: string; created_at: string };
 type IconName = React.ComponentProps<typeof Icon>["name"];
 

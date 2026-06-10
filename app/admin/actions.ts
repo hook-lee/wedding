@@ -78,14 +78,14 @@ export async function saveAdminForm(
     intro: String(formData.get("bride_intro") ?? "").trim() || undefined,
   };
 
-  let story_items: { date: string; title: string; body: string }[] = [];
+  let story_items: { date: string; title: string; body: string; photo_url?: string }[] = [];
   try {
     const raw = String(formData.get("story_items_json") ?? "[]");
     story_items = JSON.parse(raw);
   } catch {
     story_items = [];
   }
-  story_items = story_items.filter((s) => s.date || s.title || s.body);
+  story_items = story_items.filter((s) => s.date || s.title || s.body || s.photo_url);
 
   const account_info = {
     groom: {
