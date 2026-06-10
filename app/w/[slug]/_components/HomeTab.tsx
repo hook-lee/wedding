@@ -9,6 +9,7 @@ import { ProfileView } from "./ProfileView";
 import { Reveal } from "./Reveal";
 import { Countdown } from "./Countdown";
 import { Calendar } from "./Calendar";
+import { Icon } from "./Icon";
 import { daysUntil } from "@/lib/date/dday";
 import { formatKstDateTime } from "@/lib/date/kst";
 import type { Tables } from "@/lib/supabase/types";
@@ -17,16 +18,25 @@ import type { ParentsBlock } from "@/lib/parents/types";
 type Profile = { mbti?: string; intro?: string };
 type StoryItem = { date: string; title: string; body: string };
 type GuestbookEntry = { id: string; guest_name: string; message: string; created_at: string };
+type IconName = React.ComponentProps<typeof Icon>["name"];
 
 type Props = {
   site: Tables<"wedding_sites">;
   initialGuestbook: GuestbookEntry[];
 };
 
-function SectionTitle({ icon, label, anchor }: { icon: string; label: string; anchor: string }) {
+function SectionTitle({
+  icon,
+  label,
+  anchor,
+}: {
+  icon: IconName;
+  label: string;
+  anchor: string;
+}) {
   return (
     <div id={anchor} className="flex items-center gap-2 pt-10 pb-4 scroll-mt-16">
-      <span className="text-lg">{icon}</span>
+      <Icon name={icon} className="w-4 h-4 text-secondary" />
       <h2 className="text-base font-semibold tracking-wide">{label}</h2>
       <span className="flex-1 h-px bg-border" />
     </div>
@@ -38,9 +48,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
   const dateText = site.wedding_at ? formatKstDateTime(site.wedding_at) : "";
   const parents = (site.parents as unknown as ParentsBlock) ?? {};
   const enabled = (site.sections_enabled as unknown as Record<string, boolean>) ?? {};
-
-  const calendarTitle = `${site.groom_name}${site.name_joiner}${site.bride_name} 결혼식`;
-  const calendarLocation = [site.venue_name, site.venue_address].filter(Boolean).join(", ");
+  const greetingVideoId = site.greeting_video_id ?? "";
 
   return (
     <div className="space-y-2">
@@ -77,13 +85,30 @@ export function HomeTab({ site, initialGuestbook }: Props) {
         )}
         {(site.venue_name || site.venue_address) && (
           <Reveal delay={300}>
-            <p className="text-sm text-secondary">
-              📍 {site.venue_name}
+            <p className="text-sm text-secondary flex items-center justify-center gap-1">
+              <Icon name="pin" className="w-3.5 h-3.5" />
+              {site.venue_name}
               {site.venue_name && site.venue_address && " · "}
               {site.venue_address}
             </p>
           </Reveal>
         )}
+
+        {/* === 인사말 영상 (선택) === */}
+        {greetingVideoId && (
+          <Reveal delay={320}>
+            <div className="max-w-sm mx-auto aspect-video rounded-md overflow-hidden shadow-card">
+              <iframe
+                src={`https://www.youtube.com/embed/${greetingVideoId}?modestbranding=1&rel=0&playsinline=1`}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="인사말 영상"
+              />
+            </div>
+          </Reveal>
+        )}
+
         {site.greeting && (
           <Reveal delay={350}>
             <p className="text-sm text-secondary whitespace-pre-line max-w-xs mx-auto leading-relaxed pt-2">
@@ -112,13 +137,8 @@ export function HomeTab({ site, initialGuestbook }: Props) {
       {/* === 캘린더 === */}
       {site.wedding_at && (
         <Reveal>
-          <SectionTitle icon="📅" label="캘린더" anchor="calendar" />
-          <Calendar
-            weddingAt={site.wedding_at}
-            title={calendarTitle}
-            location={calendarLocation || "결혼식장"}
-            slug={site.slug}
-          />
+          <SectionTitle icon="calendar" label="캘린더" anchor="calendar" />
+          <Calendar weddingAt={site.wedding_at} slug={site.slug} />
           <div className="mt-6">
             <Countdown targetIso={site.wedding_at} />
           </div>
@@ -128,7 +148,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
       {/* === 우리 스토리 === */}
       {enabled.story && (
         <Reveal>
-          <SectionTitle icon="📖" label="우리 스토리" anchor="story" />
+          <SectionTitle icon="book" label="우리 스토리" anchor="story" />
           <StoryTab items={(site.story_items as unknown as StoryItem[]) ?? []} />
         </Reveal>
       )}
@@ -136,7 +156,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
       {/* === 사진첩 === */}
       {enabled.gallery && (
         <Reveal>
-          <SectionTitle icon="📷" label="사진첩" anchor="gallery" />
+          <SectionTitle icon="image" label="사진첩" anchor="gallery" />
           <GalleryTab urls={site.gallery_urls ?? []} />
         </Reveal>
       )}
@@ -144,14 +164,14 @@ export function HomeTab({ site, initialGuestbook }: Props) {
       {/* === 일촌평 === */}
       {enabled.guestbook && (
         <Reveal>
-          <SectionTitle icon="💬" label="일촌평" anchor="guestbook" />
+          <SectionTitle icon="chat" label="일촌평" anchor="guestbook" />
           <GuestbookTab siteId={site.id} initial={initialGuestbook} />
         </Reveal>
       )}
 
       {/* === 오시는길 === */}
       <Reveal>
-        <SectionTitle icon="📍" label="오시는길" anchor="info" />
+        <SectionTitle icon="pin" label="오시는길" anchor="info" />
         <VenueView
           venue={{
             name: site.venue_name,
@@ -171,7 +191,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
       {/* === RSVP === */}
       {enabled.rsvp && (
         <Reveal>
-          <SectionTitle icon="📋" label="참석 의사" anchor="rsvp" />
+          <SectionTitle icon="clipboard" label="참석 의사" anchor="rsvp" />
           <RsvpView siteId={site.id} />
         </Reveal>
       )}
@@ -179,7 +199,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
       {/* === 마음전하기 === */}
       {enabled.account && (
         <Reveal>
-          <SectionTitle icon="💝" label="마음 전하기" anchor="account" />
+          <SectionTitle icon="heart" label="마음 전하기" anchor="account" />
           <AccountView
             info={
               (site.account_info as unknown as Parameters<typeof AccountView>[0]["info"]) ?? {}
@@ -191,7 +211,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
       {/* === 프로필 === */}
       {enabled.profile && (
         <Reveal>
-          <SectionTitle icon="👤" label="신랑·신부 프로필" anchor="profile" />
+          <SectionTitle icon="user" label="신랑·신부 프로필" anchor="profile" />
           <ProfileView
             groom={(site.groom_profile as unknown as Profile) ?? {}}
             groomName={site.groom_name}
@@ -201,7 +221,6 @@ export function HomeTab({ site, initialGuestbook }: Props) {
         </Reveal>
       )}
 
-      {/* footer spacer for last fade */}
       <div className="h-16" />
     </div>
   );

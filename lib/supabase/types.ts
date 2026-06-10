@@ -21,6 +21,7 @@ export type Database = {
           parking_lat: number | null;
           parking_lng: number | null;
           greeting: string;
+          greeting_video_id: string;
           groom_profile: Json;
           bride_profile: Json;
           story_items: Json;
@@ -54,6 +55,7 @@ export type Database = {
           parking_lat?: number | null;
           parking_lng?: number | null;
           greeting?: string;
+          greeting_video_id?: string;
           groom_profile?: Json;
           bride_profile?: Json;
           story_items?: Json;

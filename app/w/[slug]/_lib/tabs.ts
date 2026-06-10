@@ -1,11 +1,12 @@
 export type TabKey = "home" | "story" | "gallery" | "guestbook" | "info";
 
-export const TAB_LABELS: Record<TabKey, { icon: string; label: string }> = {
-  home: { icon: "🏠", label: "홈" },
-  story: { icon: "📖", label: "스토리" },
-  gallery: { icon: "📷", label: "사진첩" },
-  guestbook: { icon: "💬", label: "일촌평" },
-  info: { icon: "📍", label: "더보기" },
+// Icon names map to lib/icons via the Icon component used in TabBar.
+export const TAB_LABELS: Record<TabKey, { iconName: string; label: string }> = {
+  home: { iconName: "home", label: "홈" },
+  story: { iconName: "book", label: "스토리" },
+  gallery: { iconName: "image", label: "사진첩" },
+  guestbook: { iconName: "chat", label: "일촌평" },
+  info: { iconName: "pin", label: "더보기" },
 };
 
 // info(오시는길) is required (always shown). Others are gated by sections_enabled.

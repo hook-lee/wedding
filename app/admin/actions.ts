@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { validateSlug } from "@/lib/slug/validate";
 import { isSlugAvailable } from "@/lib/db/wedding-site";
 import { kstDateTimeLocalToUtcIso } from "@/lib/date/kst";
+import { extractYouTubeVideoId } from "@/lib/youtube/parse-url";
 import { revalidatePath } from "next/cache";
 import type { ParentsBlock, ParentStatus } from "@/lib/parents/types";
 
@@ -63,6 +64,10 @@ export async function saveAdminForm(
   const parking_lng = parkingLngStr ? Number(parkingLngStr) : null;
 
   const greeting = String(formData.get("greeting") ?? "").trim();
+  const greeting_video_url = String(formData.get("greeting_video_url") ?? "").trim();
+  const greeting_video_id = greeting_video_url
+    ? (extractYouTubeVideoId(greeting_video_url) ?? "")
+    : "";
 
   const groom_profile = {
     mbti: String(formData.get("groom_mbti") ?? "").trim() || undefined,
@@ -144,6 +149,7 @@ export async function saveAdminForm(
       parking_lat,
       parking_lng,
       greeting,
+      greeting_video_id,
       groom_profile,
       bride_profile,
       story_items,
