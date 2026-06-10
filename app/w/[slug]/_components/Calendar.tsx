@@ -6,36 +6,73 @@ const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
 type Props = {
   weddingAt: string;
-  title: string; // 예: "창환 ♡ 지영 결혼식"
+  title: string;
   location: string;
   slug: string;
 };
 
+function isMobile() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+function pad(n: number, len = 2): string {
+  return String(n).padStart(len, "0");
+}
+
+/** Google Calendar deep link — opens in browser with pre-filled event. */
+function buildGoogleUrl(weddingAt: string, title: string, location: string): string {
+  const start = new Date(weddingAt);
+  const end = new Date(start.getTime() + 3 * 3600 * 1000);
+  const toGoogle = (d: Date) =>
+    d.getUTCFullYear() +
+    pad(d.getUTCMonth() + 1) +
+    pad(d.getUTCDate()) +
+    "T" +
+    pad(d.getUTCHours()) +
+    pad(d.getUTCMinutes()) +
+    pad(d.getUTCSeconds()) +
+    "Z";
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    dates: `${toGoogle(start)}/${toGoogle(end)}`,
+    location,
+    details: `${title} 결혼식에 초대합니다`,
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
 export function Calendar({ weddingAt, title, location, slug }: Props) {
-  // Compute KST date parts using manual offset (same convention as lib/date/kst.ts).
   const kstDate = new Date(new Date(weddingAt).getTime() + KST_OFFSET_MS);
   const year = kstDate.getUTCFullYear();
-  const month = kstDate.getUTCMonth(); // 0-indexed
+  const month = kstDate.getUTCMonth();
   const day = kstDate.getUTCDate();
 
-  // Build calendar grid for that month.
   const firstWeekday = new Date(Date.UTC(year, month, 1)).getUTCDay();
   const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
   const cells: (number | null)[] = [];
   for (let i = 0; i < firstWeekday; i++) cells.push(null);
   for (let i = 1; i <= daysInMonth; i++) cells.push(i);
-  // Pad to multiple of 7 so the trailing row is balanced
   while (cells.length % 7 !== 0) cells.push(null);
 
+  /**
+   * Mobile: .ics 다운로드 — iOS는 Calendar 앱 자동 호출, Android는 캘린더 선택 다이얼로그.
+   * Desktop: Google Calendar 웹을 새 탭에 열어 추가 페이지 직접 노출.
+   */
   function save() {
-    const ics = buildIcs({
-      title,
-      location,
-      description: title + " 결혼식에 초대합니다",
-      startIso: weddingAt,
-      uidSeed: slug,
-    });
-    downloadIcs(ics, `wedding-${slug}.ics`);
+    if (isMobile()) {
+      const ics = buildIcs({
+        title,
+        location,
+        description: title + " 결혼식에 초대합니다",
+        startIso: weddingAt,
+        uidSeed: slug,
+      });
+      downloadIcs(ics, `wedding-${slug}.ics`);
+    } else {
+      window.open(buildGoogleUrl(weddingAt, title, location), "_blank", "noopener");
+    }
   }
 
   return (
@@ -92,8 +129,13 @@ export function Calendar({ weddingAt, title, location, slug }: Props) {
         onClick={save}
         className="mt-4 w-full p-2.5 bg-ink text-bg rounded-pill text-sm shadow-card hover:opacity-90 transition-opacity"
       >
-        📅 캘린더에 저장하기
+        📅 내 캘린더에 추가하기
       </button>
+      <p className="text-[10px] text-muted text-center mt-2 leading-relaxed">
+        📱 모바일: 기본 캘린더 앱에 자동 추가
+        <br />
+        💻 PC: Google 캘린더로 이동
+      </p>
     </div>
   );
 }
