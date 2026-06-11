@@ -128,16 +128,17 @@ export function SplashOverlay(p: Props) {
         </p>
       )}
 
-      {/* CTA 버튼 — 입장 + BGM 시작 */}
+      {/* CTA 버튼 — 입장 + BGM 시작. 통일된 Button 스타일을 직접 적용 (애니메이션 keyframe과
+          inline style을 합쳐야 해서 Button 컴포넌트가 아닌 native button 사용). */}
       <button
         type="button"
         onClick={enter}
-        className="mt-4 px-8 py-3 bg-ink text-bg rounded-pill text-sm shadow-card opacity-0"
+        className="mt-4 inline-flex items-center justify-center gap-2 min-h-[44px] px-7 bg-ink text-bg rounded-pill text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity opacity-0"
         style={{
           animation: `wd-line-in 700ms ease-out ${1600 + namesText.length * 70}ms forwards, wd-bounce-soft 2.5s ease-in-out ${3000 + namesText.length * 70}ms infinite`,
         }}
       >
-        🎵 BGM과 함께 청첩장 열기
+        BGM과 함께 청첩장 열기
       </button>
 
       {/* 아래쪽 안내 화살표 */}

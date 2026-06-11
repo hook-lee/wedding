@@ -20,14 +20,16 @@ export function TabShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen pb-16">
-      <header className="sticky top-0 bg-bg/95 backdrop-blur border-b border-border px-4 py-3 flex justify-between items-center z-10">
-        <span className="text-xs tracking-widest text-muted">WEDDING</span>
-        <div id="topbar-controls" className="flex gap-3 text-sm items-center">
+    <div className="min-h-screen pb-20">
+      <header className="sticky top-0 bg-bg/90 backdrop-blur-md border-b border-border px-4 py-3 flex justify-between items-center z-10">
+        <span className="text-[11px] tracking-[0.5em] text-muted uppercase">
+          Wedding
+        </span>
+        <div id="topbar-controls" className="flex gap-3 items-center text-ink">
           <BgmPlayer tracks={bgmTracks} />
         </div>
       </header>
-      <div className="p-4">{children}</div>
+      <div className="px-4 sm:px-5">{children}</div>
       <TabBar slug={slug} tabs={tabs} active={active} />
     </div>
   );

@@ -67,9 +67,47 @@
 /* Fixed warm brown for 故/顯考/顯妣 - independent of theme */
 .text-deceased { color: #8B5A3C; }
 
-/* Base body */
+/* Base body — antialiased + larger comfortable line-height */
 body {
   background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Native form controls inherit theme colors and standard ring offset */
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Keyboard users get a visible ring; pointer users don't see noisy outlines */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Mobile tap highlight matches accent color softly, not the default neon blue */
+* {
+  -webkit-tap-highlight-color: rgb(0 0 0 / 0.05);
+}
+
+/* Prevent iOS Safari from auto-zooming when an input is focused — font-size
+   ≥ 16px on inputs is the only reliable way. Our Input/Textarea defaults are
+   text-base (16px) but legacy `text-sm` inputs still exist; this is a global
+   safety net. */
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1rem);
+  }
 }
