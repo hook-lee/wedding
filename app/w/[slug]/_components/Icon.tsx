@@ -17,7 +17,11 @@ type IconName =
   | "calendarPlus"
   | "volume"
   | "volumeOff"
-  | "skipForward";
+  | "skipForward"
+  | "building"
+  | "parking"
+  | "navigation"
+  | "copy";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: (
@@ -95,6 +99,25 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <polygon points="5 4 15 12 5 20 5 4" />
       <line x1="19" y1="5" x2="19" y2="19" />
+    </>
+  ),
+  building: (
+    <>
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M9 8h.01M15 8h.01M9 12h.01M15 12h.01M9 16h6" />
+    </>
+  ),
+  parking: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M10 17V7h3.5a3 3 0 0 1 0 6H10" />
+    </>
+  ),
+  navigation: <polygon points="3 11 22 2 13 21 11 13 3 11" />,
+  copy: (
+    <>
+      <rect x="9" y="9" width="13" height="13" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
     </>
   ),
 };

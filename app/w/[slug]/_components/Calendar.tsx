@@ -23,8 +23,8 @@ export function Calendar({ weddingAt, slug }: Props) {
   while (cells.length % 7 !== 0) cells.push(null);
 
   return (
-    <div className="bg-surface border border-border rounded-md p-4 shadow-card max-w-sm mx-auto">
-      <p className="text-center text-sm text-secondary mb-3 tracking-widest">
+    <div className="bg-surface border border-border rounded-lg p-5 sm:p-6 shadow-card max-w-sm mx-auto">
+      <p className="text-center text-sm text-secondary mb-4 tracking-widest">
         {year}년 {month + 1}월
       </p>
       <div className="grid grid-cols-7 gap-1 text-center">
@@ -63,7 +63,7 @@ export function Calendar({ weddingAt, slug }: Props) {
 
       <a
         href={`/w/${slug}/calendar`}
-        className="mt-4 w-full flex items-center justify-center gap-2 p-2.5 bg-ink text-bg rounded-pill text-sm shadow-card hover:opacity-90 transition-opacity"
+        className="mt-5 w-full inline-flex items-center justify-center gap-2 min-h-[44px] px-5 bg-ink text-bg rounded-pill text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
       >
         <Icon name="calendarPlus" className="w-4 h-4" />
         캘린더에 저장
