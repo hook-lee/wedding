@@ -1,7 +1,10 @@
 "use client";
 import { useState } from "react";
-import { signupAction } from "./actions";
 import Link from "next/link";
+import { signupAction } from "./actions";
+import { Field } from "@/app/_ui/Field";
+import { Input } from "@/app/_ui/Input";
+import { Button } from "@/app/_ui/Button";
 
 export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
@@ -15,34 +18,54 @@ export default function SignupPage() {
   }
 
   return (
-    <form action={handle} className="space-y-4">
-      <h1 className="text-2xl font-semibold mb-6">내 청첩장 만들기</h1>
-      <input
-        name="email"
-        type="email"
-        required
-        placeholder="이메일"
-        className="w-full p-3 rounded-sm border border-border bg-surface"
-      />
-      <input
-        name="password"
-        type="password"
-        required
-        minLength={8}
-        placeholder="비밀번호 (8자 이상)"
-        className="w-full p-3 rounded-sm border border-border bg-surface"
-      />
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full p-3 bg-ink text-bg rounded-pill disabled:opacity-50"
-      >
+    <form action={handle} className="space-y-5">
+      <header className="space-y-2 mb-2">
+        <h1 className="text-2xl font-semibold text-ink">내 청첩장 만들기</h1>
+        <p className="text-sm text-secondary">
+          이메일로 가입하고, 폼을 채우면 청첩장이 만들어져요.
+        </p>
+      </header>
+
+      <Field label="이메일">
+        <Input
+          name="email"
+          type="email"
+          required
+          placeholder="example@email.com"
+          autoComplete="email"
+        />
+      </Field>
+
+      <Field label="비밀번호" hint="8자 이상">
+        <Input
+          name="password"
+          type="password"
+          required
+          minLength={8}
+          placeholder="비밀번호"
+          autoComplete="new-password"
+        />
+      </Field>
+
+      {error && (
+        <p
+          role="alert"
+          className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3"
+        >
+          {error}
+        </p>
+      )}
+
+      <Button type="submit" disabled={pending} variant="primary" className="w-full">
         {pending ? "가입 중..." : "가입하기"}
-      </button>
+      </Button>
+
       <p className="text-sm text-center text-secondary">
         이미 계정이 있으신가요?{" "}
-        <Link href="/login" className="underline">
+        <Link
+          href="/login"
+          className="text-ink underline underline-offset-2 hover:opacity-80"
+        >
           로그인
         </Link>
       </p>

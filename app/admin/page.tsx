@@ -26,38 +26,59 @@ type AccountInfo = {
 export default async function AdminHome() {
   const user = await requireUser();
   const site = await getOrCreateSiteForOwner(user.id);
+  const isLive = site.slug && !site.slug.startsWith("draft-");
 
   return (
-    <main className="min-h-screen p-6 max-w-3xl mx-auto space-y-6 bg-bg">
-      <header className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">내 청첩장 편집</h1>
-        <div className="flex gap-3 items-center">
-          <Link href="/admin/guestbook" className="text-sm underline text-secondary">일촌평</Link>
-          <Link href="/admin/rsvp" className="text-sm underline text-secondary">RSVP</Link>
-          <form action="/admin/logout" method="POST">
-            <button className="text-sm text-secondary underline">로그아웃</button>
-          </form>
+    <main className="min-h-screen p-4 sm:p-6 max-w-3xl mx-auto space-y-5 bg-bg">
+      <header className="space-y-3">
+        <div className="flex justify-between items-start gap-3 flex-wrap">
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl font-semibold text-ink">내 청첩장 편집</h1>
+            <p className="text-xs text-muted">
+              로그인됨: <span className="text-secondary">{user.email}</span>
+            </p>
+          </div>
+          <nav className="flex gap-4 items-center text-sm">
+            <Link
+              href="/admin/guestbook"
+              className="text-secondary hover:text-ink underline underline-offset-2"
+            >
+              일촌평
+            </Link>
+            <Link
+              href="/admin/rsvp"
+              className="text-secondary hover:text-ink underline underline-offset-2"
+            >
+              RSVP
+            </Link>
+            <form action="/admin/logout" method="POST" className="m-0">
+              <button
+                type="submit"
+                className="text-secondary hover:text-ink underline underline-offset-2"
+              >
+                로그아웃
+              </button>
+            </form>
+          </nav>
         </div>
-      </header>
-      <p className="text-sm text-secondary">
-        로그인됨: <strong className="text-ink">{user.email}</strong>
-      </p>
 
-      {site.slug && !site.slug.startsWith("draft-") && (
-        <div className="bg-surface border border-border rounded-md p-3 flex justify-between items-center">
-          <p className="text-sm">
-            내 청첩장: <code className="font-mono">/w/{site.slug}</code>
-          </p>
-          <a
-            href={`/w/${site.slug}`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm underline"
-          >
-            미리보기 ↗
-          </a>
-        </div>
-      )}
+        {isLive && (
+          <div className="bg-surface border border-border rounded-lg p-4 flex justify-between items-center gap-3 shadow-card">
+            <div className="min-w-0">
+              <p className="text-xs text-muted">내 청첩장 주소</p>
+              <p className="text-sm font-mono text-ink truncate">/w/{site.slug}</p>
+            </div>
+            <a
+              href={`/w/${site.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-ink underline underline-offset-2 hover:opacity-80 whitespace-nowrap"
+            >
+              미리보기 ↗
+            </a>
+          </div>
+        )}
+      </header>
 
       <AdminForm>
         <BasicInfoSection site={site} />
