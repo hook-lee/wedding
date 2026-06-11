@@ -3,7 +3,14 @@ import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatKstDateTime } from "@/lib/date/kst";
 
-function escape(s: string) { return `"${(s ?? "").replace(/"/g, '""')}"`; }
+// CSV cell escape — also neutralizes Excel/Sheets formula injection by prefixing
+// values that start with =, +, -, @, tab, or CR with a single quote (Excel
+// treats the resulting cell as text rather than a formula).
+function escape(s: string): string {
+  const v = (s ?? "").toString();
+  const safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
+  return `"${safe.replace(/"/g, '""')}"`;
+}
 
 export async function GET() {
   const user = await requireUser();

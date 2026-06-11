@@ -63,11 +63,23 @@ export function BgmPlayer({ tracks }: { tracks: Track[] }) {
 
   // Listen for YouTube iframe API messages (player ended → advance)
   useEffect(() => {
+    const TRUSTED_YT_HOSTS = new Set([
+      "www.youtube.com",
+      "youtube.com",
+      "www.youtube-nocookie.com",
+      "youtube-nocookie.com",
+    ]);
     function handle(e: MessageEvent) {
       if (typeof e.data !== "string") return;
-      // Only trust messages from youtube origins
-      if (!/youtube\.com$/i.test(new URL(e.origin || "https://x.test").hostname))
+      // Only trust messages from exact YouTube origins. A loose regex like
+      // /youtube\.com$/ would match attacker-registered `evilyoutube.com`.
+      let host = "";
+      try {
+        host = new URL(e.origin).hostname;
+      } catch {
         return;
+      }
+      if (!TRUSTED_YT_HOSTS.has(host)) return;
       try {
         const json = JSON.parse(e.data) as {
           event?: string;

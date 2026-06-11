@@ -4,6 +4,22 @@ import { KakaoSdkError, loadKakaoMapsSdk } from "@/lib/kakao/load-sdk";
 
 type LoadState = "loading" | "ready" | "no-key" | "sdk-failed";
 
+// venue_name is owner-controlled but rendered into Kakao InfoWindow HTML —
+// escape before interpolation to prevent stored XSS on the shared origin.
+function escapeHtml(s: string): string {
+  return s.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c]!,
+  );
+}
+
 export function KakaoMap({
   lat,
   lng,
@@ -26,7 +42,7 @@ export function KakaoMap({
         const marker = new maps.Marker({ position: center });
         marker.setMap(map);
         const info = new maps.InfoWindow({
-          content: `<div style="padding:6px 10px;font-size:12px;">${name}</div>`,
+          content: `<div style="padding:6px 10px;font-size:12px;">${escapeHtml(name)}</div>`,
         });
         info.open(map, marker);
         setState("ready");
