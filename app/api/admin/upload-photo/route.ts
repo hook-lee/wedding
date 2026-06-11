@@ -8,6 +8,28 @@ export const runtime = "nodejs";
 
 const MAX_GALLERY = 20;
 
+// Explicit allowlist — bars image/svg+xml which would let attackers stage XSS
+// against the *.supabase.co origin by uploading a script-containing SVG.
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/heic",
+  "image/heif",
+]);
+
+const EXT_BY_MIME: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/jpg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/heic": "heic",
+  "image/heif": "heif",
+};
+
 export async function POST(req: Request) {
   const user = await requireUser();
   const site = await getOrCreateSiteForOwner(user.id);
@@ -17,8 +39,13 @@ export async function POST(req: Request) {
   const kind = String(form.get("kind") ?? "gallery");
 
   if (!file) return NextResponse.json({ error: "파일이 없습니다." }, { status: 400 });
-  if (file.size > 8 * 1024 * 1024) return NextResponse.json({ error: "8MB 초과" }, { status: 400 });
-  if (!file.type.startsWith("image/")) return NextResponse.json({ error: "이미지만" }, { status: 400 });
+  if (file.size > 8 * 1024 * 1024)
+    return NextResponse.json({ error: "8MB 초과" }, { status: 400 });
+  if (!ALLOWED_IMAGE_TYPES.has(file.type))
+    return NextResponse.json(
+      { error: "지원하지 않는 형식입니다. (jpg/png/webp/gif/heic만 가능)" },
+      { status: 400 },
+    );
 
   if (kind === "gallery" && (site.gallery_urls?.length ?? 0) >= MAX_GALLERY) {
     return NextResponse.json(
@@ -28,7 +55,9 @@ export async function POST(req: Request) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  // Derive extension from MIME (whitelisted above) — never from user-supplied filename
+  // to avoid path-traversal payloads in file.name.
+  const ext = EXT_BY_MIME[file.type] ?? "jpg";
   let path: string;
   if (kind === "main") path = `${site.id}/main.${ext}`;
   else if (kind === "story") path = `${site.id}/story/${crypto.randomUUID()}.${ext}`;

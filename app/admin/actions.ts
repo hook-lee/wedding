@@ -7,6 +7,7 @@ import { kstDateTimeLocalToUtcIso } from "@/lib/date/kst";
 import { extractYouTubeVideoId } from "@/lib/youtube/parse-url";
 import { revalidatePath } from "next/cache";
 import type { ParentsBlock, ParentStatus } from "@/lib/parents/types";
+import type { Database } from "@/lib/supabase/types";
 
 function readParentsFromForm(formData: FormData): ParentsBlock {
   const sides = ["groom", "bride"] as const;
@@ -129,40 +130,48 @@ export async function saveAdminForm(
   // Treat the datetime-local input as KST regardless of where the server runs.
   // Without this, Vercel (UTC) would misread "2026-10-10T16:00" as UTC and the
   // displayed time would shift by +9 hours.
-  const wedding_at = wedding_at_raw ? kstDateTimeLocalToUtcIso(wedding_at_raw) : null;
+  //
+  // ⚠️ Empty/cleared input must NOT silently overwrite a previously-set date.
+  // Browser autofill or Safari quirks have been seen to clear datetime-local
+  // values without user intent. If the field comes back empty, leave the DB
+  // column alone (omit wedding_at from the update payload).
+  const updatePayload: Database["public"]["Tables"]["wedding_sites"]["Update"] = {
+    slug,
+    groom_name,
+    bride_name,
+    name_joiner,
+    parents,
+    venue_name,
+    venue_address,
+    venue_lat,
+    venue_lng,
+    parking_name,
+    parking_address,
+    parking_lat,
+    parking_lng,
+    greeting,
+    greeting_video_id,
+    groom_profile,
+    bride_profile,
+    story_items,
+    account_info,
+    theme,
+    sections_enabled,
+    groom_birth_order,
+    bride_birth_order,
+    published,
+  };
+  if (wedding_at_raw) {
+    updatePayload.wedding_at = kstDateTimeLocalToUtcIso(wedding_at_raw);
+  }
 
   const { error } = await supabase
     .from("wedding_sites")
-    .update({
-      slug,
-      groom_name,
-      bride_name,
-      wedding_at,
-      name_joiner,
-      parents,
-      venue_name,
-      venue_address,
-      venue_lat,
-      venue_lng,
-      parking_name,
-      parking_address,
-      parking_lat,
-      parking_lng,
-      greeting,
-      greeting_video_id,
-      groom_profile,
-      bride_profile,
-      story_items,
-      account_info,
-      theme,
-      sections_enabled,
-      groom_birth_order,
-      bride_birth_order,
-      published,
-    })
+    .update(updatePayload)
     .eq("owner_id", user.id);
   if (error) return { error: error.message };
 
   revalidatePath("/admin");
   return { ok: true };
 }
+

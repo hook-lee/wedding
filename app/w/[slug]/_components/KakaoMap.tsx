@@ -1,12 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    kakao: any;
-  }
-}
+import { KakaoSdkError, loadKakaoMapsSdk } from "@/lib/kakao/load-sdk";
 
 type LoadState = "loading" | "ready" | "no-key" | "sdk-failed";
 
@@ -23,54 +17,31 @@ export function KakaoMap({
   const [state, setState] = useState<LoadState>("loading");
 
   useEffect(() => {
-    const KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
-    if (!KEY) {
-      setState("no-key");
-      return;
-    }
-
-    function init() {
-      if (!ref.current || !window.kakao?.maps) return;
-      window.kakao.maps.load(() => {
-        if (!ref.current) return;
-        const center = new window.kakao.maps.LatLng(lat, lng);
-        const map = new window.kakao.maps.Map(ref.current, {
-          center,
-          level: 4,
-        });
-        const marker = new window.kakao.maps.Marker({ position: center });
+    let cancelled = false;
+    loadKakaoMapsSdk()
+      .then((maps) => {
+        if (cancelled || !ref.current) return;
+        const center = new maps.LatLng(lat, lng);
+        const map = new maps.Map(ref.current, { center, level: 4 });
+        const marker = new maps.Marker({ position: center });
         marker.setMap(map);
-        const info = new window.kakao.maps.InfoWindow({
+        const info = new maps.InfoWindow({
           content: `<div style="padding:6px 10px;font-size:12px;">${name}</div>`,
         });
         info.open(map, marker);
         setState("ready");
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        if (e instanceof KakaoSdkError && e.reason === "no-key") {
+          setState("no-key");
+        } else {
+          setState("sdk-failed");
+        }
       });
-    }
-
-    if (window.kakao?.maps) {
-      init();
-      return;
-    }
-    const existing = document.querySelector<HTMLScriptElement>("script[data-kakao-sdk]");
-    if (existing) {
-      existing.addEventListener("load", init, { once: true });
-      existing.addEventListener("error", () => setState("sdk-failed"), { once: true });
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KEY}&autoload=false`;
-    script.dataset.kakaoSdk = "true";
-    script.onload = init;
-    script.onerror = () => setState("sdk-failed");
-    document.head.appendChild(script);
-
-    // If we never reach ready within 5s, surface a hint
-    const timer = setTimeout(() => {
-      setState((s) => (s === "loading" ? "sdk-failed" : s));
-    }, 5000);
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+    };
   }, [lat, lng, name]);
 
   return (

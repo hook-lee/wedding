@@ -9,6 +9,16 @@ const MAX_TRACKS = 5;
 
 type Track = { order: number; url: string; title: string; artist: string | null };
 
+const ALLOWED_AUDIO_TYPES: Record<string, string> = {
+  "audio/mpeg": "mp3",
+  "audio/mp3": "mp3",
+  "audio/mp4": "m4a",
+  "audio/aac": "aac",
+  "audio/ogg": "ogg",
+  "audio/wav": "wav",
+  "audio/webm": "webm",
+};
+
 export async function POST(req: Request) {
   const user = await requireUser();
   const site = await getOrCreateSiteForOwner(user.id);
@@ -24,11 +34,15 @@ export async function POST(req: Request) {
   if (!file) return NextResponse.json({ error: "파일이 없습니다." }, { status: 400 });
   if (file.size > 15 * 1024 * 1024)
     return NextResponse.json({ error: "15MB 초과" }, { status: 400 });
-  if (!file.type.startsWith("audio/"))
-    return NextResponse.json({ error: "오디오만" }, { status: 400 });
+  if (!ALLOWED_AUDIO_TYPES[file.type])
+    return NextResponse.json(
+      { error: "지원하지 않는 오디오 형식입니다." },
+      { status: 400 },
+    );
 
   const supabase = await createSupabaseServerClient();
-  const ext = (file.name.split(".").pop() || "mp3").toLowerCase();
+  // Derive extension from MIME — never from user-supplied filename.
+  const ext = ALLOWED_AUDIO_TYPES[file.type];
   const path = `${site.id}/${crypto.randomUUID()}.${ext}`;
   const buf = Buffer.from(await file.arrayBuffer());
 
