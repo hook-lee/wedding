@@ -3,6 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { formatKstDateTime } from "@/lib/date/kst";
 import { postGuestbook } from "../_actions/guestbook";
+import { Card } from "@/app/_ui/Card";
+import { Field } from "@/app/_ui/Field";
+import { Input } from "@/app/_ui/Input";
+import { Textarea } from "@/app/_ui/Textarea";
+import { Button } from "@/app/_ui/Button";
 
 type Entry = {
   id: string;
@@ -60,51 +65,52 @@ export function GuestbookTab({
 
   return (
     <div className="space-y-4 max-w-md mx-auto py-2">
-      <form
-        ref={formRef}
-        action={handle}
-        className="bg-surface border border-border rounded-md p-4 space-y-2 shadow-card"
-      >
-        <input
-          name="name"
-          required
-          maxLength={30}
-          placeholder="이름 또는 애칭"
-          className="w-full p-2 rounded-sm border border-border bg-bg text-sm"
-        />
-        <textarea
-          name="message"
-          required
-          maxLength={200}
-          placeholder="축하 메시지 (최대 200자)"
-          className="w-full p-2 rounded-sm border border-border bg-bg text-sm h-16"
-        />
-        {error && <p className="text-xs text-red-600">{error}</p>}
-        <div className="flex justify-end">
-          <button
-            disabled={pending}
-            className="px-4 py-1.5 bg-ink text-bg rounded-pill text-sm"
-          >
-            {pending ? "남기는 중..." : "남기기"}
-          </button>
-        </div>
+      <form ref={formRef} action={handle}>
+        <Card className="space-y-3">
+          <Field label="이름 또는 애칭">
+            <Input
+              name="name"
+              required
+              maxLength={30}
+              placeholder="이름 또는 애칭"
+            />
+          </Field>
+          <Field label="축하 메시지" hint="최대 200자">
+            <Textarea
+              name="message"
+              required
+              maxLength={200}
+              rows={3}
+              placeholder="축하 메시지를 남겨주세요"
+            />
+          </Field>
+          {error && <p className="text-xs text-red-600">{error}</p>}
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              disabled={pending}
+              variant="primary"
+            >
+              {pending ? "남기는 중..." : "남기기"}
+            </Button>
+          </div>
+        </Card>
       </form>
 
       <p className="text-xs text-muted text-center">총 {entries.length}개</p>
 
       <ul className="space-y-2">
         {entries.map((e) => (
-          <li
-            key={e.id}
-            className="bg-surface border border-border rounded-md p-3 shadow-card"
-          >
-            <p className="text-sm font-semibold">{e.guest_name}</p>
-            <p className="text-sm text-secondary mt-1 whitespace-pre-line">
-              {e.message}
-            </p>
-            <p className="text-xs text-muted mt-1">
-              {formatKstDateTime(e.created_at)}
-            </p>
+          <li key={e.id}>
+            <Card className="p-4 sm:p-5 space-y-1">
+              <p className="text-sm font-semibold text-ink">{e.guest_name}</p>
+              <p className="text-sm text-secondary whitespace-pre-line">
+                {e.message}
+              </p>
+              <p className="text-xs text-muted pt-1">
+                {formatKstDateTime(e.created_at)}
+              </p>
+            </Card>
           </li>
         ))}
       </ul>

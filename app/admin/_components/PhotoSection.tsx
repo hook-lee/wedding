@@ -1,6 +1,8 @@
 "use client";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Card, CardHeader } from "@/app/_ui/Card";
+import { Button } from "@/app/_ui/Button";
 
 type Props = { mainUrl: string | null; galleryUrls: string[] };
 
@@ -77,30 +79,30 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
   const remainingSlots = MAX_GALLERY - galleryUrls.length;
 
   return (
-    <section className="bg-surface border border-border rounded-md p-6 space-y-6 shadow-card">
-      <h2 className="text-lg font-semibold">사진</h2>
+    <Card>
+      <CardHeader title="사진" />
 
       {/* Main photo */}
       <div className="space-y-2">
-        <p className="text-sm text-secondary">메인 사진 (1장)</p>
+        <p className="text-sm text-secondary font-medium">메인 사진 (1장)</p>
         {mainUrl && (
           <div className="relative w-40 h-48">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={mainUrl} alt="" className="w-full h-full object-cover rounded-sm" />
+            <img src={mainUrl} alt="" className="w-full h-full object-cover rounded-md" />
             <button
               type="button"
               disabled={busy}
               onClick={() => remove(mainUrl, "main")}
-              className="absolute top-1 right-1 bg-ink text-bg text-xs px-2 py-1 rounded-pill"
+              className="absolute top-1 right-1 bg-ink text-bg text-xs px-2 py-1 rounded-pill disabled:opacity-50"
             >
               삭제
             </button>
           </div>
         )}
-        <div className="flex items-center gap-2">
-          <label className="flex-1 cursor-pointer text-sm">
-            <span className="inline-block px-3 py-2 border border-border bg-bg rounded-sm">
-              {mainFile ? mainFile.name : "파일 선택"}
+        <div className="flex items-center gap-2 flex-wrap">
+          <label className="flex-1 min-w-0 cursor-pointer text-sm">
+            <span className="inline-flex items-center min-h-[44px] px-3 border border-border bg-bg rounded-md text-ink w-full">
+              <span className="truncate">{mainFile ? mainFile.name : "파일 선택"}</span>
             </span>
             <input
               ref={mainInputRef}
@@ -111,31 +113,34 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
               onChange={(e) => setMainFile(e.target.files?.[0] ?? null)}
             />
           </label>
-          <button
+          <Button
             type="button"
             disabled={busy || !mainFile}
             onClick={() => mainFile && uploadMain(mainFile)}
-            className="px-4 py-2 bg-ink text-bg rounded-pill text-sm disabled:opacity-50"
+            variant="primary"
           >
             {busy ? "업로드 중..." : "업로드"}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Gallery */}
       <div className="space-y-2">
-        <p className="text-sm text-secondary">갤러리 ({galleryUrls.length}/{MAX_GALLERY}장)</p>
+        <p className="text-sm text-secondary font-medium">
+          갤러리 ({galleryUrls.length}/{MAX_GALLERY}장)
+        </p>
         {galleryUrls.length > 0 && (
           <div className="grid grid-cols-4 gap-2">
             {galleryUrls.map((u) => (
               <div key={u} className="relative aspect-square">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={u} alt="" className="w-full h-full object-cover rounded-sm" />
+                <img src={u} alt="" className="w-full h-full object-cover rounded-md" />
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() => remove(u, "gallery")}
-                  className="absolute top-1 right-1 bg-ink text-bg text-xs px-1.5 py-0.5 rounded-pill"
+                  className="absolute top-1 right-1 bg-ink text-bg text-xs px-1.5 py-0.5 rounded-pill disabled:opacity-50"
+                  aria-label="사진 삭제"
                 >
                   X
                 </button>
@@ -149,12 +154,14 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
           </p>
         ) : (
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <label className="flex-1 cursor-pointer text-sm">
-                <span className="inline-block px-3 py-2 border border-border bg-bg rounded-sm">
-                  {galleryFiles.length > 0
-                    ? `${galleryFiles.length}개 파일 선택됨`
-                    : "파일 선택 (여러 장 가능)"}
+            <div className="flex items-center gap-2 flex-wrap">
+              <label className="flex-1 min-w-0 cursor-pointer text-sm">
+                <span className="inline-flex items-center min-h-[44px] px-3 border border-border bg-bg rounded-md text-ink w-full">
+                  <span className="truncate">
+                    {galleryFiles.length > 0
+                      ? `${galleryFiles.length}개 파일 선택됨`
+                      : "파일 선택 (여러 장 가능)"}
+                  </span>
                 </span>
                 <input
                   ref={galleryInputRef}
@@ -174,18 +181,19 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
                   }}
                 />
               </label>
-              <button
+              <Button
                 type="button"
                 disabled={busy || galleryFiles.length === 0}
                 onClick={() => uploadGallery(galleryFiles)}
-                className="px-4 py-2 bg-ink text-bg rounded-pill text-sm disabled:opacity-50 whitespace-nowrap"
+                variant="primary"
+                className="whitespace-nowrap"
               >
                 {busy && progress
                   ? `${progress.current}/${progress.total} 업로드 중`
                   : galleryFiles.length > 0
                   ? `${galleryFiles.length}장 업로드`
                   : "업로드"}
-              </button>
+              </Button>
             </div>
             <p className="text-xs text-muted">
               남은 슬롯: {remainingSlots}장 · Ctrl/⌘ 또는 Shift로 여러 장 선택 가능
@@ -193,6 +201,6 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
           </div>
         )}
       </div>
-    </section>
+    </Card>
   );
 }

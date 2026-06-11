@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Card, CardHeader } from "@/app/_ui/Card";
+import { Input } from "@/app/_ui/Input";
+import { Button } from "@/app/_ui/Button";
 
 type Track = {
   order: number;
@@ -96,23 +99,21 @@ export function BgmSection({ tracks }: { tracks: Track[] }) {
   const canAdd = tracks.length < 5;
 
   return (
-    <section className="bg-surface border border-border rounded-md p-6 space-y-4 shadow-card">
-      <h2 className="text-lg font-semibold">
-        BGM 플레이리스트 ({tracks.length}/5)
-      </h2>
+    <Card>
+      <CardHeader title={`BGM 플레이리스트 (${tracks.length}/5)`} />
       <ul className="space-y-2">
         {tracks.map((t) => (
           <li
             key={trackKey(t)}
-            className="flex items-center gap-3 p-2 bg-bg rounded-sm"
+            className="flex items-center gap-3 p-2 bg-bg rounded-md"
           >
-            <span className="w-6 h-6 rounded-pill bg-ink text-bg text-xs flex items-center justify-center">
+            <span className="w-6 h-6 rounded-pill bg-ink text-bg text-xs flex items-center justify-center flex-shrink-0">
               {t.order}
             </span>
             <span className="text-base" aria-hidden>
               {isYoutube(t) ? "🎬" : "🎵"}
             </span>
-            <span className="flex-1 text-sm">
+            <span className="flex-1 min-w-0 text-sm truncate">
               {t.title}{" "}
               {t.artist && <span className="text-muted">— {t.artist}</span>}
             </span>
@@ -126,13 +127,13 @@ export function BgmSection({ tracks }: { tracks: Track[] }) {
                 미리보기
               </a>
             ) : (
-              t.url && <audio src={t.url} controls className="h-8" />
+              t.url && <audio src={t.url} controls className="h-8 max-w-[180px]" />
             )}
             <button
               type="button"
               disabled={busy}
               onClick={() => remove(t)}
-              className="text-xs text-red-600"
+              className="text-xs text-red-600 px-2 min-h-[44px] disabled:opacity-50"
             >
               삭제
             </button>
@@ -146,7 +147,7 @@ export function BgmSection({ tracks }: { tracks: Track[] }) {
             <button
               type="button"
               onClick={() => setMode("audio")}
-              className={`px-3 py-1 rounded-pill text-xs ${
+              className={`px-4 py-1.5 rounded-pill text-xs transition-colors ${
                 mode === "audio"
                   ? "bg-ink text-bg"
                   : "bg-bg text-ink border border-border"
@@ -157,7 +158,7 @@ export function BgmSection({ tracks }: { tracks: Track[] }) {
             <button
               type="button"
               onClick={() => setMode("youtube")}
-              className={`px-3 py-1 rounded-pill text-xs ${
+              className={`px-4 py-1.5 rounded-pill text-xs transition-colors ${
                 mode === "youtube"
                   ? "bg-ink text-bg"
                   : "bg-bg text-ink border border-border"
@@ -169,19 +170,19 @@ export function BgmSection({ tracks }: { tracks: Track[] }) {
 
           {mode === "audio" ? (
             <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
-              <input
+              <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="곡 제목"
-                className="p-2 rounded-sm border border-border bg-surface"
+                aria-label="곡 제목"
               />
-              <input
+              <Input
                 value={artist}
                 onChange={(e) => setArtist(e.target.value)}
                 placeholder="아티스트 (선택)"
-                className="p-2 rounded-sm border border-border bg-surface"
+                aria-label="아티스트"
               />
-              <label className="px-3 py-2 bg-ink text-bg rounded-pill text-sm cursor-pointer">
+              <label className="inline-flex items-center justify-center min-h-[44px] px-5 bg-ink text-bg rounded-pill text-sm font-medium cursor-pointer shadow-card">
                 업로드
                 <input
                   type="file"
@@ -196,38 +197,38 @@ export function BgmSection({ tracks }: { tracks: Track[] }) {
             </div>
           ) : (
             <div className="space-y-2">
-              <input
+              <Input
                 value={ytUrl}
                 onChange={(e) => setYtUrl(e.target.value)}
                 placeholder="https://youtube.com/watch?v=..."
-                className="w-full p-2 rounded-sm border border-border bg-surface"
+                aria-label="YouTube 링크"
               />
               <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
-                <input
+                <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="곡 제목"
-                  className="p-2 rounded-sm border border-border bg-surface"
+                  aria-label="곡 제목"
                 />
-                <input
+                <Input
                   value={artist}
                   onChange={(e) => setArtist(e.target.value)}
                   placeholder="아티스트 (선택)"
-                  className="p-2 rounded-sm border border-border bg-surface"
+                  aria-label="아티스트"
                 />
-                <button
+                <Button
                   type="button"
                   disabled={busy}
                   onClick={addYoutube}
-                  className="px-3 py-2 bg-ink text-bg rounded-pill text-sm"
+                  variant="primary"
                 >
                   추가
-                </button>
+                </Button>
               </div>
             </div>
           )}
         </div>
       )}
-    </section>
+    </Card>
   );
 }

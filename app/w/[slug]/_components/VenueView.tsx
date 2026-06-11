@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { KakaoMap } from "./KakaoMap";
+import { Card } from "@/app/_ui/Card";
+import { Button } from "@/app/_ui/Button";
 
 type Place = {
   name: string;
@@ -73,64 +75,74 @@ export function VenueView({ venue, parking }: Props) {
 
       {/* 예식장 카드 */}
       {(venue.name || venue.address) && (
-        <div className="bg-surface border border-border rounded-md p-3 shadow-card">
+        <Card className="p-4 sm:p-5 space-y-2">
           <p className="text-xs text-muted">🎂 예식장</p>
-          {venue.name && <p className="text-sm font-semibold mt-1">{venue.name}</p>}
-          {venue.address && <p className="text-sm text-secondary mt-1">{venue.address}</p>}
-          <div className="flex gap-2 mt-3">
+          {venue.name && (
+            <p className="text-sm font-semibold text-ink">{venue.name}</p>
+          )}
+          {venue.address && (
+            <p className="text-sm text-secondary">{venue.address}</p>
+          )}
+          <div className="flex gap-2 pt-2">
             {venue.address && (
-              <button
+              <Button
                 type="button"
                 onClick={() => copyAddress(venue.address, "venue")}
-                className="flex-1 p-2 border border-ink rounded-pill text-xs"
+                variant="secondary"
+                className="flex-1 px-3 text-xs"
               >
                 {copied === "venue" ? "복사됨 ✓" : "📋 주소 복사"}
-              </button>
+              </Button>
             )}
             {hasVenueCoords && (
-              <button
+              <Button
                 type="button"
                 onClick={() =>
                   navigateTo(venue.lat!, venue.lng!, venue.name || "예식장")
                 }
-                className="flex-1 p-2 bg-ink text-bg rounded-pill text-xs"
+                variant="primary"
+                className="flex-1 px-3 text-xs"
               >
                 🚗 예식장 길찾기
-              </button>
+              </Button>
             )}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* 주차장 카드 (좌표 있을 때만) */}
       {hasParking && (
-        <div className="bg-surface border border-border rounded-md p-3 shadow-card">
+        <Card className="p-4 sm:p-5 space-y-2">
           <p className="text-xs text-muted">🅿️ 주차장</p>
-          {parking.name && <p className="text-sm font-semibold mt-1">{parking.name}</p>}
-          {parking.address && (
-            <p className="text-sm text-secondary mt-1">{parking.address}</p>
+          {parking.name && (
+            <p className="text-sm font-semibold text-ink">{parking.name}</p>
           )}
-          <div className="flex gap-2 mt-3">
+          {parking.address && (
+            <p className="text-sm text-secondary">{parking.address}</p>
+          )}
+          <div className="flex gap-2 pt-2">
             {parking.address && (
-              <button
+              <Button
                 type="button"
                 onClick={() => copyAddress(parking.address, "parking")}
-                className="flex-1 p-2 border border-ink rounded-pill text-xs"
+                variant="secondary"
+                className="flex-1 px-3 text-xs"
               >
                 {copied === "parking" ? "복사됨 ✓" : "📋 주소 복사"}
-              </button>
+              </Button>
             )}
-            <button
+            <Button
               type="button"
               onClick={() =>
                 navigateTo(parking.lat!, parking.lng!, parking.name || "주차장")
               }
-              className="flex-1 p-2 bg-ink text-bg rounded-pill text-xs"
+              variant="primary"
+              className="flex-1 px-3 text-xs"
             >
               🅿️ 주차장 길찾기
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       )}
 
       <p className="text-[10px] text-muted text-center pt-1">

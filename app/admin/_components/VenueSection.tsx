@@ -1,6 +1,10 @@
 "use client";
 import { useState } from "react";
 import { MapPicker } from "./MapPicker";
+import { Card, CardHeader } from "@/app/_ui/Card";
+import { Field } from "@/app/_ui/Field";
+import { Input } from "@/app/_ui/Input";
+import { Button } from "@/app/_ui/Button";
 
 type Candidate = {
   lat: number;
@@ -63,42 +67,51 @@ function PlaceFields({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold">{title}</h3>
-      <label className="block">
-        <span className="text-xs text-secondary">이름</span>
-        <input
+      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+
+      <Field label="이름">
+        <Input
           name={`${prefix}_name`}
           defaultValue={initialName}
-          placeholder={prefix === "venue" ? "예: OO웨딩홀 그랜드볼룸" : "예: OO웨딩홀 지하 주차장"}
-          className="w-full mt-1 p-2 rounded-sm border border-border bg-surface"
+          placeholder={
+            prefix === "venue"
+              ? "예: OO웨딩홀 그랜드볼룸"
+              : "예: OO웨딩홀 지하 주차장"
+          }
         />
-      </label>
+      </Field>
+
       <div className="space-y-1">
-        <label className="block">
-          <span className="text-xs text-secondary">주소 또는 장소명</span>
-          <div className="flex gap-2 mt-1">
-            <input
+        <label className="block space-y-1">
+          <span className="text-sm text-secondary font-medium">
+            주소 또는 장소명
+          </span>
+          <div className="flex gap-2">
+            <Input
               name={`${prefix}_address`}
               value={addr}
               onChange={(e) => setAddr(e.target.value)}
               placeholder="예: 자작마루 / 100주년기념관 / 서울시립대로 163"
-              className="flex-1 min-w-0 p-2 rounded-sm border border-border bg-surface"
+              className="flex-1"
             />
-            <button
+            <Button
               type="button"
               onClick={search}
               disabled={status === "loading"}
-              className="px-3 py-2 bg-ink text-bg rounded-pill text-sm whitespace-nowrap disabled:opacity-50"
+              variant="primary"
+              className="whitespace-nowrap px-4"
             >
               {status === "loading" ? "검색 중..." : "검색"}
-            </button>
+            </Button>
           </div>
         </label>
 
         {/* 후보 리스트 */}
         {candidates.length > 0 && (
-          <div className="mt-2 space-y-1 p-2 bg-bg border border-border rounded-sm">
-            <p className="text-xs text-muted mb-1">검색 결과 ({candidates.length}개) — 정확한 위치를 선택하세요</p>
+          <div className="mt-2 space-y-1 p-2 bg-bg border border-border rounded-md">
+            <p className="text-xs text-muted mb-1">
+              검색 결과 ({candidates.length}개) — 정확한 위치를 선택하세요
+            </p>
             {candidates.map((c, i) => {
               const isPicked = picked?.lat === c.lat && picked?.lng === c.lng;
               return (
@@ -106,7 +119,7 @@ function PlaceFields({
                   key={`${c.lat}-${c.lng}-${i}`}
                   type="button"
                   onClick={() => pick(c)}
-                  className={`block w-full text-left p-2 rounded-sm border text-xs ${
+                  className={`block w-full text-left p-2 rounded-md border text-xs transition-colors ${
                     isPicked
                       ? "bg-ink text-bg border-ink"
                       : "bg-surface border-border hover:bg-bg"
@@ -148,7 +161,9 @@ function PlaceFields({
               위치를 찾지 못했습니다. 더 구체적인 이름이나 도로명 주소로 다시 시도해주세요.
             </p>
             {debugInfo.length > 0 && (
-              <p className="text-[10px] text-muted font-mono">debug: {debugInfo.join(" | ")}</p>
+              <p className="text-[10px] text-muted font-mono">
+                debug: {debugInfo.join(" | ")}
+              </p>
             )}
           </div>
         )}
@@ -203,11 +218,11 @@ type Props = {
 
 export function VenueSection(p: Props) {
   return (
-    <section className="bg-surface border border-border rounded-md p-6 space-y-5 shadow-card">
-      <h2 className="text-lg font-semibold">식장 · 주차장</h2>
-      <p className="text-xs text-muted">
-        💡 주소·장소명 입력 후 <strong>검색</strong> 버튼 → 검색 결과 중 정확한 위치 선택. 같은 캠퍼스 안의 다른 건물도 골라 잡을 수 있습니다.
-      </p>
+    <Card>
+      <CardHeader
+        title="식장 · 주차장"
+        hint="주소·장소명 입력 후 '검색' 버튼 → 검색 결과 중 정확한 위치를 선택. 같은 캠퍼스 안의 다른 건물도 골라 잡을 수 있습니다."
+      />
 
       <PlaceFields
         prefix="venue"
@@ -228,6 +243,6 @@ export function VenueSection(p: Props) {
           initialLng={p.parkingLng}
         />
       </div>
-    </section>
+    </Card>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Input } from "@/app/_ui/Input";
 
 export function SlugField({ defaultValue }: { defaultValue: string }) {
   const [slug, setSlug] = useState(defaultValue);
@@ -27,22 +28,28 @@ export function SlugField({ defaultValue }: { defaultValue: string }) {
   }, [slug, defaultValue]);
 
   return (
-    <label className="block">
-      <span className="text-sm text-secondary">슬러그 (URL의 마지막 부분)</span>
-      <div className="flex items-center gap-2 mt-1">
+    <label className="block space-y-1">
+      <span className="text-sm text-secondary font-medium">
+        슬러그 (URL의 마지막 부분)
+      </span>
+      <div className="flex items-center gap-2">
         <span className="text-muted text-sm">/w/</span>
-        <input
+        <Input
           name="slug"
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
           required
           pattern="[a-z0-9][a-z0-9-]{1,48}[a-z0-9]"
-          className="flex-1 p-2 rounded-sm border border-border bg-surface"
+          className="flex-1"
         />
       </div>
-      {status === "checking" && <p className="text-xs text-muted mt-1">확인 중…</p>}
-      {status === "ok" && <p className="text-xs text-green-700 mt-1">사용 가능 ✓</p>}
-      {status === "bad" && <p className="text-xs text-red-600 mt-1">{reason}</p>}
+      {status === "checking" && (
+        <p className="text-xs text-muted">확인 중…</p>
+      )}
+      {status === "ok" && (
+        <p className="text-xs text-green-700">사용 가능 ✓</p>
+      )}
+      {status === "bad" && <p className="text-xs text-red-600">{reason}</p>}
     </label>
   );
 }

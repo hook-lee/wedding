@@ -1,6 +1,7 @@
 "use client";
 import { useActionState } from "react";
 import { saveAdminForm, type SaveResult } from "../actions";
+import { Button } from "@/app/_ui/Button";
 
 export function AdminForm({ children }: { children: React.ReactNode }) {
   const [state, formAction, pending] = useActionState<SaveResult | null, FormData>(
@@ -23,13 +24,14 @@ export function AdminForm({ children }: { children: React.ReactNode }) {
             ✓ 저장됨
           </p>
         )}
-        <button
+        <Button
           type="submit"
           disabled={pending}
-          className="w-full p-3 bg-ink text-bg rounded-pill disabled:opacity-50 shadow-card"
+          variant="primary"
+          className="w-full"
         >
           {pending ? "저장 중..." : "내 청첩장 저장"}
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -1,5 +1,9 @@
 "use client";
 import { useRef, useState } from "react";
+import { Card, CardHeader } from "@/app/_ui/Card";
+import { Input } from "@/app/_ui/Input";
+import { Textarea } from "@/app/_ui/Textarea";
+import { Button } from "@/app/_ui/Button";
 
 type StoryItem = { date: string; title: string; body: string; photo_url?: string };
 
@@ -47,45 +51,51 @@ export function StorySection({ items }: { items: StoryItem[] }) {
   }
 
   return (
-    <section className="bg-surface border border-border rounded-md p-6 space-y-4 shadow-card">
-      <h2 className="text-lg font-semibold">우리 스토리</h2>
-      <p className="text-xs text-muted">
-        각 항목에 날짜·제목·내용 + 선택적으로 사진을 추가할 수 있어요.
-      </p>
+    <Card>
+      <CardHeader
+        title="우리 스토리"
+        hint="각 항목에 날짜·제목·내용 + 선택적으로 사진을 추가할 수 있어요."
+      />
 
       {list.map((it, i) => {
         const busy = uploadingIndex === i;
         return (
-          <div key={i} className="bg-bg border border-border rounded-md p-3 space-y-2">
-            <div className="grid grid-cols-[100px_1fr_auto] gap-2">
-              <input
+          <div
+            key={i}
+            className="bg-bg border border-border rounded-md p-3 space-y-2"
+          >
+            <div className="grid grid-cols-[110px_1fr_auto] gap-2 items-start">
+              <Input
                 value={it.date}
                 onChange={(e) => update(i, "date", e.target.value)}
                 placeholder="2023.05"
-                className="p-2 rounded-sm border border-border bg-surface text-sm"
+                aria-label="날짜"
+                className="text-sm"
               />
-              <input
+              <Input
                 value={it.title}
                 onChange={(e) => update(i, "title", e.target.value)}
                 placeholder="제목"
-                className="p-2 rounded-sm border border-border bg-surface text-sm"
+                aria-label="제목"
+                className="text-sm"
               />
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="text-red-600 text-sm self-start px-2"
+                className="text-red-600 text-sm self-start px-2 min-h-[44px]"
                 aria-label="항목 삭제"
               >
                 ✕
               </button>
             </div>
 
-            <textarea
+            <Textarea
               value={it.body}
               onChange={(e) => update(i, "body", e.target.value)}
               placeholder="내용"
               rows={2}
-              className="w-full p-2 rounded-sm border border-border bg-surface text-sm"
+              aria-label="내용"
+              className="text-sm"
             />
 
             {/* 사진 영역 */}
@@ -96,20 +106,21 @@ export function StorySection({ items }: { items: StoryItem[] }) {
                   <img
                     src={it.photo_url}
                     alt=""
-                    className="w-full h-full object-cover rounded-sm"
+                    className="w-full h-full object-cover rounded-md"
                   />
                   <button
                     type="button"
                     onClick={() => removePhoto(i)}
                     disabled={busy}
                     className="absolute top-0.5 right-0.5 bg-ink text-bg text-[10px] px-1.5 py-0.5 rounded-pill"
+                    aria-label="사진 삭제"
                   >
                     X
                   </button>
                 </div>
               )}
-              <label className="cursor-pointer text-xs">
-                <span className="inline-block px-3 py-1.5 border border-border bg-surface rounded-sm">
+              <label className="cursor-pointer text-xs inline-flex">
+                <span className="inline-flex items-center min-h-[44px] px-4 border border-border bg-surface rounded-md text-ink">
                   {busy ? "업로드 중..." : it.photo_url ? "사진 변경" : "+ 사진 추가"}
                 </span>
                 <input
@@ -131,10 +142,10 @@ export function StorySection({ items }: { items: StoryItem[] }) {
         );
       })}
 
-      <button type="button" onClick={add} className="text-sm underline text-secondary">
+      <Button type="button" onClick={add} variant="ghost">
         + 항목 추가
-      </button>
+      </Button>
       <input type="hidden" name="story_items_json" value={JSON.stringify(list)} />
-    </section>
+    </Card>
   );
 }

@@ -103,9 +103,9 @@ export function MapPicker({ lat, lng, onChange }: Props) {
   }, [lat, lng]);
 
   return (
-    <div className="space-y-1">
-      <div className="w-full h-64 rounded-md border border-border bg-bg relative">
-        <div ref={ref} className="w-full h-full rounded-md" />
+    <div className="space-y-2">
+      <div className="w-full h-64 rounded-lg border border-border bg-bg relative overflow-hidden">
+        <div ref={ref} className="w-full h-full" />
         {state !== "ready" && (
           <div className="absolute inset-0 flex items-center justify-center text-xs text-muted px-4 text-center">
             {state === "loading" && "지도 불러오는 중…"}

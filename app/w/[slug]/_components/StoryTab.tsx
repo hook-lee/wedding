@@ -13,7 +13,7 @@ export function StoryTab({ items }: { items: Item[] }) {
           </div>
           <div className="space-y-2">
             <p className="text-xs text-muted tracking-widest">{it.date}</p>
-            <h3 className="text-sm font-semibold">{it.title}</h3>
+            <h3 className="text-sm font-semibold text-ink">{it.title}</h3>
             {it.photo_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
