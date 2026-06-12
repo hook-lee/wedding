@@ -77,13 +77,18 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Native form controls inherit theme colors and standard ring offset */
-input,
-textarea,
-select,
-button {
-  font-family: inherit;
-  color: inherit;
+/* Native form controls inherit theme colors. Wrapped in @layer base so that
+   Tailwind utility classes (text-bg, text-ink, etc.) still win — unlayered
+   rules would otherwise override every utility and break button text colors
+   (e.g. dark splash CTA text on dark splash CTA button). */
+@layer base {
+  input,
+  textarea,
+  select,
+  button {
+    font-family: inherit;
+    color: inherit;
+  }
 }
 
 /* Keyboard users get a visible ring; pointer users don't see noisy outlines */
