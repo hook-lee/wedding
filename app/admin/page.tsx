@@ -11,8 +11,12 @@ import { GreetingSection } from "./_components/GreetingSection";
 import { ProfileSection } from "./_components/ProfileSection";
 import { StorySection } from "./_components/StorySection";
 import { AccountSection } from "./_components/AccountSection";
+import { TransitParkingSection } from "./_components/TransitParkingSection";
+import { InfoItemsSection } from "./_components/InfoItemsSection";
+import { FlowerDeclineSection } from "./_components/FlowerDeclineSection";
 import { ThemeSection } from "./_components/ThemeSection";
 import type { ParentsBlock } from "@/lib/parents/types";
+import { readExtras } from "@/lib/extras/types";
 
 type Track = { order: number; url: string; title: string; artist: string | null };
 type Profile = { mbti?: string; intro?: string };
@@ -27,6 +31,7 @@ export default async function AdminHome() {
   const user = await requireUser();
   const site = await getOrCreateSiteForOwner(user.id);
   const isLive = site.slug && !site.slug.startsWith("draft-");
+  const extras = readExtras(site.extras);
 
   return (
     <main className="min-h-screen p-4 sm:p-6 max-w-3xl mx-auto space-y-5 bg-bg">
@@ -97,6 +102,8 @@ export default async function AdminHome() {
           parkingLat={site.parking_lat ?? null}
           parkingLng={site.parking_lng ?? null}
         />
+        <TransitParkingSection extras={extras} />
+        <InfoItemsSection items={extras.info_items ?? []} />
         <GreetingSection site={site} />
         <ProfileSection
           groom={(site.groom_profile as unknown as Profile) ?? {}}
@@ -104,6 +111,10 @@ export default async function AdminHome() {
         />
         <StorySection items={(site.story_items as unknown as StoryItem[]) ?? []} />
         <AccountSection info={(site.account_info as unknown as AccountInfo) ?? {}} />
+        <FlowerDeclineSection
+          enabled={extras.flower_decline ?? false}
+          note={extras.flower_decline_note ?? ""}
+        />
         <ThemeSection
           theme={site.theme}
           sectionsEnabled={(site.sections_enabled as unknown as Record<string, boolean>) ?? {}}

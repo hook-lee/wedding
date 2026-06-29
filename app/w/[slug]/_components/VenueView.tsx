@@ -15,6 +15,9 @@ type Place = {
 type Props = {
   venue: Place;
   parking: Place;
+  transitSubway?: string;
+  transitBus?: string;
+  parkingNotes?: string;
 };
 
 function isMobile() {
@@ -46,7 +49,13 @@ function navigateTo(lat: number, lng: number, name: string) {
   }
 }
 
-export function VenueView({ venue, parking }: Props) {
+export function VenueView({
+  venue,
+  parking,
+  transitSubway,
+  transitBus,
+  parkingNotes,
+}: Props) {
   const [copied, setCopied] = useState<string | null>(null);
 
   async function copyAddress(addr: string, key: string) {
@@ -171,6 +180,43 @@ export function VenueView({ venue, parking }: Props) {
       <p className="text-[10px] text-muted text-center pt-1">
         모바일은 네이버지도 앱 우선, 앱이 없으면 카카오맵 웹으로 이동합니다.
       </p>
+
+      {/* 교통편·주차 안내 (extras) */}
+      {transitSubway?.trim() && (
+        <Card className="space-y-1.5">
+          <p className="text-xs text-muted flex items-center gap-1.5">
+            <Icon name="navigation" className="w-3.5 h-3.5" />
+            지하철
+          </p>
+          <p className="text-sm text-secondary whitespace-pre-line leading-relaxed">
+            {transitSubway}
+          </p>
+        </Card>
+      )}
+
+      {transitBus?.trim() && (
+        <Card className="space-y-1.5">
+          <p className="text-xs text-muted flex items-center gap-1.5">
+            <Icon name="navigation" className="w-3.5 h-3.5" />
+            버스
+          </p>
+          <p className="text-sm text-secondary whitespace-pre-line leading-relaxed">
+            {transitBus}
+          </p>
+        </Card>
+      )}
+
+      {parkingNotes?.trim() && (
+        <Card className="space-y-1.5">
+          <p className="text-xs text-muted flex items-center gap-1.5">
+            <Icon name="parking" className="w-3.5 h-3.5" />
+            주차 안내
+          </p>
+          <p className="text-sm text-secondary whitespace-pre-line leading-relaxed">
+            {parkingNotes}
+          </p>
+        </Card>
+      )}
     </div>
   );
 }

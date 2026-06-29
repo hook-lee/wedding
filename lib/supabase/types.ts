@@ -35,6 +35,7 @@ export type Database = {
           groom_birth_order: string;
           bride_birth_order: string;
           published: boolean;
+          extras: Json;
           created_at: string;
           updated_at: string;
         };
@@ -69,6 +70,7 @@ export type Database = {
           groom_birth_order?: string;
           bride_birth_order?: string;
           published?: boolean;
+          extras?: Json;
           created_at?: string;
           updated_at?: string;
         };

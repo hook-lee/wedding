@@ -6,6 +6,8 @@ import { VenueView } from "./VenueView";
 import { RsvpView } from "./RsvpView";
 import { AccountView } from "./AccountView";
 import { ProfileView } from "./ProfileView";
+import { InfoView } from "./InfoView";
+import { FlowerDeclineView } from "./FlowerDeclineView";
 import { Reveal } from "./Reveal";
 import { Countdown } from "./Countdown";
 import { Calendar } from "./Calendar";
@@ -14,6 +16,7 @@ import { daysUntil } from "@/lib/date/dday";
 import { formatKstDateTime } from "@/lib/date/kst";
 import type { Tables } from "@/lib/supabase/types";
 import type { ParentsBlock } from "@/lib/parents/types";
+import { readExtras, flowerDeclineNoteOrDefault } from "@/lib/extras/types";
 
 type Profile = { mbti?: string; intro?: string };
 type StoryItem = { date: string; title: string; body: string; photo_url?: string };
@@ -49,6 +52,9 @@ export function HomeTab({ site, initialGuestbook }: Props) {
   const parents = (site.parents as unknown as ParentsBlock) ?? {};
   const enabled = (site.sections_enabled as unknown as Record<string, boolean>) ?? {};
   const greetingVideoId = site.greeting_video_id ?? "";
+  const extras = readExtras(site.extras);
+  const hasInfoItems = (extras.info_items?.length ?? 0) > 0;
+  const showFlowerDecline = extras.flower_decline === true;
 
   return (
     <div className="space-y-2">
@@ -185,8 +191,19 @@ export function HomeTab({ site, initialGuestbook }: Props) {
             lat: site.parking_lat ?? null,
             lng: site.parking_lng ?? null,
           }}
+          transitSubway={extras.transit_subway}
+          transitBus={extras.transit_bus}
+          parkingNotes={extras.parking_notes}
         />
       </Reveal>
+
+      {/* === 예식 정보 및 안내사항 (선택) === */}
+      {hasInfoItems && (
+        <Reveal>
+          <SectionTitle icon="clipboard" label="예식 정보 및 안내사항" anchor="extras-info" />
+          <InfoView items={extras.info_items ?? []} />
+        </Reveal>
+      )}
 
       {/* === RSVP === */}
       {enabled.rsvp && (
@@ -205,6 +222,12 @@ export function HomeTab({ site, initialGuestbook }: Props) {
               (site.account_info as unknown as Parameters<typeof AccountView>[0]["info"]) ?? {}
             }
           />
+          {/* 화환 사양 안내 (선택) */}
+          {showFlowerDecline && (
+            <div className="pt-4">
+              <FlowerDeclineView note={flowerDeclineNoteOrDefault(extras)} />
+            </div>
+          )}
         </Reveal>
       )}
 

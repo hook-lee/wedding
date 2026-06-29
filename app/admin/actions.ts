@@ -8,6 +8,7 @@ import { extractYouTubeVideoId } from "@/lib/youtube/parse-url";
 import { revalidatePath } from "next/cache";
 import type { ParentsBlock, ParentStatus } from "@/lib/parents/types";
 import type { Database } from "@/lib/supabase/types";
+import type { InfoItem, SiteExtras } from "@/lib/extras/types";
 
 function readParentsFromForm(formData: FormData): ParentsBlock {
   const sides = ["groom", "bride"] as const;
@@ -121,6 +122,29 @@ export async function saveAdminForm(
   const groom_birth_order = (String(formData.get("groom_birth_order") ?? "").trim()) || "장남";
   const bride_birth_order = (String(formData.get("bride_birth_order") ?? "").trim()) || "장녀";
 
+  // === extras (transit/parking notes, info items, flower decline) ===
+  let info_items: InfoItem[] = [];
+  try {
+    const raw = String(formData.get("info_items_json") ?? "[]");
+    const parsed = JSON.parse(raw) as InfoItem[];
+    info_items = parsed
+      .map((it) => ({
+        title: String(it.title ?? "").trim(),
+        body: String(it.body ?? "").trim(),
+      }))
+      .filter((it) => it.title || it.body);
+  } catch {
+    info_items = [];
+  }
+  const extras: SiteExtras = {
+    transit_subway: String(formData.get("transit_subway") ?? "").trim(),
+    transit_bus: String(formData.get("transit_bus") ?? "").trim(),
+    parking_notes: String(formData.get("parking_notes") ?? "").trim(),
+    info_items,
+    flower_decline: formData.get("flower_decline") === "on",
+    flower_decline_note: String(formData.get("flower_decline_note") ?? "").trim(),
+  };
+
   const v = validateSlug(slug);
   if (!v.ok) return { error: v.reason };
   if (!(await isSlugAvailable(slug, user.id))) {
@@ -160,6 +184,7 @@ export async function saveAdminForm(
     groom_birth_order,
     bride_birth_order,
     published,
+    extras,
   };
   if (wedding_at_raw) {
     updatePayload.wedding_at = kstDateTimeLocalToUtcIso(wedding_at_raw);
