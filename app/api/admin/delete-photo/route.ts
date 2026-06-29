@@ -32,7 +32,13 @@ export async function POST(req: Request) {
       .update({ main_photo_url: null })
       .eq("id", site.id);
   } else {
-    const next = (site.gallery_urls ?? []).filter((u: string) => u !== url);
+    // Match by storage path, not exact URL string — protects against query
+    // strings, double slashes, or other harmless URL drift between how the
+    // file was originally registered vs. what the client sends back now.
+    const next = (site.gallery_urls ?? []).filter((u: string) => {
+      const p = String(u).split("/wedding-photos/")[1] ?? "";
+      return p !== path;
+    });
     await supabase
       .from("wedding_sites")
       .update({ gallery_urls: next })
