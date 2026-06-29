@@ -21,7 +21,8 @@ type IconName =
   | "building"
   | "parking"
   | "navigation"
-  | "copy";
+  | "copy"
+  | "close";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: (
@@ -120,6 +121,7 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
     </>
   ),
+  close: <path d="M18 6 6 18M6 6l12 12" />,
 };
 
 export function Icon({

@@ -1,11 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/app/_ui/Button";
 import { Icon } from "./Icon";
 
 type Acc = { bank?: string; account?: string; holder?: string };
 type Side = { self?: Acc | null; father?: Acc | null; mother?: Acc | null };
 type Info = { groom?: Side; bride?: Side };
+
+const MODAL_KEYFRAMES = `
+@keyframes wd-modal-backdrop { from { opacity: 0 } to { opacity: 1 } }
+@keyframes wd-modal-card {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+`;
 
 function AccountCard({ label, acc }: { label: string; acc: Acc }) {
   const [copied, setCopied] = useState(false);
@@ -34,6 +42,79 @@ function AccountCard({ label, acc }: { label: string; acc: Acc }) {
         {copied ? "복사됨 ✓" : "탭하면 계좌번호 복사"}
       </p>
     </button>
+  );
+}
+
+function AccountModal({
+  title,
+  rows,
+  onClose,
+}: {
+  title: string;
+  rows: { label: string; acc: Acc }[];
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${title} 계좌`}
+      style={{ animation: "wd-modal-backdrop 180ms ease-out forwards" }}
+    >
+      <style>{MODAL_KEYFRAMES}</style>
+      <div
+        className="bg-surface rounded-lg w-full max-w-sm max-h-[85vh] flex flex-col shadow-card"
+        onClick={(e) => e.stopPropagation()}
+        style={{ animation: "wd-modal-card 220ms ease-out forwards" }}
+      >
+        {/* 헤더 */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h3 className="text-base font-semibold text-ink">{title}</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-muted hover:text-ink p-1 -m-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/20 rounded"
+            aria-label="닫기"
+          >
+            <Icon name="close" className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* 본문 — 입력된 계좌만큼만 */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-2">
+          {rows.map((r) => (
+            <AccountCard key={r.label} label={r.label} acc={r.acc} />
+          ))}
+        </div>
+
+        {/* 하단 닫기 */}
+        <div className="px-5 py-4 border-t border-border">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            className="w-full"
+          >
+            닫기
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -66,19 +147,15 @@ function SideSection({
       <Button
         type="button"
         variant="primary"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(true)}
         className="w-full gap-2"
-        aria-expanded={open}
+        aria-haspopup="dialog"
       >
         <Icon name="heart" className="w-4 h-4" />
-        {open ? "닫기" : "마음 전달하기"}
+        마음 전달하기
       </Button>
       {open && (
-        <div className="space-y-2 pt-1">
-          {rows.map((r) => (
-            <AccountCard key={r.label} label={r.label} acc={r.acc} />
-          ))}
-        </div>
+        <AccountModal title={title} rows={rows} onClose={() => setOpen(false)} />
       )}
     </div>
   );
