@@ -1,6 +1,24 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Card, CardHeader } from "@/app/_ui/Card";
 import { Button } from "@/app/_ui/Button";
 
@@ -8,14 +26,108 @@ type Props = { mainUrl: string | null; galleryUrls: string[] };
 
 const MAX_GALLERY = 20;
 
+function GalleryThumb({
+  url,
+  busy,
+  onRemove,
+}: {
+  url: string;
+  busy: boolean;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: url });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: isDragging ? "grabbing" : "grab",
+    touchAction: "none",
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="relative aspect-[4/5] select-none"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={url}
+        alt=""
+        draggable={false}
+        className="w-full h-full object-cover rounded-md pointer-events-none"
+      />
+      {/* X 버튼은 드래그 이벤트 안 받게 stopPropagation + onPointerDown 차단 */}
+      <button
+        type="button"
+        disabled={busy}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute top-1 right-1 bg-ink text-bg text-xs px-1.5 py-0.5 rounded-pill disabled:opacity-50 z-10"
+        aria-label="사진 삭제"
+      >
+        X
+      </button>
+    </div>
+  );
+}
+
 export function PhotoSection({ mainUrl, galleryUrls }: Props) {
   const [busy, setBusy] = useState(false);
   const [mainFile, setMainFile] = useState<File | null>(null);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
+  const [orderedUrls, setOrderedUrls] = useState<string[]>(galleryUrls);
+  const [reorderStatus, setReorderStatus] = useState<"idle" | "saving" | "saved" | "error">(
+    "idle",
+  );
   const mainInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Re-sync local order whenever the server gives us a new list (after upload / delete / refresh)
+  useEffect(() => {
+    setOrderedUrls(galleryUrls);
+  }, [galleryUrls]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  async function persistOrder(next: string[]) {
+    setReorderStatus("saving");
+    try {
+      const r = await fetch("/api/admin/reorder-gallery", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ urls: next }),
+      });
+      if (!r.ok) throw new Error(await r.text());
+      setReorderStatus("saved");
+      setTimeout(() => setReorderStatus("idle"), 1500);
+    } catch {
+      setReorderStatus("error");
+      setOrderedUrls(galleryUrls); // 실패 시 서버 상태로 롤백
+    }
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = orderedUrls.indexOf(String(active.id));
+    const newIndex = orderedUrls.indexOf(String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(orderedUrls, oldIndex, newIndex);
+    setOrderedUrls(next); // optimistic
+    void persistOrder(next);
+  }
 
   async function uploadMain(file: File) {
     setBusy(true);
@@ -76,7 +188,7 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
     router.refresh();
   }
 
-  const remainingSlots = MAX_GALLERY - galleryUrls.length;
+  const remainingSlots = MAX_GALLERY - orderedUrls.length;
 
   return (
     <Card>
@@ -126,27 +238,41 @@ export function PhotoSection({ mainUrl, galleryUrls }: Props) {
 
       {/* Gallery */}
       <div className="space-y-2">
-        <p className="text-sm text-secondary font-medium">
-          갤러리 ({galleryUrls.length}/{MAX_GALLERY}장)
-        </p>
-        {galleryUrls.length > 0 && (
-          <div className="grid grid-cols-4 gap-2">
-            {galleryUrls.map((u) => (
-              <div key={u} className="relative aspect-square">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={u} alt="" className="w-full h-full object-cover rounded-md" />
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => remove(u, "gallery")}
-                  className="absolute top-1 right-1 bg-ink text-bg text-xs px-1.5 py-0.5 rounded-pill disabled:opacity-50"
-                  aria-label="사진 삭제"
-                >
-                  X
-                </button>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm text-secondary font-medium">
+            갤러리 ({orderedUrls.length}/{MAX_GALLERY}장)
+          </p>
+          {orderedUrls.length > 1 && (
+            <p className="text-[11px] text-muted">
+              {reorderStatus === "saving"
+                ? "순서 저장 중…"
+                : reorderStatus === "saved"
+                ? "순서 저장됨 ✓"
+                : reorderStatus === "error"
+                ? "저장 실패"
+                : "드래그해서 순서 변경"}
+            </p>
+          )}
+        </div>
+        {orderedUrls.length > 0 && (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={orderedUrls} strategy={rectSortingStrategy}>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {orderedUrls.map((u) => (
+                  <GalleryThumb
+                    key={u}
+                    url={u}
+                    busy={busy}
+                    onRemove={() => remove(u, "gallery")}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
         )}
         {remainingSlots <= 0 ? (
           <p className="text-xs text-muted">

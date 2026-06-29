@@ -1,8 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 
+const PREVIEW_COUNT = 12;
+
 export function GalleryTab({ urls }: { urls: string[] }) {
   const [open, setOpen] = useState<number | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (open === null) return;
@@ -24,15 +27,19 @@ export function GalleryTab({ urls }: { urls: string[] }) {
       <p className="text-center text-muted py-8">아직 사진이 없습니다.</p>
     );
 
+  const visibleUrls =
+    expanded || urls.length <= PREVIEW_COUNT ? urls : urls.slice(0, PREVIEW_COUNT);
+  const hiddenCount = urls.length - PREVIEW_COUNT;
+
   return (
     <>
       <div className="grid grid-cols-3 gap-0.5">
-        {urls.map((u, i) => (
+        {visibleUrls.map((u, i) => (
           // eslint-disable-next-line @next/next/no-img-element
           <button
             key={u}
             onClick={() => setOpen(i)}
-            className="aspect-square"
+            className="aspect-[4/5]"
           >
             <img
               src={u}
@@ -43,6 +50,29 @@ export function GalleryTab({ urls }: { urls: string[] }) {
           </button>
         ))}
       </div>
+
+      {hiddenCount > 0 && !expanded && (
+        <div className="pt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="inline-flex items-center justify-center min-h-[44px] px-5 bg-surface border border-border rounded-pill text-sm text-ink hover:bg-bg transition-colors"
+          >
+            사진 더 보기 ({hiddenCount}장)
+          </button>
+        </div>
+      )}
+      {expanded && urls.length > PREVIEW_COUNT && (
+        <div className="pt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            className="text-xs text-muted hover:text-ink underline underline-offset-2 min-h-[32px]"
+          >
+            접기
+          </button>
+        </div>
+      )}
 
       {open !== null && (
         <div
