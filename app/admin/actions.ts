@@ -143,6 +143,7 @@ export async function saveAdminForm(
     info_items,
     flower_decline: formData.get("flower_decline") === "on",
     flower_decline_note: String(formData.get("flower_decline_note") ?? "").trim(),
+    share_title_suffix: String(formData.get("share_title_suffix") ?? "").trim(),
   };
 
   const v = validateSlug(slug);

@@ -86,7 +86,7 @@ export default async function AdminHome() {
       </header>
 
       <AdminForm>
-        <BasicInfoSection site={site} />
+        <BasicInfoSection site={site} shareTitleSuffix={extras.share_title_suffix ?? ""} />
         <ParentsSection
           parents={(site.parents as ParentsBlock) ?? {}}
           groomBirthOrder={site.groom_birth_order ?? "장남"}

@@ -9,6 +9,7 @@ import { GalleryTab } from "./_components/GalleryTab";
 import { GuestbookTab } from "./_components/GuestbookTab";
 import { InfoTab } from "./_components/InfoTab";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { readExtras, shareTitleSuffixOrDefault } from "@/lib/extras/types";
 
 const VALID: TabKey[] = ["home", "story", "gallery", "guestbook", "info"];
 
@@ -20,7 +21,8 @@ export async function generateMetadata({
   const { slug } = await params;
   try {
     const site = await loadSite(slug);
-    const title = `${site.groom_name}${site.name_joiner}${site.bride_name} 결혼식`;
+    const extras = readExtras(site.extras);
+    const title = `${site.groom_name}${site.name_joiner}${site.bride_name} ${shareTitleSuffixOrDefault(extras)}`;
     const description =
       (site.greeting?.slice(0, 80) || "결혼식에 초대합니다") +
       (site.greeting && site.greeting.length > 80 ? "..." : "");

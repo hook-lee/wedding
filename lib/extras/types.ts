@@ -13,9 +13,11 @@ export type SiteExtras = {
   info_items?: InfoItem[];
   flower_decline?: boolean;
   flower_decline_note?: string;
+  share_title_suffix?: string;
 };
 
 const DEFAULT_DECLINE_NOTE = "화환은 정중히 사양하겠습니다.";
+const DEFAULT_SHARE_TITLE_SUFFIX = "결혼합니다";
 
 export function readExtras(raw: unknown): SiteExtras {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
@@ -47,10 +49,17 @@ export function readExtras(raw: unknown): SiteExtras {
       typeof obj.flower_decline_note === "string"
         ? obj.flower_decline_note
         : undefined,
+    share_title_suffix:
+      typeof obj.share_title_suffix === "string" ? obj.share_title_suffix : undefined,
   };
 }
 
 export function flowerDeclineNoteOrDefault(extras: SiteExtras): string {
   const v = (extras.flower_decline_note ?? "").trim();
   return v || DEFAULT_DECLINE_NOTE;
+}
+
+export function shareTitleSuffixOrDefault(extras: SiteExtras): string {
+  const v = (extras.share_title_suffix ?? "").trim();
+  return v || DEFAULT_SHARE_TITLE_SUFFIX;
 }
