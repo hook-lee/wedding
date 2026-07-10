@@ -119,7 +119,9 @@ export function BgmPlayer({ tracks }: { tracks: Track[] }) {
         return () => clearTimeout(t);
       }
     } else if (audioRef.current) {
-      audioRef.current.src = current.url;
+      // src is set declaratively below (JSX `src` prop) so the browser can
+      // start fetching bytes on first paint instead of waiting for this
+      // effect to run — only resume playback here on track change.
       if (playing) audioRef.current.play().catch(() => {});
     }
   }, [idx, current, playing]);
@@ -167,7 +169,12 @@ export function BgmPlayer({ tracks }: { tracks: Track[] }) {
   return (
     <div className="flex items-center gap-2">
       {!isYoutube(current) && (
-        <audio ref={audioRef} onEnded={next} preload="metadata" />
+        <audio
+          ref={audioRef}
+          src={current.url}
+          onEnded={next}
+          preload="auto"
+        />
       )}
       {isYoutube(current) && ytSrc && (
         <iframe
