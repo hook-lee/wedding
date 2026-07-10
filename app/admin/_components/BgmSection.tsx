@@ -42,21 +42,32 @@ export function BgmSection({ tracks }: { tracks: Track[] }) {
       const urlRes = await fetch("/api/admin/bgm-upload-url", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ mimeType: file.type, size: file.size }),
+        body: JSON.stringify({
+          mimeType: file.type,
+          size: file.size,
+          fileName: file.name,
+        }),
       });
       if (!urlRes.ok) {
         const j = await urlRes.json().catch(() => ({}));
-        alert(j.error ?? "업로드 준비 실패");
+        alert(j.error ?? `업로드 준비 실패 (${urlRes.status})`);
         return;
       }
-      const { path, token } = (await urlRes.json()) as { path: string; token: string };
+      const { path, token, contentType } = (await urlRes.json()) as {
+        path: string;
+        token: string;
+        contentType: string;
+      };
 
       // 2) 브라우저에서 Supabase Storage로 직접 업로드 — Vercel의 4.5MB 요청
       //    본문 제한을 완전히 우회한다 (일반 노래 파일은 대부분 이보다 큼).
+      //    file.type이 비어있거나 이상한 값이어도 서버가 확장자로 판별해준
+      //    contentType을 쓴다 (일부 다운로드 출처의 파일은 브라우저가
+      //    MIME을 못 읽어오는 경우가 있음).
       const supabase = createSupabaseBrowserClient();
       const { error: upErr } = await supabase.storage
         .from("wedding-bgm")
-        .uploadToSignedUrl(path, token, file, { contentType: file.type });
+        .uploadToSignedUrl(path, token, file, { contentType });
       if (upErr) {
         alert(`업로드 실패: ${upErr.message}`);
         return;

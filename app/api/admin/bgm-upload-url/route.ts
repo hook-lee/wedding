@@ -17,10 +17,25 @@ const ALLOWED_AUDIO_TYPES: Record<string, string> = {
   "audio/mpeg": "mp3",
   "audio/mp3": "mp3",
   "audio/mp4": "m4a",
+  "audio/x-m4a": "m4a",
   "audio/aac": "aac",
   "audio/ogg": "ogg",
   "audio/wav": "wav",
+  "audio/x-wav": "wav",
   "audio/webm": "webm",
+};
+
+// Canonical MIME to actually store, keyed by extension — used whenever the
+// browser's own `file.type` is blank or non-standard (common for audio
+// files downloaded from Korean music sites, KakaoTalk, or older browsers
+// that skip MIME sniffing for less common containers).
+const EXT_TO_MIME: Record<string, string> = {
+  mp3: "audio/mpeg",
+  m4a: "audio/mp4",
+  aac: "audio/aac",
+  ogg: "audio/ogg",
+  wav: "audio/wav",
+  webm: "audio/webm",
 };
 
 export async function POST(req: Request) {
@@ -30,14 +45,23 @@ export async function POST(req: Request) {
   if (tracks.length >= MAX_TRACKS)
     return NextResponse.json({ error: "최대 5곡" }, { status: 400 });
 
-  const { mimeType, size } = (await req.json()) as {
+  const { mimeType, size, fileName } = (await req.json()) as {
     mimeType?: string;
     size?: number;
+    fileName?: string;
   };
-  const ext = ALLOWED_AUDIO_TYPES[String(mimeType)];
+
+  let ext = ALLOWED_AUDIO_TYPES[String(mimeType)];
+  if (!ext) {
+    // Browser didn't give us a recognized MIME type — fall back to the
+    // file's own extension so a blank/nonstandard file.type doesn't reject
+    // an otherwise perfectly playable audio file.
+    const fromName = String(fileName ?? "").split(".").pop()?.toLowerCase();
+    if (fromName && fromName in EXT_TO_MIME) ext = fromName;
+  }
   if (!ext)
     return NextResponse.json(
-      { error: "지원하지 않는 오디오 형식입니다." },
+      { error: "지원하지 않는 오디오 형식입니다. (mp3·m4a·aac·ogg·wav·webm)" },
       { status: 400 },
     );
   if (typeof size !== "number" || size <= 0 || size > MAX_BGM_BYTES)
@@ -54,5 +78,5 @@ export async function POST(req: Request) {
       { status: 500 },
     );
 
-  return NextResponse.json({ path, token: data.token });
+  return NextResponse.json({ path, token: data.token, contentType: EXT_TO_MIME[ext] });
 }
