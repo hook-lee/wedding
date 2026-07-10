@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/app/_ui/Button";
 import { Icon } from "./Icon";
 
@@ -67,7 +68,13 @@ function AccountModal({
     };
   }, [onClose]);
 
-  return (
+  // Rendered via portal straight into <body> — this section lives inside a
+  // <Reveal> wrapper that applies a CSS `transform` for its scroll-in
+  // animation. Any ancestor with `transform` creates a new containing block
+  // for `position: fixed` descendants, so without the portal this modal's
+  // "fullscreen" backdrop would actually be clipped to that section's box
+  // instead of the real viewport — letting adjacent sections show through.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
       onClick={onClose}
@@ -114,7 +121,8 @@ function AccountModal({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

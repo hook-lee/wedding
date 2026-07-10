@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardHeader } from "@/app/_ui/Card";
 import { Input } from "@/app/_ui/Input";
 import { Button } from "@/app/_ui/Button";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Track = {
   order: number;
@@ -36,22 +37,48 @@ export function BgmSection({ tracks }: { tracks: Track[] }) {
       return;
     }
     setBusy(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("title", title);
-    fd.append("artist", artist);
-    const res = await fetch("/api/admin/upload-bgm", {
-      method: "POST",
-      body: fd,
-    });
-    if (!res.ok) {
-      const j = await res.json().catch(() => ({}));
-      alert(j.error ?? "업로드 실패");
+    try {
+      // 1) 서버에서 이 파일 크기/형식으로 서명된 업로드 URL 발급
+      const urlRes = await fetch("/api/admin/bgm-upload-url", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mimeType: file.type, size: file.size }),
+      });
+      if (!urlRes.ok) {
+        const j = await urlRes.json().catch(() => ({}));
+        alert(j.error ?? "업로드 준비 실패");
+        return;
+      }
+      const { path, token } = (await urlRes.json()) as { path: string; token: string };
+
+      // 2) 브라우저에서 Supabase Storage로 직접 업로드 — Vercel의 4.5MB 요청
+      //    본문 제한을 완전히 우회한다 (일반 노래 파일은 대부분 이보다 큼).
+      const supabase = createSupabaseBrowserClient();
+      const { error: upErr } = await supabase.storage
+        .from("wedding-bgm")
+        .uploadToSignedUrl(path, token, file, { contentType: file.type });
+      if (upErr) {
+        alert(`업로드 실패: ${upErr.message}`);
+        return;
+      }
+
+      // 3) 서버에 최종 반영 (bgm_tracks에 추가)
+      const finalizeRes = await fetch("/api/admin/update-bgm", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "add-audio", path, title, artist }),
+      });
+      if (!finalizeRes.ok) {
+        const j = await finalizeRes.json().catch(() => ({}));
+        alert(j.error ?? "저장 실패");
+        return;
+      }
+      setTitle("");
+      setArtist("");
+    } finally {
+      setBusy(false);
+      router.refresh();
     }
-    setTitle("");
-    setArtist("");
-    setBusy(false);
-    router.refresh();
   }
 
   async function addYoutube() {
