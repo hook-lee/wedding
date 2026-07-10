@@ -86,6 +86,11 @@ export function BgmSection({ tracks }: { tracks: Track[] }) {
       }
       setTitle("");
       setArtist("");
+    } catch (err) {
+      // Any thrown error (network failure, SDK exception, etc.) used to
+      // vanish silently here because this block only had `finally`, not
+      // `catch` — the button would just look unresponsive with no alert.
+      alert(`업로드 중 오류가 발생했어요: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setBusy(false);
       router.refresh();
@@ -227,9 +232,14 @@ export function BgmSection({ tracks }: { tracks: Track[] }) {
                   accept="audio/*"
                   hidden
                   disabled={busy}
-                  onChange={(e) =>
-                    e.target.files?.[0] && uploadAudio(e.target.files[0])
-                  }
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    // Reset so re-selecting the exact same file (e.g. retrying
+                    // after a fix) still fires onChange — browsers otherwise
+                    // treat an unchanged value as "no change".
+                    e.target.value = "";
+                    if (file) void uploadAudio(file);
+                  }}
                 />
               </label>
             </div>
