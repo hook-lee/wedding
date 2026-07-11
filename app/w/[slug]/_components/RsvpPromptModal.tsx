@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
+import { RsvpView } from "./RsvpView";
+import type { RsvpFields } from "@/lib/extras/types";
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
@@ -13,9 +15,11 @@ function todayKstKey(slug: string): string {
 
 type Props = {
   slug: string;
+  siteId: string;
   namesText: string;
   dateText: string;
   venueName: string;
+  fields: Required<RsvpFields>;
 };
 
 /**
@@ -26,8 +30,11 @@ type Props = {
  * that ancestor's box instead of the real viewport (same issue fixed for
  * AccountView's modal earlier).
  */
-export function RsvpPromptModal({ slug, namesText, dateText, venueName }: Props) {
+export function RsvpPromptModal({ slug, siteId, namesText, dateText, venueName, fields }: Props) {
   const [open, setOpen] = useState(false);
+  // false = summary + CTA, true = the actual RSVP form swapped in place —
+  // stays in the same popup instead of closing and scrolling away.
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     function onEnter() {
@@ -66,13 +73,6 @@ export function RsvpPromptModal({ slug, namesText, dateText, venueName }: Props)
     setOpen(false);
   }
 
-  function goToRsvp() {
-    setOpen(false);
-    setTimeout(() => {
-      document.getElementById("rsvp")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 50);
-  }
-
   if (!open) return null;
 
   return createPortal(
@@ -84,10 +84,10 @@ export function RsvpPromptModal({ slug, namesText, dateText, venueName }: Props)
       aria-label="참석 의사 전달"
     >
       <div
-        className="bg-surface rounded-lg w-full max-w-sm shadow-card"
+        className="bg-surface rounded-lg w-full max-w-sm max-h-[85vh] flex flex-col shadow-card"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
           <h3 className="text-base font-semibold text-ink">참석 의사 전달</h3>
           <button
             type="button"
@@ -99,49 +99,58 @@ export function RsvpPromptModal({ slug, namesText, dateText, venueName }: Props)
           </button>
         </div>
 
-        <div className="p-5 space-y-4 text-center">
-          <p className="text-sm text-secondary leading-relaxed">
-            축하의 마음으로 참석해주시는 모든 분들을 귀하게 모실 수 있도록
-            참석 의사를 전달 부탁드립니다.
-          </p>
+        <div className="overflow-y-auto p-5">
+          {!showForm ? (
+            <div className="space-y-4 text-center">
+              <p className="text-sm text-secondary leading-relaxed">
+                축하의 마음으로 참석해주시는 모든 분들을 귀하게 모실 수 있도록
+                참석 의사를 전달 부탁드립니다.
+              </p>
 
-          <div className="bg-bg border border-border rounded-md p-4 space-y-1.5 text-left">
-            <p className="text-sm font-semibold text-ink flex items-center gap-1.5">
-              <Icon name="heart" className="w-3.5 h-3.5" />
-              {namesText}
-            </p>
-            {dateText && (
-              <p className="text-sm text-secondary flex items-center gap-1.5">
-                <Icon name="calendar" className="w-3.5 h-3.5" />
-                {dateText}
-              </p>
-            )}
-            {venueName && (
-              <p className="text-sm text-secondary flex items-center gap-1.5">
-                <Icon name="pin" className="w-3.5 h-3.5" />
-                {venueName}
-              </p>
-            )}
+              <div className="bg-bg border border-border rounded-md p-4 space-y-1.5 text-left">
+                <p className="text-sm font-semibold text-ink flex items-center gap-1.5">
+                  <Icon name="heart" className="w-3.5 h-3.5" />
+                  {namesText}
+                </p>
+                {dateText && (
+                  <p className="text-sm text-secondary flex items-center gap-1.5">
+                    <Icon name="calendar" className="w-3.5 h-3.5" />
+                    {dateText}
+                  </p>
+                )}
+                {venueName && (
+                  <p className="text-sm text-secondary flex items-center gap-1.5">
+                    <Icon name="pin" className="w-3.5 h-3.5" />
+                    {venueName}
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowForm(true)}
+                className="w-full inline-flex items-center justify-center min-h-[44px] px-6 bg-ink text-bg rounded-pill text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
+              >
+                참석 의사 전달하기
+              </button>
+            </div>
+          ) : (
+            // No extra card padding here — RsvpView already renders its own Card.
+            <RsvpView siteId={siteId} fields={fields} />
+          )}
+        </div>
+
+        {!showForm && (
+          <div className="px-5 pb-4 flex justify-center flex-shrink-0">
+            <button
+              type="button"
+              onClick={dismissToday}
+              className="text-xs text-muted hover:text-ink underline underline-offset-2 min-h-[32px]"
+            >
+              오늘 하루 보지 않기
+            </button>
           </div>
-
-          <button
-            type="button"
-            onClick={goToRsvp}
-            className="w-full inline-flex items-center justify-center min-h-[44px] px-6 bg-ink text-bg rounded-pill text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
-          >
-            참석 의사 전달하기
-          </button>
-        </div>
-
-        <div className="px-5 pb-4 flex justify-center">
-          <button
-            type="button"
-            onClick={dismissToday}
-            className="text-xs text-muted hover:text-ink underline underline-offset-2 min-h-[32px]"
-          >
-            오늘 하루 보지 않기
-          </button>
-        </div>
+        )}
       </div>
     </div>,
     document.body,

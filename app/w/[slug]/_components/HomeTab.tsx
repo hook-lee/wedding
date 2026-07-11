@@ -76,9 +76,11 @@ export function HomeTab({ site, initialGuestbook }: Props) {
       {enabled.rsvp && extras.rsvp_prompt_enabled && (
         <RsvpPromptModal
           slug={site.slug}
+          siteId={site.id}
           namesText={namesText}
           dateText={dateText}
           venueName={site.venue_name}
+          fields={resolveRsvpFields(extras)}
         />
       )}
       {/* === 메인 === */}
