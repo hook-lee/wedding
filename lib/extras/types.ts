@@ -44,7 +44,10 @@ export type SiteExtras = {
   share_title_suffix?: string;
   section_order?: SectionKey[];
   rsvp_fields?: RsvpFields;
-  tab_order?: string[];
+  // Which content types are pinned to the bottom tab bar (up to
+  // MAX_PRIMARY_TABS, from app/w/[slug]/_lib/tabs.ts PRIMARY_KEYS), and in
+  // what order. Anything enabled-but-not-chosen falls into the "더보기" tab.
+  primary_tabs?: string[];
 };
 
 const DEFAULT_DECLINE_NOTE = "화환은 정중히 사양하겠습니다.";
@@ -99,8 +102,8 @@ export function readExtras(raw: unknown): SiteExtras {
             parking: (obj.rsvp_fields as Record<string, unknown>).parking === true,
           }
         : undefined,
-    tab_order: Array.isArray(obj.tab_order)
-      ? (obj.tab_order as unknown[]).map((k) => String(k))
+    primary_tabs: Array.isArray(obj.primary_tabs)
+      ? (obj.primary_tabs as unknown[]).map((k) => String(k))
       : undefined,
   };
 }

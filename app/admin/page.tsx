@@ -20,7 +20,7 @@ import { TabOrderSection } from "./_components/TabOrderSection";
 import { RsvpFieldsSection } from "./_components/RsvpFieldsSection";
 import type { ParentsBlock } from "@/lib/parents/types";
 import { readExtras, resolveSectionOrder, resolveRsvpFields } from "@/lib/extras/types";
-import { resolveTabOrder } from "@/app/w/[slug]/_lib/tabs";
+import { enabledPrimaryKeys, resolvePrimaryTabs } from "@/app/w/[slug]/_lib/tabs";
 
 type Track = { order: number; url: string; title: string; artist: string | null };
 type Profile = { mbti?: string; intro?: string };
@@ -36,6 +36,12 @@ export default async function AdminHome() {
   const site = await getOrCreateSiteForOwner(user.id);
   const isLive = site.slug && !site.slug.startsWith("draft-");
   const extras = readExtras(site.extras);
+  const sectionsEnabled =
+    (site.sections_enabled as unknown as Record<string, boolean>) ?? {};
+  const primaryTabsInitial = resolvePrimaryTabs(
+    extras.primary_tabs,
+    enabledPrimaryKeys(sectionsEnabled),
+  );
 
   return (
     <main className="min-h-screen p-4 sm:p-6 max-w-6xl mx-auto space-y-5 bg-bg">
@@ -121,10 +127,10 @@ export default async function AdminHome() {
           note={extras.flower_decline_note ?? ""}
         />
         <SectionOrderSection order={resolveSectionOrder(extras)} />
-        <TabOrderSection order={resolveTabOrder(extras.tab_order)} />
+        <TabOrderSection initial={primaryTabsInitial} />
         <ThemeSection
           theme={site.theme}
-          sectionsEnabled={(site.sections_enabled as unknown as Record<string, boolean>) ?? {}}
+          sectionsEnabled={sectionsEnabled}
           published={site.published}
         />
       </AdminWorkspace>

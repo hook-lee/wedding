@@ -2,16 +2,20 @@ import type { Metadata } from "next";
 import { loadSite } from "./_lib/load-site";
 import { SplashOverlay } from "./_components/SplashOverlay";
 import { TabShell } from "./_components/TabShell";
-import { visibleTabs, type TabKey } from "./_lib/tabs";
+import { visibleTabs, PRIMARY_KEYS, type PrimaryKey, type TabKey } from "./_lib/tabs";
 import { HomeTab } from "./_components/HomeTab";
 import { StoryTab } from "./_components/StoryTab";
 import { GalleryTab } from "./_components/GalleryTab";
 import { GuestbookTab } from "./_components/GuestbookTab";
-import { InfoTab } from "./_components/InfoTab";
+import { VenueView } from "./_components/VenueView";
+import { RsvpView } from "./_components/RsvpView";
+import { AccountView } from "./_components/AccountView";
+import { ProfileView } from "./_components/ProfileView";
+import { MoreTab } from "./_components/MoreTab";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { readExtras, shareTitleSuffixOrDefault } from "@/lib/extras/types";
+import { readExtras, resolveRsvpFields, shareTitleSuffixOrDefault } from "@/lib/extras/types";
 
-const VALID: TabKey[] = ["home", "story", "gallery", "guestbook", "info"];
+const VALID: TabKey[] = ["home", "more", ...PRIMARY_KEYS];
 
 export async function generateMetadata({
   params,
@@ -55,7 +59,7 @@ export default async function PublicPage({
   const sectionsEnabled =
     (site.sections_enabled as unknown as Record<string, boolean>) ?? {};
   const extras = readExtras(site.extras);
-  const tabs = visibleTabs(sectionsEnabled, extras.tab_order);
+  const { tabs, moreItems } = visibleTabs(sectionsEnabled, extras.primary_tabs);
   const requested = (VALID.includes(tab as TabKey) ? tab : "home") as TabKey;
   const active: TabKey = tabs.includes(requested) ? requested : "home";
 
@@ -104,12 +108,50 @@ export default async function PublicPage({
         {active === "guestbook" && (
           <GuestbookTab siteId={site.id} initial={initialGuestbook ?? []} />
         )}
-        {active === "info" && (
-          <InfoTab
-            site={site}
-            sub={
-              (sub as "venue" | "rsvp" | "account" | "profile" | undefined) ?? null
+        {active === "venue" && (
+          <VenueView
+            venue={{
+              name: site.venue_name,
+              address: site.venue_address,
+              lat: site.venue_lat,
+              lng: site.venue_lng,
+            }}
+            parking={{
+              name: site.parking_name ?? "",
+              address: site.parking_address ?? "",
+              lat: site.parking_lat ?? null,
+              lng: site.parking_lng ?? null,
+            }}
+            transitSubway={extras.transit_subway}
+            transitBus={extras.transit_bus}
+            parkingNotes={extras.parking_notes}
+          />
+        )}
+        {active === "rsvp" && (
+          <RsvpView siteId={site.id} fields={resolveRsvpFields(extras)} />
+        )}
+        {active === "account" && (
+          <AccountView
+            info={
+              (site.account_info as unknown as Parameters<
+                typeof AccountView
+              >[0]["info"]) ?? {}
             }
+          />
+        )}
+        {active === "profile" && (
+          <ProfileView
+            groom={(site.groom_profile as unknown as { mbti?: string; intro?: string }) ?? {}}
+            groomName={site.groom_name}
+            bride={(site.bride_profile as unknown as { mbti?: string; intro?: string }) ?? {}}
+            brideName={site.bride_name}
+          />
+        )}
+        {active === "more" && (
+          <MoreTab
+            site={site}
+            items={moreItems}
+            sub={(sub as PrimaryKey | undefined) ?? null}
           />
         )}
       </TabShell>

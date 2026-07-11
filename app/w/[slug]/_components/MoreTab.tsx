@@ -5,46 +5,41 @@ import { RsvpView } from "./RsvpView";
 import { AccountView } from "./AccountView";
 import { ProfileView } from "./ProfileView";
 import { readExtras, resolveRsvpFields } from "@/lib/extras/types";
+import { TAB_LABELS, type PrimaryKey } from "../_lib/tabs";
 
-type SubKey = "venue" | "rsvp" | "account" | "profile";
-const SUB_LABELS: Record<SubKey, string> = {
-  venue: "오시는길",
-  rsvp: "RSVP",
-  account: "마음전하기",
-  profile: "프로필",
-};
-
-export function InfoTab({
+/**
+ * Catch-all "더보기" tab: whatever content the couple didn't pin to the
+ * bottom bar (via the admin's "하단 탭바 구성" picker) shows up here as a
+ * small pill sub-nav instead. `items` is already resolved by visibleTabs()
+ * to exclude anything promoted to a primary tab.
+ */
+export function MoreTab({
   site,
+  items,
   sub,
 }: {
   site: Tables<"wedding_sites">;
-  sub: SubKey | null;
+  items: PrimaryKey[];
+  sub: PrimaryKey | null;
 }) {
-  const enabled =
-    (site.sections_enabled as unknown as Record<string, boolean>) ?? {};
   const extras = readExtras(site.extras);
-  const subs: SubKey[] = ["venue"];
-  if (enabled.rsvp) subs.push("rsvp");
-  if (enabled.account) subs.push("account");
-  if (enabled.profile) subs.push("profile");
+  const active: PrimaryKey | null =
+    sub && items.includes(sub) ? sub : (items[0] ?? null);
 
-  const active: SubKey = sub && subs.includes(sub) ? sub : "venue";
+  if (!active) return null;
 
   return (
     <div className="space-y-4">
       <nav className="flex gap-2 overflow-x-auto pb-1">
-        {subs.map((s) => (
+        {items.map((k) => (
           <Link
-            key={s}
-            href={`/w/${site.slug}?tab=info&sub=${s}`}
+            key={k}
+            href={`/w/${site.slug}?tab=more&sub=${k}`}
             className={`px-3 py-1 rounded-pill text-xs whitespace-nowrap ${
-              active === s
-                ? "bg-ink text-bg"
-                : "bg-bg border border-border"
+              active === k ? "bg-ink text-bg" : "bg-bg border border-border"
             }`}
           >
-            {SUB_LABELS[s]}
+            {TAB_LABELS[k].label}
           </Link>
         ))}
       </nav>
@@ -62,6 +57,9 @@ export function InfoTab({
             lat: site.parking_lat ?? null,
             lng: site.parking_lng ?? null,
           }}
+          transitSubway={extras.transit_subway}
+          transitBus={extras.transit_bus}
+          parkingNotes={extras.parking_notes}
         />
       )}
       {active === "rsvp" && (
@@ -79,17 +77,11 @@ export function InfoTab({
       {active === "profile" && (
         <ProfileView
           groom={
-            (site.groom_profile as unknown as {
-              mbti?: string;
-              intro?: string;
-            }) ?? {}
+            (site.groom_profile as unknown as { mbti?: string; intro?: string }) ?? {}
           }
           groomName={site.groom_name}
           bride={
-            (site.bride_profile as unknown as {
-              mbti?: string;
-              intro?: string;
-            }) ?? {}
+            (site.bride_profile as unknown as { mbti?: string; intro?: string }) ?? {}
           }
           brideName={site.bride_name}
         />

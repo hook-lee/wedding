@@ -23,7 +23,8 @@ type IconName =
   | "navigation"
   | "copy"
   | "close"
-  | "grip";
+  | "grip"
+  | "more";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: (
@@ -131,6 +132,13 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <circle cx="15" cy="12" r="1.4" fill="currentColor" stroke="none" />
       <circle cx="9" cy="18" r="1.4" fill="currentColor" stroke="none" />
       <circle cx="15" cy="18" r="1.4" fill="currentColor" stroke="none" />
+    </>
+  ),
+  more: (
+    <>
+      <circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none" />
     </>
   ),
 };

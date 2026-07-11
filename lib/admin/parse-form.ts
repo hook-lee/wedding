@@ -147,16 +147,15 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     section_order = undefined;
   }
 
-  let tab_order: string[] | undefined;
+  let primary_tabs: string[] | undefined;
   try {
-    const raw = String(formData.get("tab_order_json") ?? "");
+    const raw = String(formData.get("primary_tabs_json") ?? "");
     if (raw) {
       const parsed = JSON.parse(raw) as unknown[];
-      const cleaned = parsed.map((k) => String(k));
-      if (cleaned.length) tab_order = cleaned;
+      primary_tabs = parsed.map((k) => String(k));
     }
   } catch {
-    tab_order = undefined;
+    primary_tabs = undefined;
   }
 
   const extras: SiteExtras = {
@@ -177,7 +176,7 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
       side: formData.get("rsvp_field_side") === "on",
       parking: formData.get("rsvp_field_parking") === "on",
     },
-    tab_order,
+    primary_tabs,
   };
 
   const fields: ParsedAdminFields = {
