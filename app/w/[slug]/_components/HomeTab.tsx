@@ -70,6 +70,8 @@ export function HomeTab({ site, initialGuestbook }: Props) {
   const hasInfoItems = (extras.info_items?.length ?? 0) > 0;
   const showFlowerDecline = extras.flower_decline === true;
   const namesText = `${site.groom_name}${site.name_joiner}${site.bride_name}`;
+  const groomProfile = (site.groom_profile as unknown as Profile) ?? {};
+  const brideProfile = (site.bride_profile as unknown as Profile) ?? {};
 
   return (
     <div className="space-y-2">
@@ -155,12 +157,16 @@ export function HomeTab({ site, initialGuestbook }: Props) {
               mother={parents.groom_mother}
               childLabel={site.groom_birth_order ?? "장남"}
               childName={site.groom_name}
+              roleLabel="신랑"
+              profile={groomProfile}
             />
             <ParentsLine
               father={parents.bride_father}
               mother={parents.bride_mother}
               childLabel={site.bride_birth_order ?? "장녀"}
               childName={site.bride_name}
+              roleLabel="신부"
+              profile={brideProfile}
             />
           </div>
         </Reveal>
@@ -277,9 +283,9 @@ export function HomeTab({ site, initialGuestbook }: Props) {
               <Reveal key="profile">
                 <SectionTitle icon="user" label="신랑·신부 프로필" anchor="profile" />
                 <ProfileView
-                  groom={(site.groom_profile as unknown as Profile) ?? {}}
+                  groom={groomProfile}
                   groomName={site.groom_name}
-                  bride={(site.bride_profile as unknown as Profile) ?? {}}
+                  bride={brideProfile}
                   brideName={site.bride_name}
                 />
               </Reveal>

@@ -156,9 +156,16 @@ export function resolveRsvpFields(extras: SiteExtras): Required<RsvpFields> {
   };
 }
 
-/** Should this section render inline on the home scroll? Defaults to true. */
+// "profile" defaults to hidden-on-home once a couple can tap a name in the
+// hero (ParentsLine) to open that person's profile in a popup instead —
+// the standalone section is redundant unless they explicitly turn it back on.
+const DEFAULT_HIDDEN_ON_HOME: readonly SectionKey[] = ["profile"];
+
+/** Should this section render inline on the home scroll? Defaults to true, except DEFAULT_HIDDEN_ON_HOME. */
 export function isHomeVisible(extras: SiteExtras, key: SectionKey): boolean {
-  return extras.home_visible?.[key] ?? true;
+  const saved = extras.home_visible?.[key];
+  if (saved !== undefined) return saved;
+  return !DEFAULT_HIDDEN_ON_HOME.includes(key);
 }
 
 export function flowerDeclineNoteOrDefault(extras: SiteExtras): string {
