@@ -22,7 +22,8 @@ type IconName =
   | "parking"
   | "navigation"
   | "copy"
-  | "close";
+  | "close"
+  | "grip";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: (
@@ -122,6 +123,16 @@ const PATHS: Record<IconName, React.ReactNode> = {
     </>
   ),
   close: <path d="M18 6 6 18M6 6l12 12" />,
+  grip: (
+    <>
+      <circle cx="9" cy="6" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="6" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="12" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="12" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="18" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="18" r="1.4" fill="currentColor" stroke="none" />
+    </>
+  ),
 };
 
 export function Icon({

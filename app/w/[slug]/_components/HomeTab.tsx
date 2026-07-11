@@ -16,7 +16,12 @@ import { daysUntil } from "@/lib/date/dday";
 import { formatKstDateTime } from "@/lib/date/kst";
 import type { Tables } from "@/lib/supabase/types";
 import type { ParentsBlock } from "@/lib/parents/types";
-import { readExtras, flowerDeclineNoteOrDefault } from "@/lib/extras/types";
+import {
+  readExtras,
+  flowerDeclineNoteOrDefault,
+  resolveSectionOrder,
+  type SectionKey,
+} from "@/lib/extras/types";
 
 type Profile = { mbti?: string; intro?: string };
 type StoryItem = { date: string; title: string; body: string; photo_url?: string };
@@ -140,109 +145,131 @@ export function HomeTab({ site, initialGuestbook }: Props) {
         </Reveal>
       </div>
 
-      {/* === 캘린더 === */}
-      {site.wedding_at && (
-        <Reveal>
-          <SectionTitle icon="calendar" label="캘린더" anchor="calendar" />
-          <Calendar weddingAt={site.wedding_at} slug={site.slug} />
-          <div className="mt-6">
-            <Countdown targetIso={site.wedding_at} />
-          </div>
-        </Reveal>
-      )}
+      {/* === 아래 섹션들은 어드민의 "섹션 순서" 드래그로 순서가 바뀔 수 있다 === */}
+      {(() => {
+        const sections: Record<SectionKey, { visible: boolean; node: React.ReactNode }> = {
+          calendar: {
+            visible: !!site.wedding_at,
+            node: (
+              <Reveal key="calendar">
+                <SectionTitle icon="calendar" label="캘린더" anchor="calendar" />
+                <Calendar weddingAt={site.wedding_at!} slug={site.slug} />
+                <div className="mt-6">
+                  <Countdown targetIso={site.wedding_at!} />
+                </div>
+              </Reveal>
+            ),
+          },
+          story: {
+            visible: !!enabled.story,
+            node: (
+              <Reveal key="story">
+                <SectionTitle icon="book" label="우리 스토리" anchor="story" />
+                <StoryTab items={(site.story_items as unknown as StoryItem[]) ?? []} />
+              </Reveal>
+            ),
+          },
+          gallery: {
+            visible: !!enabled.gallery,
+            node: (
+              <Reveal key="gallery">
+                <SectionTitle icon="image" label="사진첩" anchor="gallery" />
+                <GalleryTab urls={site.gallery_urls ?? []} />
+              </Reveal>
+            ),
+          },
+          guestbook: {
+            visible: !!enabled.guestbook,
+            node: (
+              <Reveal key="guestbook">
+                <SectionTitle icon="chat" label="일촌평" anchor="guestbook" />
+                <GuestbookTab siteId={site.id} initial={initialGuestbook} />
+              </Reveal>
+            ),
+          },
+          info: {
+            visible: true,
+            node: (
+              <Reveal key="info">
+                <SectionTitle icon="pin" label="오시는길" anchor="info" />
+                <VenueView
+                  venue={{
+                    name: site.venue_name,
+                    address: site.venue_address,
+                    lat: site.venue_lat,
+                    lng: site.venue_lng,
+                  }}
+                  parking={{
+                    name: site.parking_name ?? "",
+                    address: site.parking_address ?? "",
+                    lat: site.parking_lat ?? null,
+                    lng: site.parking_lng ?? null,
+                  }}
+                  transitSubway={extras.transit_subway}
+                  transitBus={extras.transit_bus}
+                  parkingNotes={extras.parking_notes}
+                />
+              </Reveal>
+            ),
+          },
+          extras_info: {
+            visible: hasInfoItems,
+            node: (
+              <Reveal key="extras_info">
+                <SectionTitle icon="clipboard" label="예식 정보 및 안내사항" anchor="extras-info" />
+                <InfoView items={extras.info_items ?? []} />
+              </Reveal>
+            ),
+          },
+          rsvp: {
+            visible: !!enabled.rsvp,
+            node: (
+              <Reveal key="rsvp">
+                <SectionTitle icon="clipboard" label="참석 의사" anchor="rsvp" />
+                <RsvpView siteId={site.id} />
+              </Reveal>
+            ),
+          },
+          account: {
+            visible: !!enabled.account,
+            node: (
+              <Reveal key="account">
+                <SectionTitle icon="heart" label="마음 전하기" anchor="account" />
+                <AccountView
+                  info={
+                    (site.account_info as unknown as Parameters<
+                      typeof AccountView
+                    >[0]["info"]) ?? {}
+                  }
+                />
+                {showFlowerDecline && (
+                  <div className="pt-4">
+                    <FlowerDeclineView note={flowerDeclineNoteOrDefault(extras)} />
+                  </div>
+                )}
+              </Reveal>
+            ),
+          },
+          profile: {
+            visible: !!enabled.profile,
+            node: (
+              <Reveal key="profile">
+                <SectionTitle icon="user" label="신랑·신부 프로필" anchor="profile" />
+                <ProfileView
+                  groom={(site.groom_profile as unknown as Profile) ?? {}}
+                  groomName={site.groom_name}
+                  bride={(site.bride_profile as unknown as Profile) ?? {}}
+                  brideName={site.bride_name}
+                />
+              </Reveal>
+            ),
+          },
+        };
 
-      {/* === 우리 스토리 === */}
-      {enabled.story && (
-        <Reveal>
-          <SectionTitle icon="book" label="우리 스토리" anchor="story" />
-          <StoryTab items={(site.story_items as unknown as StoryItem[]) ?? []} />
-        </Reveal>
-      )}
-
-      {/* === 사진첩 === */}
-      {enabled.gallery && (
-        <Reveal>
-          <SectionTitle icon="image" label="사진첩" anchor="gallery" />
-          <GalleryTab urls={site.gallery_urls ?? []} />
-        </Reveal>
-      )}
-
-      {/* === 일촌평 === */}
-      {enabled.guestbook && (
-        <Reveal>
-          <SectionTitle icon="chat" label="일촌평" anchor="guestbook" />
-          <GuestbookTab siteId={site.id} initial={initialGuestbook} />
-        </Reveal>
-      )}
-
-      {/* === 오시는길 === */}
-      <Reveal>
-        <SectionTitle icon="pin" label="오시는길" anchor="info" />
-        <VenueView
-          venue={{
-            name: site.venue_name,
-            address: site.venue_address,
-            lat: site.venue_lat,
-            lng: site.venue_lng,
-          }}
-          parking={{
-            name: site.parking_name ?? "",
-            address: site.parking_address ?? "",
-            lat: site.parking_lat ?? null,
-            lng: site.parking_lng ?? null,
-          }}
-          transitSubway={extras.transit_subway}
-          transitBus={extras.transit_bus}
-          parkingNotes={extras.parking_notes}
-        />
-      </Reveal>
-
-      {/* === 예식 정보 및 안내사항 (선택) === */}
-      {hasInfoItems && (
-        <Reveal>
-          <SectionTitle icon="clipboard" label="예식 정보 및 안내사항" anchor="extras-info" />
-          <InfoView items={extras.info_items ?? []} />
-        </Reveal>
-      )}
-
-      {/* === RSVP === */}
-      {enabled.rsvp && (
-        <Reveal>
-          <SectionTitle icon="clipboard" label="참석 의사" anchor="rsvp" />
-          <RsvpView siteId={site.id} />
-        </Reveal>
-      )}
-
-      {/* === 마음전하기 === */}
-      {enabled.account && (
-        <Reveal>
-          <SectionTitle icon="heart" label="마음 전하기" anchor="account" />
-          <AccountView
-            info={
-              (site.account_info as unknown as Parameters<typeof AccountView>[0]["info"]) ?? {}
-            }
-          />
-          {/* 화환 사양 안내 (선택) */}
-          {showFlowerDecline && (
-            <div className="pt-4">
-              <FlowerDeclineView note={flowerDeclineNoteOrDefault(extras)} />
-            </div>
-          )}
-        </Reveal>
-      )}
-
-      {/* === 프로필 === */}
-      {enabled.profile && (
-        <Reveal>
-          <SectionTitle icon="user" label="신랑·신부 프로필" anchor="profile" />
-          <ProfileView
-            groom={(site.groom_profile as unknown as Profile) ?? {}}
-            groomName={site.groom_name}
-            bride={(site.bride_profile as unknown as Profile) ?? {}}
-            brideName={site.bride_name}
-          />
-        </Reveal>
-      )}
+        return resolveSectionOrder(extras).map((key) =>
+          sections[key].visible ? sections[key].node : null,
+        );
+      })()}
 
       <div className="h-16" />
     </div>

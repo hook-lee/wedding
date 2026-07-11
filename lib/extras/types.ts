@@ -6,6 +6,21 @@
 
 export type InfoItem = { title: string; body: string };
 
+// Every section that can appear below the fixed hero (names/date/greeting/
+// parents — that block never moves). Order here is the default/fallback.
+export const SECTION_KEYS = [
+  "calendar",
+  "story",
+  "gallery",
+  "guestbook",
+  "info",
+  "extras_info",
+  "rsvp",
+  "account",
+  "profile",
+] as const;
+export type SectionKey = (typeof SECTION_KEYS)[number];
+
 export type SiteExtras = {
   transit_subway?: string;
   transit_bus?: string;
@@ -14,6 +29,7 @@ export type SiteExtras = {
   flower_decline?: boolean;
   flower_decline_note?: string;
   share_title_suffix?: string;
+  section_order?: SectionKey[];
 };
 
 const DEFAULT_DECLINE_NOTE = "화환은 정중히 사양하겠습니다.";
@@ -51,7 +67,23 @@ export function readExtras(raw: unknown): SiteExtras {
         : undefined,
     share_title_suffix:
       typeof obj.share_title_suffix === "string" ? obj.share_title_suffix : undefined,
+    section_order: Array.isArray(obj.section_order)
+      ? (obj.section_order as unknown[]).filter((k): k is SectionKey =>
+          (SECTION_KEYS as readonly string[]).includes(String(k)),
+        )
+      : undefined,
   };
+}
+
+/**
+ * Full, valid section order: starts from the saved order (if any), drops
+ * unknown keys, then appends any canonical keys missing from it (covers new
+ * sections added after a site was first saved, and malformed/partial data).
+ */
+export function resolveSectionOrder(extras: SiteExtras): SectionKey[] {
+  const saved = (extras.section_order ?? []).filter((k, i, arr) => arr.indexOf(k) === i);
+  const missing = SECTION_KEYS.filter((k) => !saved.includes(k));
+  return [...saved, ...missing];
 }
 
 export function flowerDeclineNoteOrDefault(extras: SiteExtras): string {

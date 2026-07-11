@@ -1,7 +1,7 @@
 import { kstDateTimeLocalToUtcIso } from "@/lib/date/kst";
 import { extractYouTubeVideoId } from "@/lib/youtube/parse-url";
 import type { ParentsBlock, ParentStatus } from "@/lib/parents/types";
-import type { InfoItem, SiteExtras } from "@/lib/extras/types";
+import { SECTION_KEYS, type InfoItem, type SectionKey, type SiteExtras } from "@/lib/extras/types";
 import type { Database, Tables } from "@/lib/supabase/types";
 
 const VALID_THEMES = ["ivory", "sage", "pink", "cobalt", "mocha", "ash"] as const;
@@ -133,6 +133,20 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
   } catch {
     info_items = [];
   }
+  let section_order: SectionKey[] | undefined;
+  try {
+    const raw = String(formData.get("section_order_json") ?? "");
+    if (raw) {
+      const parsed = JSON.parse(raw) as unknown[];
+      const cleaned = parsed
+        .map((k) => String(k))
+        .filter((k): k is SectionKey => (SECTION_KEYS as readonly string[]).includes(k));
+      if (cleaned.length) section_order = cleaned;
+    }
+  } catch {
+    section_order = undefined;
+  }
+
   const extras: SiteExtras = {
     transit_subway: String(formData.get("transit_subway") ?? "").trim(),
     transit_bus: String(formData.get("transit_bus") ?? "").trim(),
@@ -141,6 +155,7 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     flower_decline: formData.get("flower_decline") === "on",
     flower_decline_note: String(formData.get("flower_decline_note") ?? "").trim(),
     share_title_suffix: String(formData.get("share_title_suffix") ?? "").trim(),
+    section_order,
   };
 
   const fields: ParsedAdminFields = {
