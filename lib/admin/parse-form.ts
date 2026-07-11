@@ -158,6 +158,21 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     primary_tabs = undefined;
   }
 
+  let home_visible: Partial<Record<SectionKey, boolean>> | undefined;
+  try {
+    const raw = String(formData.get("section_home_visible_json") ?? "");
+    if (raw) {
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      home_visible = Object.fromEntries(
+        (SECTION_KEYS as readonly string[])
+          .filter((k) => k in parsed)
+          .map((k) => [k, parsed[k] === true]),
+      );
+    }
+  } catch {
+    home_visible = undefined;
+  }
+
   const extras: SiteExtras = {
     transit_subway: String(formData.get("transit_subway") ?? "").trim(),
     transit_bus: String(formData.get("transit_bus") ?? "").trim(),
@@ -177,6 +192,8 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
       parking: formData.get("rsvp_field_parking") === "on",
     },
     primary_tabs,
+    home_visible,
+    rsvp_prompt_enabled: formData.get("rsvp_prompt_enabled") === "on",
   };
 
   const fields: ParsedAdminFields = {

@@ -19,7 +19,13 @@ import { SectionOrderSection } from "./_components/SectionOrderSection";
 import { TabOrderSection } from "./_components/TabOrderSection";
 import { RsvpFieldsSection } from "./_components/RsvpFieldsSection";
 import type { ParentsBlock } from "@/lib/parents/types";
-import { readExtras, resolveSectionOrder, resolveRsvpFields } from "@/lib/extras/types";
+import {
+  readExtras,
+  resolveSectionOrder,
+  resolveRsvpFields,
+  isHomeVisible,
+  type SectionKey,
+} from "@/lib/extras/types";
 import { enabledPrimaryKeys, resolvePrimaryTabs } from "@/app/w/[slug]/_lib/tabs";
 
 type Track = { order: number; url: string; title: string; artist: string | null };
@@ -42,6 +48,10 @@ export default async function AdminHome() {
     extras.primary_tabs,
     enabledPrimaryKeys(sectionsEnabled),
   );
+  const sectionOrder = resolveSectionOrder(extras);
+  const sectionVisible = Object.fromEntries(
+    sectionOrder.map((k) => [k, isHomeVisible(extras, k)]),
+  ) as Record<SectionKey, boolean>;
 
   return (
     <main className="min-h-screen p-4 sm:p-6 max-w-6xl mx-auto space-y-5 bg-bg">
@@ -120,13 +130,16 @@ export default async function AdminHome() {
           bride={(site.bride_profile as unknown as Profile) ?? {}}
         />
         <StorySection items={(site.story_items as unknown as StoryItem[]) ?? []} />
-        <RsvpFieldsSection fields={resolveRsvpFields(extras)} />
+        <RsvpFieldsSection
+          fields={resolveRsvpFields(extras)}
+          promptEnabled={extras.rsvp_prompt_enabled ?? false}
+        />
         <AccountSection info={(site.account_info as unknown as AccountInfo) ?? {}} />
         <FlowerDeclineSection
           enabled={extras.flower_decline ?? false}
           note={extras.flower_decline_note ?? ""}
         />
-        <SectionOrderSection order={resolveSectionOrder(extras)} />
+        <SectionOrderSection order={sectionOrder} visible={sectionVisible} />
         <TabOrderSection initial={primaryTabsInitial} />
         <ThemeSection
           theme={site.theme}

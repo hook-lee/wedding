@@ -12,7 +12,13 @@ const ITEMS: { key: keyof RsvpFields; name: string; label: string }[] = [
   { key: "parking", name: "rsvp_field_parking", label: "주차 필요 여부" },
 ];
 
-export function RsvpFieldsSection({ fields }: { fields: Required<RsvpFields> }) {
+export function RsvpFieldsSection({
+  fields,
+  promptEnabled,
+}: {
+  fields: Required<RsvpFields>;
+  promptEnabled: boolean;
+}) {
   return (
     <Card>
       <CardHeader
@@ -36,6 +42,18 @@ export function RsvpFieldsSection({ fields }: { fields: Required<RsvpFields> }) 
           </label>
         ))}
       </div>
+
+      <label className="flex items-center gap-2 p-3 bg-bg rounded-md cursor-pointer min-h-[44px]">
+        <input
+          type="checkbox"
+          name="rsvp_prompt_enabled"
+          defaultChecked={promptEnabled}
+          className="w-4 h-4"
+        />
+        <span className="text-sm text-ink">
+          입장하자마자 &apos;참석 의사 전달&apos; 팝업 보여주기
+        </span>
+      </label>
     </Card>
   );
 }

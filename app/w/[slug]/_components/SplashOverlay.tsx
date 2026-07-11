@@ -138,7 +138,7 @@ export function SplashOverlay(p: Props) {
           animation: `wd-line-in 700ms ease-out ${1600 + namesText.length * 70}ms forwards, wd-bounce-soft 2.5s ease-in-out ${3000 + namesText.length * 70}ms infinite`,
         }}
       >
-        BGM과 함께 청첩장 열기
+        청첩장 열기
       </button>
 
       {/* 아래쪽 안내 화살표 */}

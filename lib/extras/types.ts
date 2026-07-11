@@ -48,6 +48,14 @@ export type SiteExtras = {
   // MAX_PRIMARY_TABS, from app/w/[slug]/_lib/tabs.ts PRIMARY_KEYS), and in
   // what order. Anything enabled-but-not-chosen falls into the "더보기" tab.
   primary_tabs?: string[];
+  // Per-section "show inline on the home scroll" toggle — independent from
+  // sections_enabled (which controls whether the section exists at all) and
+  // from primary_tabs (which controls bottom-bar shortcuts). Missing key =
+  // visible (existing sites are unaffected until they touch this).
+  home_visible?: Partial<Record<SectionKey, boolean>>;
+  // Show a "참석 의사 전달" prompt modal right after the splash entrance,
+  // nudging guests toward the RSVP section. Off by default.
+  rsvp_prompt_enabled?: boolean;
 };
 
 const DEFAULT_DECLINE_NOTE = "화환은 정중히 사양하겠습니다.";
@@ -105,6 +113,16 @@ export function readExtras(raw: unknown): SiteExtras {
     primary_tabs: Array.isArray(obj.primary_tabs)
       ? (obj.primary_tabs as unknown[]).map((k) => String(k))
       : undefined,
+    home_visible:
+      obj.home_visible && typeof obj.home_visible === "object" && !Array.isArray(obj.home_visible)
+        ? Object.fromEntries(
+            SECTION_KEYS.filter((k) => k in (obj.home_visible as Record<string, unknown>)).map(
+              (k) => [k, (obj.home_visible as Record<string, unknown>)[k] === true],
+            ),
+          )
+        : undefined,
+    rsvp_prompt_enabled:
+      typeof obj.rsvp_prompt_enabled === "boolean" ? obj.rsvp_prompt_enabled : undefined,
   };
 }
 
@@ -136,6 +154,11 @@ export function resolveRsvpFields(extras: SiteExtras): Required<RsvpFields> {
     side: f.side ?? false,
     parking: f.parking ?? false,
   };
+}
+
+/** Should this section render inline on the home scroll? Defaults to true. */
+export function isHomeVisible(extras: SiteExtras, key: SectionKey): boolean {
+  return extras.home_visible?.[key] ?? true;
 }
 
 export function flowerDeclineNoteOrDefault(extras: SiteExtras): string {

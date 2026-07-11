@@ -36,7 +36,15 @@ const LABELS: Record<SectionKey, { label: string; icon: IconName }> = {
   profile: { label: "신랑·신부 프로필", icon: "user" },
 };
 
-function Row({ id }: { id: SectionKey }) {
+function Row({
+  id,
+  visible,
+  onToggleVisible,
+}: {
+  id: SectionKey;
+  visible: boolean;
+  onToggleVisible: () => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id });
   const style: React.CSSProperties = {
@@ -48,7 +56,9 @@ function Row({ id }: { id: SectionKey }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 p-3 bg-bg border border-border rounded-md select-none"
+      className={`flex items-center gap-3 p-3 border rounded-md select-none transition-colors ${
+        visible ? "bg-bg border-border" : "bg-bg/40 border-border/60"
+      }`}
     >
       <button
         type="button"
@@ -59,28 +69,54 @@ function Row({ id }: { id: SectionKey }) {
       >
         <Icon name="grip" className="w-4 h-4" />
       </button>
-      <Icon name={LABELS[id].icon} className="w-4 h-4 text-secondary flex-shrink-0" />
-      <span className="text-sm text-ink">{LABELS[id].label}</span>
+      <Icon
+        name={LABELS[id].icon}
+        className={`w-4 h-4 flex-shrink-0 ${visible ? "text-secondary" : "text-muted"}`}
+      />
+      <span className={`text-sm flex-1 ${visible ? "text-ink" : "text-muted"}`}>
+        {LABELS[id].label}
+      </span>
+      <button
+        type="button"
+        onClick={onToggleVisible}
+        className={`inline-flex items-center gap-1 text-xs px-2 py-1.5 rounded-md min-h-[32px] ${
+          visible ? "text-secondary hover:text-ink" : "text-muted hover:text-ink"
+        }`}
+        aria-pressed={visible}
+        aria-label={`${LABELS[id].label} 홈 화면 노출 ${visible ? "끄기" : "켜기"}`}
+      >
+        <Icon name={visible ? "eye" : "eyeOff"} className="w-4 h-4" />
+        {visible ? "노출" : "숨김"}
+      </button>
     </div>
   );
 }
 
-export function SectionOrderSection({ order }: { order: SectionKey[] }) {
+export function SectionOrderSection({
+  order,
+  visible,
+}: {
+  order: SectionKey[];
+  visible: Record<SectionKey, boolean>;
+}) {
   const [list, setList] = useState<SectionKey[]>(order);
-  const hiddenRef = useRef<HTMLInputElement>(null);
+  const [visMap, setVisMap] = useState<Record<SectionKey, boolean>>(visible);
+  const orderRef = useRef<HTMLInputElement>(null);
+  const visRef = useRef<HTMLInputElement>(null);
   const mounted = useRef(false);
 
-  // Dragging updates React state only — no native <input> event fires from
-  // that, so the admin's live-preview listener (which watches for real
-  // input/change events bubbling from the form) wouldn't otherwise notice.
-  // Dispatch one manually after each reorder so the preview stays live.
+  // Dragging / toggling updates React state only — no native <input> event
+  // fires from that, so the admin's live-preview listener (which watches for
+  // real input/change events bubbling from the form) wouldn't otherwise
+  // notice. Dispatch one manually after each change so the preview stays live.
   useEffect(() => {
     if (!mounted.current) {
       mounted.current = true;
       return;
     }
-    hiddenRef.current?.dispatchEvent(new Event("input", { bubbles: true }));
-  }, [list]);
+    orderRef.current?.dispatchEvent(new Event("input", { bubbles: true }));
+    visRef.current?.dispatchEvent(new Event("input", { bubbles: true }));
+  }, [list, visMap]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -101,7 +137,7 @@ export function SectionOrderSection({ order }: { order: SectionKey[] }) {
     <Card>
       <CardHeader
         title="섹션 순서"
-        hint="드래그해서 청첩장에 표시되는 순서를 바꿀 수 있어요. 대문(이름·날짜·인사말·부모님)은 항상 맨 위에 고정돼요."
+        hint="드래그해서 청첩장에 표시되는 순서를 바꿀 수 있어요. 대문(이름·날짜·인사말·부모님)은 항상 맨 위에 고정돼요. '숨김'으로 두면 홈 화면 스크롤에는 안 보이고, 하단 탭바나 더보기로 들어갔을 때만 보여요."
       />
       <DndContext
         sensors={sensors}
@@ -111,12 +147,32 @@ export function SectionOrderSection({ order }: { order: SectionKey[] }) {
         <SortableContext items={list} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
             {list.map((key) => (
-              <Row key={key} id={key} />
+              <Row
+                key={key}
+                id={key}
+                visible={visMap[key] ?? true}
+                onToggleVisible={() =>
+                  setVisMap((prev) => ({ ...prev, [key]: !(prev[key] ?? true) }))
+                }
+              />
             ))}
           </div>
         </SortableContext>
       </DndContext>
-      <input ref={hiddenRef} type="hidden" name="section_order_json" value={JSON.stringify(list)} readOnly />
+      <input
+        ref={orderRef}
+        type="hidden"
+        name="section_order_json"
+        value={JSON.stringify(list)}
+        readOnly
+      />
+      <input
+        ref={visRef}
+        type="hidden"
+        name="section_home_visible_json"
+        value={JSON.stringify(visMap)}
+        readOnly
+      />
     </Card>
   );
 }

@@ -8,6 +8,7 @@ import { AccountView } from "./AccountView";
 import { ProfileView } from "./ProfileView";
 import { InfoView } from "./InfoView";
 import { FlowerDeclineView } from "./FlowerDeclineView";
+import { RsvpPromptModal } from "./RsvpPromptModal";
 import { Reveal } from "./Reveal";
 import { Countdown } from "./Countdown";
 import { Calendar } from "./Calendar";
@@ -21,6 +22,7 @@ import {
   flowerDeclineNoteOrDefault,
   resolveSectionOrder,
   resolveRsvpFields,
+  isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
 
@@ -67,9 +69,18 @@ export function HomeTab({ site, initialGuestbook }: Props) {
   const extras = readExtras(site.extras);
   const hasInfoItems = (extras.info_items?.length ?? 0) > 0;
   const showFlowerDecline = extras.flower_decline === true;
+  const namesText = `${site.groom_name}${site.name_joiner}${site.bride_name}`;
 
   return (
     <div className="space-y-2">
+      {enabled.rsvp && extras.rsvp_prompt_enabled && (
+        <RsvpPromptModal
+          slug={site.slug}
+          namesText={namesText}
+          dateText={dateText}
+          venueName={site.venue_name}
+        />
+      )}
       {/* === 메인 === */}
       <div id="main" className="text-center space-y-4 pt-4">
         {dday !== null && dday >= 0 && (
@@ -275,7 +286,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
         };
 
         return resolveSectionOrder(extras).map((key) =>
-          sections[key].visible ? sections[key].node : null,
+          sections[key].visible && isHomeVisible(extras, key) ? sections[key].node : null,
         );
       })()}
 
