@@ -96,12 +96,13 @@ export function HomeTab({ site, initialGuestbook }: Props) {
         )}
         {(site.venue_name || site.venue_address) && (
           <Reveal delay={300}>
-            <p className="text-sm text-secondary flex items-center justify-center gap-1">
-              <Icon name="pin" className="w-3.5 h-3.5" />
-              {site.venue_name}
-              {site.venue_name && site.venue_address && " · "}
-              {site.venue_address}
-            </p>
+            <div className="text-sm text-secondary leading-relaxed">
+              <p className="flex items-center justify-center gap-1">
+                <Icon name="pin" className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>{site.venue_name || site.venue_address}</span>
+              </p>
+              {site.venue_name && site.venue_address && <p>{site.venue_address}</p>}
+            </div>
           </Reveal>
         )}
 
