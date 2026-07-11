@@ -4,6 +4,7 @@ import { VenueView } from "./VenueView";
 import { RsvpView } from "./RsvpView";
 import { AccountView } from "./AccountView";
 import { ProfileView } from "./ProfileView";
+import { readExtras, resolveRsvpFields } from "@/lib/extras/types";
 
 type SubKey = "venue" | "rsvp" | "account" | "profile";
 const SUB_LABELS: Record<SubKey, string> = {
@@ -22,6 +23,7 @@ export function InfoTab({
 }) {
   const enabled =
     (site.sections_enabled as unknown as Record<string, boolean>) ?? {};
+  const extras = readExtras(site.extras);
   const subs: SubKey[] = ["venue"];
   if (enabled.rsvp) subs.push("rsvp");
   if (enabled.account) subs.push("account");
@@ -62,7 +64,9 @@ export function InfoTab({
           }}
         />
       )}
-      {active === "rsvp" && <RsvpView siteId={site.id} />}
+      {active === "rsvp" && (
+        <RsvpView siteId={site.id} fields={resolveRsvpFields(extras)} />
+      )}
       {active === "account" && (
         <AccountView
           info={

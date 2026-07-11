@@ -147,6 +147,18 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     section_order = undefined;
   }
 
+  let tab_order: string[] | undefined;
+  try {
+    const raw = String(formData.get("tab_order_json") ?? "");
+    if (raw) {
+      const parsed = JSON.parse(raw) as unknown[];
+      const cleaned = parsed.map((k) => String(k));
+      if (cleaned.length) tab_order = cleaned;
+    }
+  } catch {
+    tab_order = undefined;
+  }
+
   const extras: SiteExtras = {
     transit_subway: String(formData.get("transit_subway") ?? "").trim(),
     transit_bus: String(formData.get("transit_bus") ?? "").trim(),
@@ -157,10 +169,15 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     share_title_suffix: String(formData.get("share_title_suffix") ?? "").trim(),
     section_order,
     rsvp_fields: {
+      attending: formData.get("rsvp_field_attending") === "on",
+      phone: formData.get("rsvp_field_phone") === "on",
+      party_size: formData.get("rsvp_field_party_size") === "on",
+      message: formData.get("rsvp_field_message") === "on",
       meal: formData.get("rsvp_field_meal") === "on",
       side: formData.get("rsvp_field_side") === "on",
       parking: formData.get("rsvp_field_parking") === "on",
     },
+    tab_order,
   };
 
   const fields: ParsedAdminFields = {

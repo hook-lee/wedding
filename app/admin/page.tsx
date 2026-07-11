@@ -16,9 +16,11 @@ import { InfoItemsSection } from "./_components/InfoItemsSection";
 import { FlowerDeclineSection } from "./_components/FlowerDeclineSection";
 import { ThemeSection } from "./_components/ThemeSection";
 import { SectionOrderSection } from "./_components/SectionOrderSection";
+import { TabOrderSection } from "./_components/TabOrderSection";
 import { RsvpFieldsSection } from "./_components/RsvpFieldsSection";
 import type { ParentsBlock } from "@/lib/parents/types";
-import { readExtras, resolveSectionOrder } from "@/lib/extras/types";
+import { readExtras, resolveSectionOrder, resolveRsvpFields } from "@/lib/extras/types";
+import { resolveTabOrder } from "@/app/w/[slug]/_lib/tabs";
 
 type Track = { order: number; url: string; title: string; artist: string | null };
 type Profile = { mbti?: string; intro?: string };
@@ -112,13 +114,14 @@ export default async function AdminHome() {
           bride={(site.bride_profile as unknown as Profile) ?? {}}
         />
         <StorySection items={(site.story_items as unknown as StoryItem[]) ?? []} />
-        <RsvpFieldsSection fields={extras.rsvp_fields ?? {}} />
+        <RsvpFieldsSection fields={resolveRsvpFields(extras)} />
         <AccountSection info={(site.account_info as unknown as AccountInfo) ?? {}} />
         <FlowerDeclineSection
           enabled={extras.flower_decline ?? false}
           note={extras.flower_decline_note ?? ""}
         />
         <SectionOrderSection order={resolveSectionOrder(extras)} />
+        <TabOrderSection order={resolveTabOrder(extras.tab_order)} />
         <ThemeSection
           theme={site.theme}
           sectionsEnabled={(site.sections_enabled as unknown as Record<string, boolean>) ?? {}}

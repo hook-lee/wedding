@@ -54,7 +54,8 @@ export default async function PublicPage({
 
   const sectionsEnabled =
     (site.sections_enabled as unknown as Record<string, boolean>) ?? {};
-  const tabs = visibleTabs(sectionsEnabled);
+  const extras = readExtras(site.extras);
+  const tabs = visibleTabs(sectionsEnabled, extras.tab_order);
   const requested = (VALID.includes(tab as TabKey) ? tab : "home") as TabKey;
   const active: TabKey = tabs.includes(requested) ? requested : "home";
 

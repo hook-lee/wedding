@@ -10,7 +10,11 @@ function readOptionalYesNo(formData: FormData, key: string): boolean | null {
 
 export async function postRsvp(siteId: string, formData: FormData) {
   const guest_name = String(formData.get("name") ?? "").trim();
-  const attending = formData.get("attending") === "yes";
+  // If the site turned this question off, the radio group isn't rendered at
+  // all — formData.get returns null. Default to "attending" rather than
+  // false, since submitting the form at all implies intent to come.
+  const attendingRaw = formData.get("attending");
+  const attending = attendingRaw === null ? true : attendingRaw === "yes";
   const partyRaw = Number(formData.get("party_size") ?? 1);
   const party_size = Math.max(
     1,

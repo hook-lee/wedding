@@ -20,6 +20,7 @@ import {
   readExtras,
   flowerDeclineNoteOrDefault,
   resolveSectionOrder,
+  resolveRsvpFields,
   type SectionKey,
 } from "@/lib/extras/types";
 
@@ -227,7 +228,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
             node: (
               <Reveal key="rsvp">
                 <SectionTitle icon="clipboard" label="참석 의사" anchor="rsvp" />
-                <RsvpView siteId={site.id} fields={extras.rsvp_fields ?? {}} />
+                <RsvpView siteId={site.id} fields={resolveRsvpFields(extras)} />
               </Reveal>
             ),
           },

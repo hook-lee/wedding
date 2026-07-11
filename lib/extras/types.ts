@@ -21,9 +21,18 @@ export const SECTION_KEYS = [
 ] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
-// Which optional RSVP questions this site asks guests. All default to off —
-// existing sites keep the original 5-field form until the couple opts in.
-export type RsvpFields = { meal?: boolean; side?: boolean; parking?: boolean };
+// Which RSVP questions this site asks guests. 이름 is never included here —
+// it's the one field every response needs to be identifiable, so it always
+// shows and isn't user-togglable.
+export type RsvpFields = {
+  attending?: boolean;
+  phone?: boolean;
+  party_size?: boolean;
+  message?: boolean;
+  meal?: boolean;
+  side?: boolean;
+  parking?: boolean;
+};
 
 export type SiteExtras = {
   transit_subway?: string;
@@ -35,6 +44,7 @@ export type SiteExtras = {
   share_title_suffix?: string;
   section_order?: SectionKey[];
   rsvp_fields?: RsvpFields;
+  tab_order?: string[];
 };
 
 const DEFAULT_DECLINE_NOTE = "화환은 정중히 사양하겠습니다.";
@@ -80,11 +90,18 @@ export function readExtras(raw: unknown): SiteExtras {
     rsvp_fields:
       obj.rsvp_fields && typeof obj.rsvp_fields === "object" && !Array.isArray(obj.rsvp_fields)
         ? {
+            attending: (obj.rsvp_fields as Record<string, unknown>).attending === true,
+            phone: (obj.rsvp_fields as Record<string, unknown>).phone === true,
+            party_size: (obj.rsvp_fields as Record<string, unknown>).party_size === true,
+            message: (obj.rsvp_fields as Record<string, unknown>).message === true,
             meal: (obj.rsvp_fields as Record<string, unknown>).meal === true,
             side: (obj.rsvp_fields as Record<string, unknown>).side === true,
             parking: (obj.rsvp_fields as Record<string, unknown>).parking === true,
           }
         : undefined,
+    tab_order: Array.isArray(obj.tab_order)
+      ? (obj.tab_order as unknown[]).map((k) => String(k))
+      : undefined,
   };
 }
 
@@ -97,6 +114,25 @@ export function resolveSectionOrder(extras: SiteExtras): SectionKey[] {
   const saved = (extras.section_order ?? []).filter((k, i, arr) => arr.indexOf(k) === i);
   const missing = SECTION_KEYS.filter((k) => !saved.includes(k));
   return [...saved, ...missing];
+}
+
+/**
+ * Fully-resolved RSVP field visibility. Fields that existed before this
+ * toggle system was added (attending/phone/party_size/message) default to
+ * ON so existing sites' forms don't silently lose fields; the newer
+ * meal/side/parking additions default OFF as before.
+ */
+export function resolveRsvpFields(extras: SiteExtras): Required<RsvpFields> {
+  const f = extras.rsvp_fields ?? {};
+  return {
+    attending: f.attending ?? true,
+    phone: f.phone ?? true,
+    party_size: f.party_size ?? true,
+    message: f.message ?? true,
+    meal: f.meal ?? false,
+    side: f.side ?? false,
+    parking: f.parking ?? false,
+  };
 }
 
 export function flowerDeclineNoteOrDefault(extras: SiteExtras): string {
