@@ -83,6 +83,7 @@ export type Database = {
           site_id: string;
           guest_name: string;
           message: string;
+          reply: string | null;
           created_at: string;
         };
         Insert: {
@@ -90,6 +91,7 @@ export type Database = {
           site_id: string;
           guest_name: string;
           message: string;
+          reply?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["guestbook"]["Insert"]>;

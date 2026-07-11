@@ -26,7 +26,13 @@ import {
 
 type Profile = { mbti?: string; intro?: string };
 type StoryItem = { date: string; title: string; body: string; photo_url?: string };
-type GuestbookEntry = { id: string; guest_name: string; message: string; created_at: string };
+type GuestbookEntry = {
+  id: string;
+  guest_name: string;
+  message: string;
+  reply: string | null;
+  created_at: string;
+};
 type IconName = React.ComponentProps<typeof Icon>["name"];
 
 type Props = {
@@ -184,7 +190,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
             visible: !!enabled.guestbook,
             node: (
               <Reveal key="guestbook">
-                <SectionTitle icon="chat" label="일촌평" anchor="guestbook" />
+                <SectionTitle icon="chat" label="방명록" anchor="guestbook" />
                 <GuestbookTab siteId={site.id} initial={initialGuestbook} />
               </Reveal>
             ),

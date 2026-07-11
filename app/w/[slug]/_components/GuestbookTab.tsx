@@ -13,6 +13,7 @@ type Entry = {
   id: string;
   guest_name: string;
   message: string;
+  reply: string | null;
   created_at: string;
 };
 
@@ -48,6 +49,20 @@ export function GuestbookTab({
           });
         }
       )
+      // 신랑신부가 어드민에서 답글을 남기면(=UPDATE) 보고 있는 방문자 화면에도 바로 반영
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "guestbook",
+          filter: `site_id=eq.${siteId}`,
+        },
+        (payload) => {
+          const next = payload.new as Entry;
+          setEntries((prev) => prev.map((e) => (e.id === next.id ? next : e)));
+        }
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -67,13 +82,8 @@ export function GuestbookTab({
     <div className="space-y-4 max-w-md mx-auto py-2">
       <form ref={formRef} action={handle}>
         <Card className="space-y-3">
-          <Field label="이름 또는 애칭">
-            <Input
-              name="name"
-              required
-              maxLength={30}
-              placeholder="이름 또는 애칭"
-            />
+          <Field label="이름">
+            <Input name="name" required maxLength={30} placeholder="이름" />
           </Field>
           <Field label="축하 메시지" hint="최대 200자">
             <Textarea
@@ -86,11 +96,7 @@ export function GuestbookTab({
           </Field>
           {error && <p className="text-xs text-red-600">{error}</p>}
           <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={pending}
-              variant="primary"
-            >
+            <Button type="submit" disabled={pending} variant="primary">
               {pending ? "남기는 중..." : "남기기"}
             </Button>
           </div>
@@ -110,6 +116,12 @@ export function GuestbookTab({
               <p className="text-xs text-muted pt-1">
                 {formatKstDateTime(e.created_at)}
               </p>
+              {e.reply && (
+                <div className="mt-2 ml-3 pl-3 border-l-2 border-accent/40 space-y-0.5">
+                  <p className="text-xs text-accent font-medium">신랑신부 답글</p>
+                  <p className="text-sm text-ink whitespace-pre-line">{e.reply}</p>
+                </div>
+              )}
             </Card>
           </li>
         ))}

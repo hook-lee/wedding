@@ -12,7 +12,7 @@ const THEMES = [
 const SECTIONS = [
   { key: "story", label: "📖 우리 스토리" },
   { key: "gallery", label: "📷 사진첩" },
-  { key: "guestbook", label: "💬 일촌평" },
+  { key: "guestbook", label: "💬 방명록" },
   { key: "rsvp", label: "📋 RSVP" },
   { key: "account", label: "💝 마음전하기" },
   { key: "profile", label: "👤 프로필" },

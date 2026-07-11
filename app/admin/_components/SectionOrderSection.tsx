@@ -28,7 +28,7 @@ const LABELS: Record<SectionKey, { label: string; icon: IconName }> = {
   calendar: { label: "캘린더", icon: "calendar" },
   story: { label: "우리 스토리", icon: "book" },
   gallery: { label: "사진첩", icon: "image" },
-  guestbook: { label: "일촌평", icon: "chat" },
+  guestbook: { label: "방명록", icon: "chat" },
   info: { label: "오시는길", icon: "pin" },
   extras_info: { label: "예식 정보 및 안내사항", icon: "clipboard" },
   rsvp: { label: "참석 의사 (RSVP)", icon: "clipboard" },

@@ -25,7 +25,7 @@ export default function Home() {
         </div>
 
         <p className="text-xs text-muted pt-6">
-          BGM · 일촌평 · 다이어리 · 캘린더까지 한 페이지에.
+          BGM · 방명록 · 다이어리 · 캘린더까지 한 페이지에.
         </p>
       </div>
     </main>

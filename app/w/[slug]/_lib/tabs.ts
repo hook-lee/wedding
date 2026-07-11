@@ -29,7 +29,7 @@ export const TAB_LABELS: Record<TabKey, { iconName: string; label: string }> = {
   home: { iconName: "home", label: "홈" },
   story: { iconName: "book", label: "스토리" },
   gallery: { iconName: "image", label: "사진첩" },
-  guestbook: { iconName: "chat", label: "일촌평" },
+  guestbook: { iconName: "chat", label: "방명록" },
   venue: { iconName: "pin", label: "오시는길" },
   rsvp: { iconName: "clipboard", label: "RSVP" },
   account: { iconName: "heart", label: "마음전하기" },

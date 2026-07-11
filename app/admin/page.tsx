@@ -58,7 +58,7 @@ export default async function AdminHome() {
               href="/admin/guestbook"
               className="text-secondary hover:text-ink underline underline-offset-2"
             >
-              일촌평
+              방명록
             </Link>
             <Link
               href="/admin/rsvp"
