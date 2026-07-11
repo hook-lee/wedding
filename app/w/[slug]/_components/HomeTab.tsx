@@ -227,7 +227,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
             node: (
               <Reveal key="rsvp">
                 <SectionTitle icon="clipboard" label="참석 의사" anchor="rsvp" />
-                <RsvpView siteId={site.id} />
+                <RsvpView siteId={site.id} fields={extras.rsvp_fields ?? {}} />
               </Reveal>
             ),
           },

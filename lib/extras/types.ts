@@ -21,6 +21,10 @@ export const SECTION_KEYS = [
 ] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
+// Which optional RSVP questions this site asks guests. All default to off —
+// existing sites keep the original 5-field form until the couple opts in.
+export type RsvpFields = { meal?: boolean; side?: boolean; parking?: boolean };
+
 export type SiteExtras = {
   transit_subway?: string;
   transit_bus?: string;
@@ -30,6 +34,7 @@ export type SiteExtras = {
   flower_decline_note?: string;
   share_title_suffix?: string;
   section_order?: SectionKey[];
+  rsvp_fields?: RsvpFields;
 };
 
 const DEFAULT_DECLINE_NOTE = "화환은 정중히 사양하겠습니다.";
@@ -72,6 +77,14 @@ export function readExtras(raw: unknown): SiteExtras {
           (SECTION_KEYS as readonly string[]).includes(String(k)),
         )
       : undefined,
+    rsvp_fields:
+      obj.rsvp_fields && typeof obj.rsvp_fields === "object" && !Array.isArray(obj.rsvp_fields)
+        ? {
+            meal: (obj.rsvp_fields as Record<string, unknown>).meal === true,
+            side: (obj.rsvp_fields as Record<string, unknown>).side === true,
+            parking: (obj.rsvp_fields as Record<string, unknown>).parking === true,
+          }
+        : undefined,
   };
 }
 

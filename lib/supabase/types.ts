@@ -104,6 +104,9 @@ export type Database = {
           attending: boolean;
           party_size: number;
           message: string | null;
+          meal_attending: boolean | null;
+          guest_side: "groom" | "bride" | null;
+          parking_needed: boolean | null;
           created_at: string;
         };
         Insert: {
@@ -114,6 +117,9 @@ export type Database = {
           attending: boolean;
           party_size?: number;
           message?: string | null;
+          meal_attending?: boolean | null;
+          guest_side?: "groom" | "bride" | null;
+          parking_needed?: boolean | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["rsvp"]["Insert"]>;

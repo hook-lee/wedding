@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { LinkButton } from "@/app/_ui/Button";
+import { readExtras } from "@/lib/extras/types";
 
 export default async function RsvpAdmin() {
   const user = await requireUser();
@@ -17,6 +18,7 @@ export default async function RsvpAdmin() {
   const all = data ?? [];
   const attending = all.filter((r) => r.attending);
   const totalGuests = attending.reduce((sum, r) => sum + r.party_size, 0);
+  const rsvpFields = readExtras(site.extras).rsvp_fields ?? {};
 
   return (
     <main className="p-4 sm:p-6 max-w-3xl mx-auto space-y-5 bg-bg min-h-screen">
@@ -71,6 +73,9 @@ export default async function RsvpAdmin() {
                 <th className="p-3 text-left font-medium">이름</th>
                 <th className="p-3 text-center font-medium">참석</th>
                 <th className="p-3 text-center font-medium">인원</th>
+                {rsvpFields.side && <th className="p-3 text-center font-medium">구분</th>}
+                {rsvpFields.meal && <th className="p-3 text-center font-medium">식사</th>}
+                {rsvpFields.parking && <th className="p-3 text-center font-medium">주차</th>}
                 <th className="p-3 text-left font-medium">연락처</th>
                 <th className="p-3 text-left font-medium">메시지</th>
               </tr>
@@ -90,6 +95,21 @@ export default async function RsvpAdmin() {
                     )}
                   </td>
                   <td className="p-3 text-center text-ink tabular-nums">{r.party_size}</td>
+                  {rsvpFields.side && (
+                    <td className="p-3 text-center text-secondary">
+                      {r.guest_side === "groom" ? "신랑측" : r.guest_side === "bride" ? "신부측" : "-"}
+                    </td>
+                  )}
+                  {rsvpFields.meal && (
+                    <td className="p-3 text-center text-secondary">
+                      {r.meal_attending === true ? "식사함" : r.meal_attending === false ? "안 함" : "-"}
+                    </td>
+                  )}
+                  {rsvpFields.parking && (
+                    <td className="p-3 text-center text-secondary">
+                      {r.parking_needed === true ? "필요" : r.parking_needed === false ? "불필요" : "-"}
+                    </td>
+                  )}
                   <td className="p-3 text-secondary">{r.phone ?? "-"}</td>
                   <td className="p-3 text-secondary">{r.message ?? ""}</td>
                 </tr>

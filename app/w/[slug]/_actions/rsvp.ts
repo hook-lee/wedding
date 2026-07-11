@@ -1,6 +1,13 @@
 "use server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+function readOptionalYesNo(formData: FormData, key: string): boolean | null {
+  const v = formData.get(key);
+  if (v === "yes") return true;
+  if (v === "no") return false;
+  return null;
+}
+
 export async function postRsvp(siteId: string, formData: FormData) {
   const guest_name = String(formData.get("name") ?? "").trim();
   const attending = formData.get("attending") === "yes";
@@ -11,6 +18,10 @@ export async function postRsvp(siteId: string, formData: FormData) {
   );
   const phone = String(formData.get("phone") ?? "").trim() || null;
   const message = String(formData.get("message") ?? "").trim() || null;
+  const meal_attending = readOptionalYesNo(formData, "meal_attending");
+  const parking_needed = readOptionalYesNo(formData, "parking_needed");
+  const sideRaw = String(formData.get("guest_side") ?? "");
+  const guest_side = sideRaw === "groom" || sideRaw === "bride" ? sideRaw : null;
   if (!guest_name) return { error: "이름을 입력해주세요." };
   if (guest_name.length > 30)
     return { error: "이름은 30자 이하로 입력해주세요." };
@@ -23,6 +34,9 @@ export async function postRsvp(siteId: string, formData: FormData) {
     party_size,
     phone,
     message,
+    meal_attending,
+    guest_side,
+    parking_needed,
   });
   if (error) return { error: error.message };
   return { ok: true };

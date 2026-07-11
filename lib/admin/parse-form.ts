@@ -156,6 +156,11 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     flower_decline_note: String(formData.get("flower_decline_note") ?? "").trim(),
     share_title_suffix: String(formData.get("share_title_suffix") ?? "").trim(),
     section_order,
+    rsvp_fields: {
+      meal: formData.get("rsvp_field_meal") === "on",
+      side: formData.get("rsvp_field_side") === "on",
+      parking: formData.get("rsvp_field_parking") === "on",
+    },
   };
 
   const fields: ParsedAdminFields = {

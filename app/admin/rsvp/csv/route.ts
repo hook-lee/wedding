@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatKstDateTime } from "@/lib/date/kst";
+import { readExtras } from "@/lib/extras/types";
 
 // CSV cell escape — also neutralizes Excel/Sheets formula injection by prefixing
 // values that start with =, +, -, @, tab, or CR with a single quote (Excel
@@ -20,11 +21,27 @@ export async function GET() {
     .from("rsvp").select("*").eq("site_id", site.id)
     .order("created_at", { ascending: true });
 
-  const header = ["이름","참석","인원","연락처","메시지","응답시각"].map(escape).join(",");
+  const rsvpFields = readExtras(site.extras).rsvp_fields ?? {};
+  const header = [
+    "이름", "참석", "인원",
+    ...(rsvpFields.side ? ["구분"] : []),
+    ...(rsvpFields.meal ? ["식사"] : []),
+    ...(rsvpFields.parking ? ["주차"] : []),
+    "연락처", "메시지", "응답시각",
+  ].map(escape).join(",");
   const rows = (data ?? []).map((r) => [
     r.guest_name,
     r.attending ? "참석" : "불참",
     String(r.party_size),
+    ...(rsvpFields.side
+      ? [r.guest_side === "groom" ? "신랑측" : r.guest_side === "bride" ? "신부측" : ""]
+      : []),
+    ...(rsvpFields.meal
+      ? [r.meal_attending === true ? "식사함" : r.meal_attending === false ? "안 함" : ""]
+      : []),
+    ...(rsvpFields.parking
+      ? [r.parking_needed === true ? "필요" : r.parking_needed === false ? "불필요" : ""]
+      : []),
     r.phone ?? "",
     r.message ?? "",
     formatKstDateTime(r.created_at),

@@ -16,6 +16,7 @@ import { InfoItemsSection } from "./_components/InfoItemsSection";
 import { FlowerDeclineSection } from "./_components/FlowerDeclineSection";
 import { ThemeSection } from "./_components/ThemeSection";
 import { SectionOrderSection } from "./_components/SectionOrderSection";
+import { RsvpFieldsSection } from "./_components/RsvpFieldsSection";
 import type { ParentsBlock } from "@/lib/parents/types";
 import { readExtras, resolveSectionOrder } from "@/lib/extras/types";
 
@@ -111,6 +112,7 @@ export default async function AdminHome() {
           bride={(site.bride_profile as unknown as Profile) ?? {}}
         />
         <StorySection items={(site.story_items as unknown as StoryItem[]) ?? []} />
+        <RsvpFieldsSection fields={extras.rsvp_fields ?? {}} />
         <AccountSection info={(site.account_info as unknown as AccountInfo) ?? {}} />
         <FlowerDeclineSection
           enabled={extras.flower_decline ?? false}
