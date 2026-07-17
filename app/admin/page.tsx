@@ -35,7 +35,7 @@ type StoryItem = {
   title: string;
   body: string;
   photo_url?: string;
-  photo_position?: "top" | "center" | "bottom";
+  photo_position?: { x: number; y: number };
 };
 type Acc = { bank?: string; account?: string; holder?: string } | null;
 type AccountInfo = {

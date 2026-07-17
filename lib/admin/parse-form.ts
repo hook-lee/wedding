@@ -84,7 +84,7 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     title: string;
     body: string;
     photo_url?: string;
-    photo_position?: "top" | "center" | "bottom";
+    photo_position?: { x: number; y: number };
   }[] = [];
   try {
     const raw = String(formData.get("story_items_json") ?? "[]");

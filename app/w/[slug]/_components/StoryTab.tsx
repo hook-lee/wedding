@@ -1,20 +1,25 @@
 "use client";
 import { useState } from "react";
 
-type PhotoPosition = "top" | "center" | "bottom";
+type Pos = { x: number; y: number };
+// Legacy string values from before drag-positioning existed — still read so
+// older saved story items don't lose their (coarser) crop choice.
+type LegacyPos = "top" | "center" | "bottom";
 type Item = {
   date: string;
   title: string;
   body: string;
   photo_url?: string;
-  photo_position?: PhotoPosition;
+  photo_position?: Pos | LegacyPos;
 };
 
-const OBJECT_POSITION: Record<PhotoPosition, string> = {
-  top: "center top",
-  center: "center center",
-  bottom: "center bottom",
-};
+function objectPositionOf(p?: Pos | LegacyPos): string {
+  if (!p) return "50% 50%";
+  if (typeof p === "string") {
+    return p === "top" ? "50% 0%" : p === "bottom" ? "50% 100%" : "50% 50%";
+  }
+  return `${p.x}% ${p.y}%`;
+}
 
 const PREVIEW_COUNT = 2;
 
@@ -45,7 +50,7 @@ export function StoryTab({ items }: { items: Item[] }) {
                   src={it.photo_url}
                   alt=""
                   className="w-full aspect-[4/3] object-cover rounded-md shadow-card"
-                  style={{ objectPosition: OBJECT_POSITION[it.photo_position ?? "center"] }}
+                  style={{ objectPosition: objectPositionOf(it.photo_position) }}
                 />
               )}
               {it.body && (
