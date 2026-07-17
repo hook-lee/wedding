@@ -79,7 +79,13 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     intro: String(formData.get("bride_intro") ?? "").trim() || undefined,
   };
 
-  let story_items: { date: string; title: string; body: string; photo_url?: string }[] = [];
+  let story_items: {
+    date: string;
+    title: string;
+    body: string;
+    photo_url?: string;
+    photo_position?: "top" | "center" | "bottom";
+  }[] = [];
   try {
     const raw = String(formData.get("story_items_json") ?? "[]");
     story_items = JSON.parse(raw);

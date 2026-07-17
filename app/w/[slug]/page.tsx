@@ -100,6 +100,7 @@ export default async function PublicPage({
                 title: string;
                 body: string;
                 photo_url?: string;
+                photo_position?: "top" | "center" | "bottom";
               }[]) ?? []
             }
           />

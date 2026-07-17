@@ -27,7 +27,13 @@ import {
 } from "@/lib/extras/types";
 
 type Profile = { mbti?: string; intro?: string };
-type StoryItem = { date: string; title: string; body: string; photo_url?: string };
+type StoryItem = {
+  date: string;
+  title: string;
+  body: string;
+  photo_url?: string;
+  photo_position?: "top" | "center" | "bottom";
+};
 type GuestbookEntry = {
   id: string;
   guest_name: string;

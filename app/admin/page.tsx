@@ -30,7 +30,13 @@ import { enabledPrimaryKeys, resolvePrimaryTabs } from "@/app/w/[slug]/_lib/tabs
 
 type Track = { order: number; url: string; title: string; artist: string | null };
 type Profile = { mbti?: string; intro?: string };
-type StoryItem = { date: string; title: string; body: string };
+type StoryItem = {
+  date: string;
+  title: string;
+  body: string;
+  photo_url?: string;
+  photo_position?: "top" | "center" | "bottom";
+};
 type Acc = { bank?: string; account?: string; holder?: string } | null;
 type AccountInfo = {
   groom?: { self?: Acc; father?: Acc; mother?: Acc };

@@ -1,7 +1,20 @@
 "use client";
 import { useState } from "react";
 
-type Item = { date: string; title: string; body: string; photo_url?: string };
+type PhotoPosition = "top" | "center" | "bottom";
+type Item = {
+  date: string;
+  title: string;
+  body: string;
+  photo_url?: string;
+  photo_position?: PhotoPosition;
+};
+
+const OBJECT_POSITION: Record<PhotoPosition, string> = {
+  top: "center top",
+  center: "center center",
+  bottom: "center bottom",
+};
 
 const PREVIEW_COUNT = 2;
 
@@ -31,7 +44,8 @@ export function StoryTab({ items }: { items: Item[] }) {
                 <img
                   src={it.photo_url}
                   alt=""
-                  className="w-full max-w-xs aspect-[4/3] object-cover rounded-md shadow-card"
+                  className="w-full aspect-[4/3] object-cover rounded-md shadow-card"
+                  style={{ objectPosition: OBJECT_POSITION[it.photo_position ?? "center"] }}
                 />
               )}
               {it.body && (

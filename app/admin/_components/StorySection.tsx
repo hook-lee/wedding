@@ -5,7 +5,20 @@ import { Input } from "@/app/_ui/Input";
 import { Textarea } from "@/app/_ui/Textarea";
 import { Button } from "@/app/_ui/Button";
 
-type StoryItem = { date: string; title: string; body: string; photo_url?: string };
+type PhotoPosition = "top" | "center" | "bottom";
+type StoryItem = {
+  date: string;
+  title: string;
+  body: string;
+  photo_url?: string;
+  photo_position?: PhotoPosition;
+};
+
+const POSITION_LABELS: Record<PhotoPosition, string> = {
+  top: "상단",
+  center: "중앙",
+  bottom: "하단",
+};
 
 export function StorySection({ items }: { items: StoryItem[] }) {
   const [list, setList] = useState<StoryItem[]>(
@@ -138,6 +151,27 @@ export function StorySection({ items }: { items: StoryItem[] }) {
                 />
               </label>
             </div>
+
+            {/* 세로 사진이 청첩장에서 위/아래로 잘릴 때, 어느 쪽을 남길지 선택 */}
+            {it.photo_url && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs text-muted">사진 위치</span>
+                {(Object.keys(POSITION_LABELS) as PhotoPosition[]).map((pos) => (
+                  <button
+                    key={pos}
+                    type="button"
+                    onClick={() => update(i, "photo_position", pos)}
+                    className={`px-2.5 py-1 rounded-pill text-xs border transition-colors ${
+                      (it.photo_position ?? "center") === pos
+                        ? "bg-ink text-bg border-ink"
+                        : "bg-surface text-ink border-border"
+                    }`}
+                  >
+                    {POSITION_LABELS[pos]}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         );
       })}
