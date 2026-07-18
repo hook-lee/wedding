@@ -4,6 +4,7 @@ import { VenueView } from "./VenueView";
 import { RsvpView } from "./RsvpView";
 import { AccountView } from "./AccountView";
 import { ProfileView } from "./ProfileView";
+import { SponsorView } from "./SponsorView";
 import { readExtras, resolveRsvpFields } from "@/lib/extras/types";
 import { TAB_LABELS, type PrimaryKey } from "../_lib/tabs";
 
@@ -86,6 +87,7 @@ export function MoreTab({
           brideName={site.bride_name}
         />
       )}
+      {active === "sponsor" && <SponsorView extras={extras} />}
     </div>
   );
 }

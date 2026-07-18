@@ -12,6 +12,7 @@ import { RsvpView } from "./_components/RsvpView";
 import { AccountView } from "./_components/AccountView";
 import { ProfileView } from "./_components/ProfileView";
 import { MoreTab } from "./_components/MoreTab";
+import { SponsorView } from "./_components/SponsorView";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { readExtras, resolveRsvpFields, shareTitleSuffixOrDefault } from "@/lib/extras/types";
 
@@ -148,6 +149,7 @@ export default async function PublicPage({
             brideName={site.bride_name}
           />
         )}
+        {active === "sponsor" && <SponsorView extras={extras} />}
         {active === "more" && (
           <MoreTab
             site={site}

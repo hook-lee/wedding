@@ -8,6 +8,7 @@ import { AccountView } from "./AccountView";
 import { ProfileView } from "./ProfileView";
 import { InfoView } from "./InfoView";
 import { FlowerDeclineView } from "./FlowerDeclineView";
+import { SponsorView } from "./SponsorView";
 import { RsvpPromptModal } from "./RsvpPromptModal";
 import { Reveal } from "./Reveal";
 import { Countdown } from "./Countdown";
@@ -294,6 +295,15 @@ export function HomeTab({ site, initialGuestbook }: Props) {
                   bride={brideProfile}
                   brideName={site.bride_name}
                 />
+              </Reveal>
+            ),
+          },
+          sponsor: {
+            visible: !!enabled.sponsor,
+            node: (
+              <Reveal key="sponsor">
+                <SectionTitle icon="award" label="스폰서" anchor="sponsor" />
+                <SponsorView extras={extras} />
               </Reveal>
             ),
           },

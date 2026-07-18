@@ -10,12 +10,13 @@ const THEMES = [
 ];
 
 const SECTIONS = [
-  { key: "story", label: "📖 우리 스토리" },
-  { key: "gallery", label: "📷 사진첩" },
-  { key: "guestbook", label: "💬 방명록" },
-  { key: "rsvp", label: "📋 RSVP" },
-  { key: "account", label: "💝 마음전하기" },
-  { key: "profile", label: "👤 프로필" },
+  { key: "story", label: "📖 우리 스토리", defaultOn: true },
+  { key: "gallery", label: "📷 사진첩", defaultOn: true },
+  { key: "guestbook", label: "💬 방명록", defaultOn: true },
+  { key: "rsvp", label: "📋 RSVP", defaultOn: true },
+  { key: "account", label: "💝 마음전하기", defaultOn: true },
+  { key: "profile", label: "👤 프로필", defaultOn: true },
+  { key: "sponsor", label: "🤝 스폰서", defaultOn: false },
 ];
 
 export function ThemeSection({
@@ -62,7 +63,7 @@ export function ThemeSection({
               <input
                 type="checkbox"
                 name={`section_${s.key}`}
-                defaultChecked={sectionsEnabled[s.key] ?? true}
+                defaultChecked={sectionsEnabled[s.key] ?? s.defaultOn}
               />
               <span className="text-sm text-ink">{s.label}</span>
             </label>

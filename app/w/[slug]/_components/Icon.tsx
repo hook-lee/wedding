@@ -26,7 +26,8 @@ type IconName =
   | "grip"
   | "more"
   | "eye"
-  | "eyeOff";
+  | "eyeOff"
+  | "award";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: (
@@ -153,6 +154,12 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68M6.61 6.61C3.85 8.44 2 12 2 12s3.5 7 10 7a9.15 9.15 0 0 0 5.39-1.61M14.12 14.12a3 3 0 1 1-4.24-4.24" />
       <line x1="2" y1="2" x2="22" y2="22" />
+    </>
+  ),
+  award: (
+    <>
+      <circle cx="12" cy="8" r="6" />
+      <path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5" />
     </>
   ),
 };

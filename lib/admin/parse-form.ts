@@ -119,6 +119,7 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     rsvp: formData.get("section_rsvp") === "on",
     account: formData.get("section_account") === "on",
     profile: formData.get("section_profile") === "on",
+    sponsor: formData.get("section_sponsor") === "on",
   };
 
   const published = formData.get("published") === "on";
@@ -179,6 +180,18 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     home_visible = undefined;
   }
 
+  let sponsor_logos: string[] = [];
+  try {
+    const raw = String(formData.get("sponsor_logos_json") ?? "[]");
+    const parsed = JSON.parse(raw) as unknown[];
+    sponsor_logos = parsed.filter((u): u is string => typeof u === "string");
+  } catch {
+    sponsor_logos = [];
+  }
+  const sponsorTitleRaw = String(formData.get("sponsor_title") ?? "sponsored_by");
+  const sponsor_title =
+    sponsorTitleRaw === "supported_by" ? "supported_by" : "sponsored_by";
+
   const extras: SiteExtras = {
     transit_subway: String(formData.get("transit_subway") ?? "").trim(),
     transit_bus: String(formData.get("transit_bus") ?? "").trim(),
@@ -200,6 +213,9 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     primary_tabs,
     home_visible,
     rsvp_prompt_enabled: formData.get("rsvp_prompt_enabled") === "on",
+    sponsor_title,
+    sponsor_logos,
+    sponsor_slogan: String(formData.get("sponsor_slogan") ?? "").trim(),
   };
 
   const fields: ParsedAdminFields = {

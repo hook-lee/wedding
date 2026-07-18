@@ -34,6 +34,7 @@ const LABELS: Record<SectionKey, { label: string; icon: IconName }> = {
   rsvp: { label: "참석 의사 (RSVP)", icon: "clipboard" },
   account: { label: "마음 전하기", icon: "heart" },
   profile: { label: "신랑·신부 프로필", icon: "user" },
+  sponsor: { label: "스폰서", icon: "award" },
 };
 
 function Row({

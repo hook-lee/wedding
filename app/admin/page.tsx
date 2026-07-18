@@ -18,6 +18,7 @@ import { ThemeSection } from "./_components/ThemeSection";
 import { SectionOrderSection } from "./_components/SectionOrderSection";
 import { TabOrderSection } from "./_components/TabOrderSection";
 import { RsvpFieldsSection } from "./_components/RsvpFieldsSection";
+import { SponsorSection } from "./_components/SponsorSection";
 import type { ParentsBlock } from "@/lib/parents/types";
 import {
   readExtras,
@@ -144,6 +145,11 @@ export default async function AdminHome() {
         <FlowerDeclineSection
           enabled={extras.flower_decline ?? false}
           note={extras.flower_decline_note ?? ""}
+        />
+        <SponsorSection
+          title={extras.sponsor_title ?? "sponsored_by"}
+          logos={extras.sponsor_logos ?? []}
+          slogan={extras.sponsor_slogan ?? ""}
         />
         <SectionOrderSection order={sectionOrder} visible={sectionVisible} />
         <TabOrderSection initial={primaryTabsInitial} />

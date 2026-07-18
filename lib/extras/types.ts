@@ -18,8 +18,11 @@ export const SECTION_KEYS = [
   "rsvp",
   "account",
   "profile",
+  "sponsor",
 ] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
+
+export type SponsorTitle = "sponsored_by" | "supported_by";
 
 // Which RSVP questions this site asks guests. 이름 is never included here —
 // it's the one field every response needs to be identifiable, so it always
@@ -56,6 +59,11 @@ export type SiteExtras = {
   // Show a "참석 의사 전달" prompt modal right after the splash entrance,
   // nudging guests toward the RSVP section. Off by default.
   rsvp_prompt_enabled?: boolean;
+  // Sponsor/supporter logo strip — entirely optional, most weddings won't
+  // use it (gated by sections_enabled.sponsor, default off).
+  sponsor_title?: SponsorTitle;
+  sponsor_logos?: string[];
+  sponsor_slogan?: string;
 };
 
 const DEFAULT_DECLINE_NOTE = "화환은 정중히 사양하겠습니다.";
@@ -123,6 +131,15 @@ export function readExtras(raw: unknown): SiteExtras {
         : undefined,
     rsvp_prompt_enabled:
       typeof obj.rsvp_prompt_enabled === "boolean" ? obj.rsvp_prompt_enabled : undefined,
+    sponsor_title:
+      obj.sponsor_title === "sponsored_by" || obj.sponsor_title === "supported_by"
+        ? obj.sponsor_title
+        : undefined,
+    sponsor_logos: Array.isArray(obj.sponsor_logos)
+      ? (obj.sponsor_logos as unknown[]).filter((u): u is string => typeof u === "string")
+      : undefined,
+    sponsor_slogan:
+      typeof obj.sponsor_slogan === "string" ? obj.sponsor_slogan : undefined,
   };
 }
 
@@ -176,4 +193,13 @@ export function flowerDeclineNoteOrDefault(extras: SiteExtras): string {
 export function shareTitleSuffixOrDefault(extras: SiteExtras): string {
   const v = (extras.share_title_suffix ?? "").trim();
   return v || DEFAULT_SHARE_TITLE_SUFFIX;
+}
+
+export const SPONSOR_TITLE_LABELS: Record<SponsorTitle, string> = {
+  sponsored_by: "Sponsored by",
+  supported_by: "Supported by",
+};
+
+export function sponsorTitleLabel(extras: SiteExtras): string {
+  return SPONSOR_TITLE_LABELS[extras.sponsor_title ?? "sponsored_by"];
 }
