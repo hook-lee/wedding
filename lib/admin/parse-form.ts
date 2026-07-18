@@ -180,11 +180,19 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     home_visible = undefined;
   }
 
-  let sponsor_logos: string[] = [];
+  let sponsor_logos: { url: string; scale?: number }[] = [];
   try {
     const raw = String(formData.get("sponsor_logos_json") ?? "[]");
     const parsed = JSON.parse(raw) as unknown[];
-    sponsor_logos = parsed.filter((u): u is string => typeof u === "string");
+    sponsor_logos = parsed
+      .map((item) => {
+        if (!item || typeof item !== "object") return null;
+        const r = item as Record<string, unknown>;
+        if (typeof r.url !== "string") return null;
+        const scaleRaw = typeof r.scale === "number" ? r.scale : 100;
+        return { url: r.url, scale: Math.min(150, Math.max(50, scaleRaw)) };
+      })
+      .filter((x): x is { url: string; scale: number } => x !== null);
   } catch {
     sponsor_logos = [];
   }

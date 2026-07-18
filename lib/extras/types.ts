@@ -23,6 +23,10 @@ export const SECTION_KEYS = [
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
 export type SponsorTitle = "sponsored_by" | "supported_by";
+// scale: relative display size, 50–150 (%), default 100 — logos from
+// different companies rarely have consistent internal padding, so a couple
+// can nudge one up/down to visually match the rest of the row.
+export type SponsorLogo = { url: string; scale?: number };
 
 // Which RSVP questions this site asks guests. 이름 is never included here —
 // it's the one field every response needs to be identifiable, so it always
@@ -62,7 +66,7 @@ export type SiteExtras = {
   // Sponsor/supporter logo strip — entirely optional, most weddings won't
   // use it (gated by sections_enabled.sponsor, default off).
   sponsor_title?: SponsorTitle;
-  sponsor_logos?: string[];
+  sponsor_logos?: SponsorLogo[];
   sponsor_slogan?: string;
 };
 
@@ -135,8 +139,20 @@ export function readExtras(raw: unknown): SiteExtras {
       obj.sponsor_title === "sponsored_by" || obj.sponsor_title === "supported_by"
         ? obj.sponsor_title
         : undefined,
+    // Accepts both the current { url, scale } shape and plain strings from
+    // before per-logo sizing existed, so nothing already saved gets dropped.
     sponsor_logos: Array.isArray(obj.sponsor_logos)
-      ? (obj.sponsor_logos as unknown[]).filter((u): u is string => typeof u === "string")
+      ? (obj.sponsor_logos as unknown[])
+          .map((item): SponsorLogo | null => {
+            if (typeof item === "string") return { url: item, scale: 100 };
+            if (item && typeof item === "object" && typeof (item as Record<string, unknown>).url === "string") {
+              const r = item as Record<string, unknown>;
+              const scaleRaw = typeof r.scale === "number" ? r.scale : 100;
+              return { url: r.url as string, scale: Math.min(150, Math.max(50, scaleRaw)) };
+            }
+            return null;
+          })
+          .filter((x): x is SponsorLogo => x !== null)
       : undefined,
     sponsor_slogan:
       typeof obj.sponsor_slogan === "string" ? obj.sponsor_slogan : undefined,

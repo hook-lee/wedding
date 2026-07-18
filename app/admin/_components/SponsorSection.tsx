@@ -2,9 +2,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Card, CardHeader } from "@/app/_ui/Card";
 import { Input } from "@/app/_ui/Input";
-import type { SponsorTitle } from "@/lib/extras/types";
+import type { SponsorLogo, SponsorTitle } from "@/lib/extras/types";
 
 const MAX_LOGOS = 10;
+
+type Logo = { url: string; scale: number };
 
 export function SponsorSection({
   title,
@@ -12,19 +14,21 @@ export function SponsorSection({
   slogan,
 }: {
   title: SponsorTitle;
-  logos: string[];
+  logos: SponsorLogo[];
   slogan: string;
 }) {
-  const [list, setList] = useState<string[]>(logos);
+  const [list, setList] = useState<Logo[]>(
+    logos.map((l) => ({ url: l.url, scale: l.scale ?? 100 })),
+  );
   const [busy, setBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hiddenRef = useRef<HTMLInputElement>(null);
   const mounted = useRef(false);
 
-  // Uploading/removing a logo only changes React state — no native <input>
-  // event fires from that, so the admin's live-preview listener (which
-  // watches for real input/change events bubbling from the form) wouldn't
-  // otherwise notice. Same fix as StorySection/SectionOrderSection.
+  // Uploading/resizing/removing a logo only changes React state — no native
+  // <input> event fires from that, so the admin's live-preview listener
+  // (which watches for real input/change events bubbling from the form)
+  // wouldn't otherwise notice. Same fix as StorySection/SectionOrderSection.
   useEffect(() => {
     if (!mounted.current) {
       mounted.current = true;
@@ -46,11 +50,15 @@ export function SponsorSection({
         return;
       }
       const json = (await r.json()) as { url?: string };
-      if (json.url) setList((prev) => [...prev, json.url!]);
+      if (json.url) setList((prev) => [...prev, { url: json.url!, scale: 100 }]);
     } finally {
       setBusy(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  }
+
+  function updateScale(i: number, scale: number) {
+    setList((prev) => prev.map((l, idx) => (idx === i ? { ...l, scale } : l)));
   }
 
   function removeLogo(idx: number) {
@@ -61,7 +69,7 @@ export function SponsorSection({
     <Card>
       <CardHeader
         title="스폰서"
-        hint="스폰서·협찬사가 있을 때만 켜서 사용하세요. 로고는 여러 개 올릴 수 있어요."
+        hint="스폰서·협찬사가 있을 때만 켜서 사용하세요. 로고는 여러 개 올릴 수 있고, 업체마다 로고 여백이 달라서 보기에 작거나 크면 크기를 따로 조절할 수 있어요."
       />
 
       <div>
@@ -95,21 +103,44 @@ export function SponsorSection({
       </div>
 
       {list.length > 0 && (
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-          {list.map((url, i) => (
+        <div className="space-y-2">
+          {list.map((logo, i) => (
             <div
-              key={url + i}
-              className="relative aspect-square bg-bg border border-border rounded-md flex items-center justify-center p-2"
+              key={logo.url + i}
+              className="flex items-center gap-3 bg-bg border border-border rounded-md p-2"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="max-w-full max-h-full object-contain" />
+              <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center bg-surface border border-border rounded-md overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={logo.url}
+                  alt=""
+                  className="max-w-full max-h-full object-contain"
+                  style={{ transform: `scale(${logo.scale / 100})` }}
+                />
+              </div>
+              <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted">크기</span>
+                  <span className="text-xs text-ink tabular-nums">{logo.scale}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={50}
+                  max={150}
+                  step={5}
+                  value={logo.scale}
+                  onChange={(e) => updateScale(i, Number(e.target.value))}
+                  className="w-full"
+                  aria-label="로고 크기"
+                />
+              </div>
               <button
                 type="button"
                 onClick={() => removeLogo(i)}
-                className="absolute top-1 right-1 bg-ink text-bg text-[10px] px-1.5 py-0.5 rounded-pill"
+                className="text-xs text-red-600 px-2 min-h-[44px] flex-shrink-0"
                 aria-label="로고 삭제"
               >
-                X
+                삭제
               </button>
             </div>
           ))}

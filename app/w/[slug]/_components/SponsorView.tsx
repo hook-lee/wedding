@@ -14,13 +14,18 @@ export function SponsorView({ extras }: { extras: SiteExtras }) {
         <p className="text-sm text-muted py-4">아직 등록된 스폰서가 없어요.</p>
       ) : (
         <div className="flex flex-wrap items-center justify-center gap-4">
-          {logos.map((url, i) => (
+          {logos.map((logo, i) => (
             <div
-              key={url + i}
-              className="h-12 sm:h-16 flex items-center justify-center bg-surface border border-border rounded-md px-4 shadow-card"
+              key={logo.url + i}
+              className="h-12 sm:h-16 flex items-center justify-center bg-surface border border-border rounded-md px-4 shadow-card overflow-hidden"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="max-h-full max-w-[140px] object-contain" />
+              <img
+                src={logo.url}
+                alt=""
+                className="max-h-full max-w-[140px] object-contain"
+                style={{ transform: `scale(${(logo.scale ?? 100) / 100})` }}
+              />
             </div>
           ))}
         </div>
