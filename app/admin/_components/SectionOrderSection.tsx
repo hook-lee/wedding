@@ -37,13 +37,28 @@ const LABELS: Record<SectionKey, { label: string; icon: IconName }> = {
   sponsor: { label: "스폰서", icon: "award" },
 };
 
+// Sections gated by a separate master switch ("표시할 섹션" checkboxes in
+// 디자인·섹션·공개). Toggling 노출/숨김 here does nothing until that master
+// switch is also on — flag it inline so this isn't confusing twice in a row.
+const MASTER_GATED: SectionKey[] = [
+  "story",
+  "gallery",
+  "guestbook",
+  "rsvp",
+  "account",
+  "profile",
+  "sponsor",
+];
+
 function Row({
   id,
   visible,
+  masterOff,
   onToggleVisible,
 }: {
   id: SectionKey;
   visible: boolean;
+  masterOff: boolean;
   onToggleVisible: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
@@ -57,38 +72,45 @@ function Row({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 p-3 border rounded-md select-none transition-colors ${
+      className={`border rounded-md select-none transition-colors ${
         visible ? "bg-bg border-border" : "bg-bg/40 border-border/60"
       }`}
     >
-      <button
-        type="button"
-        {...attributes}
-        {...listeners}
-        className="text-muted hover:text-ink cursor-grab active:cursor-grabbing p-1 -m-1 touch-none"
-        aria-label={`${LABELS[id].label} 순서 변경 — 드래그하세요`}
-      >
-        <Icon name="grip" className="w-4 h-4" />
-      </button>
-      <Icon
-        name={LABELS[id].icon}
-        className={`w-4 h-4 flex-shrink-0 ${visible ? "text-secondary" : "text-muted"}`}
-      />
-      <span className={`text-sm flex-1 ${visible ? "text-ink" : "text-muted"}`}>
-        {LABELS[id].label}
-      </span>
-      <button
-        type="button"
-        onClick={onToggleVisible}
-        className={`inline-flex items-center gap-1 text-xs px-2 py-1.5 rounded-md min-h-[32px] ${
-          visible ? "text-secondary hover:text-ink" : "text-muted hover:text-ink"
-        }`}
-        aria-pressed={visible}
-        aria-label={`${LABELS[id].label} 홈 화면 노출 ${visible ? "끄기" : "켜기"}`}
-      >
-        <Icon name={visible ? "eye" : "eyeOff"} className="w-4 h-4" />
-        {visible ? "노출" : "숨김"}
-      </button>
+      <div className="flex items-center gap-3 p-3">
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          className="text-muted hover:text-ink cursor-grab active:cursor-grabbing p-1 -m-1 touch-none"
+          aria-label={`${LABELS[id].label} 순서 변경 — 드래그하세요`}
+        >
+          <Icon name="grip" className="w-4 h-4" />
+        </button>
+        <Icon
+          name={LABELS[id].icon}
+          className={`w-4 h-4 flex-shrink-0 ${visible ? "text-secondary" : "text-muted"}`}
+        />
+        <span className={`text-sm flex-1 ${visible ? "text-ink" : "text-muted"}`}>
+          {LABELS[id].label}
+        </span>
+        <button
+          type="button"
+          onClick={onToggleVisible}
+          className={`inline-flex items-center gap-1 text-xs px-2 py-1.5 rounded-md min-h-[32px] ${
+            visible ? "text-secondary hover:text-ink" : "text-muted hover:text-ink"
+          }`}
+          aria-pressed={visible}
+          aria-label={`${LABELS[id].label} 홈 화면 노출 ${visible ? "끄기" : "켜기"}`}
+        >
+          <Icon name={visible ? "eye" : "eyeOff"} className="w-4 h-4" />
+          {visible ? "노출" : "숨김"}
+        </button>
+      </div>
+      {masterOff && (
+        <p className="text-[11px] text-accent px-3 pb-2 -mt-1">
+          ⚠ &apos;표시할 섹션&apos;에서 이 항목이 꺼져 있어요 — 아래에서 먼저 켜야 실제로 보여요.
+        </p>
+      )}
     </div>
   );
 }
@@ -96,9 +118,11 @@ function Row({
 export function SectionOrderSection({
   order,
   visible,
+  sectionsEnabled,
 }: {
   order: SectionKey[];
   visible: Record<SectionKey, boolean>;
+  sectionsEnabled: Record<string, boolean>;
 }) {
   const [list, setList] = useState<SectionKey[]>(order);
   const [visMap, setVisMap] = useState<Record<SectionKey, boolean>>(visible);
@@ -152,6 +176,7 @@ export function SectionOrderSection({
                 key={key}
                 id={key}
                 visible={visMap[key] ?? true}
+                masterOff={MASTER_GATED.includes(key) && !sectionsEnabled[key]}
                 onToggleVisible={() =>
                   setVisMap((prev) => ({ ...prev, [key]: !(prev[key] ?? true) }))
                 }

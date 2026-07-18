@@ -151,7 +151,11 @@ export default async function AdminHome() {
           logos={extras.sponsor_logos ?? []}
           slogan={extras.sponsor_slogan ?? ""}
         />
-        <SectionOrderSection order={sectionOrder} visible={sectionVisible} />
+        <SectionOrderSection
+          order={sectionOrder}
+          visible={sectionVisible}
+          sectionsEnabled={sectionsEnabled}
+        />
         <TabOrderSection initial={primaryTabsInitial} />
         <ThemeSection
           theme={site.theme}
