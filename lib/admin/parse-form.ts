@@ -186,6 +186,11 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     const parsed = JSON.parse(raw) as unknown[];
     sponsor_logos = parsed
       .map((item) => {
+        // A stale client bundle (mid-deploy) can still submit the older
+        // plain-string shape — accept it instead of silently dropping the
+        // logo, mirroring the same leniency readExtras() already has when
+        // *reading* older-saved data.
+        if (typeof item === "string") return { url: item, scale: 100 };
         if (!item || typeof item !== "object") return null;
         const r = item as Record<string, unknown>;
         if (typeof r.url !== "string") return null;
