@@ -302,7 +302,11 @@ export function HomeTab({ site, initialGuestbook }: Props) {
             visible: !!enabled.sponsor,
             node: (
               <Reveal key="sponsor">
-                <SectionTitle icon="award" label="스폰서" anchor="sponsor" />
+                {/* 스폰서는 보통 맨 끝에 조용히 붙는 섹션이라 아이콘·라벨 없이
+                    구분선만 — 다른 섹션처럼 큰 제목을 달면 과해 보인다는 피드백. */}
+                <div id="sponsor" className="pt-10 pb-4 scroll-mt-16">
+                  <span className="block h-px bg-border" />
+                </div>
                 <SponsorView extras={extras} />
               </Reveal>
             ),

@@ -203,7 +203,11 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
   }
   const sponsorTitleRaw = String(formData.get("sponsor_title") ?? "sponsored_by");
   const sponsor_title =
-    sponsorTitleRaw === "supported_by" ? "supported_by" : "sponsored_by";
+    sponsorTitleRaw === "supported_by"
+      ? "supported_by"
+      : sponsorTitleRaw === "none"
+        ? "none"
+        : "sponsored_by";
 
   const extras: SiteExtras = {
     transit_subway: String(formData.get("transit_subway") ?? "").trim(),

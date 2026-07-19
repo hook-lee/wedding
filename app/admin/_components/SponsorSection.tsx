@@ -74,7 +74,7 @@ export function SponsorSection({
 
       <div>
         <p className="text-sm text-secondary font-medium mb-2">제목</p>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <label className="cursor-pointer">
             <input
               type="radio"
@@ -97,6 +97,18 @@ export function SponsorSection({
             />
             <span className="inline-flex items-center min-h-[44px] px-4 rounded-pill border border-border peer-checked:bg-ink peer-checked:text-bg text-sm transition-colors">
               Supported by
+            </span>
+          </label>
+          <label className="cursor-pointer">
+            <input
+              type="radio"
+              name="sponsor_title"
+              value="none"
+              defaultChecked={title === "none"}
+              className="peer sr-only"
+            />
+            <span className="inline-flex items-center min-h-[44px] px-4 rounded-pill border border-border peer-checked:bg-ink peer-checked:text-bg text-sm transition-colors">
+              제목 사용 안 함
             </span>
           </label>
         </div>

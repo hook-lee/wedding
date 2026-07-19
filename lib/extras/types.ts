@@ -22,7 +22,7 @@ export const SECTION_KEYS = [
 ] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
-export type SponsorTitle = "sponsored_by" | "supported_by";
+export type SponsorTitle = "sponsored_by" | "supported_by" | "none";
 // scale: relative display size, 50–150 (%), default 100 — logos from
 // different companies rarely have consistent internal padding, so a couple
 // can nudge one up/down to visually match the rest of the row.
@@ -136,7 +136,9 @@ export function readExtras(raw: unknown): SiteExtras {
     rsvp_prompt_enabled:
       typeof obj.rsvp_prompt_enabled === "boolean" ? obj.rsvp_prompt_enabled : undefined,
     sponsor_title:
-      obj.sponsor_title === "sponsored_by" || obj.sponsor_title === "supported_by"
+      obj.sponsor_title === "sponsored_by" ||
+      obj.sponsor_title === "supported_by" ||
+      obj.sponsor_title === "none"
         ? obj.sponsor_title
         : undefined,
     // Accepts both the current { url, scale } shape and plain strings from
@@ -214,6 +216,7 @@ export function shareTitleSuffixOrDefault(extras: SiteExtras): string {
 export const SPONSOR_TITLE_LABELS: Record<SponsorTitle, string> = {
   sponsored_by: "Sponsored by",
   supported_by: "Supported by",
+  none: "",
 };
 
 export function sponsorTitleLabel(extras: SiteExtras): string {

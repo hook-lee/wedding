@@ -3,12 +3,13 @@ import { sponsorTitleLabel, type SiteExtras } from "@/lib/extras/types";
 export function SponsorView({ extras }: { extras: SiteExtras }) {
   const logos = extras.sponsor_logos ?? [];
   const slogan = (extras.sponsor_slogan ?? "").trim();
+  const titleLabel = sponsorTitleLabel(extras);
 
   return (
     <div className="text-center space-y-4">
-      <p className="text-xs text-muted tracking-[0.3em] uppercase">
-        {sponsorTitleLabel(extras)}
-      </p>
+      {titleLabel && (
+        <p className="text-xs text-muted tracking-[0.3em] uppercase">{titleLabel}</p>
+      )}
 
       {logos.length === 0 ? (
         <p className="text-sm text-muted py-4">아직 등록된 스폰서가 없어요.</p>
