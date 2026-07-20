@@ -23,11 +23,12 @@ import {
   flowerDeclineNoteOrDefault,
   resolveSectionOrder,
   resolveRsvpFields,
+  resolveGuestbookFields,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
 
-type Profile = { mbti?: string; intro?: string };
+type Profile = { mbti?: string; intro?: string; photo_url?: string };
 type StoryItem = {
   date: string;
   title: string;
@@ -40,6 +41,9 @@ type GuestbookEntry = {
   guest_name: string;
   message: string;
   reply: string | null;
+  phone: string | null;
+  guest_side: "groom" | "bride" | null;
+  relationship: string | null;
   created_at: string;
 };
 type IconName = React.ComponentProps<typeof Icon>["name"];
@@ -217,7 +221,11 @@ export function HomeTab({ site, initialGuestbook }: Props) {
             node: (
               <Reveal key="guestbook">
                 <SectionTitle icon="chat" label="방명록" anchor="guestbook" />
-                <GuestbookTab siteId={site.id} initial={initialGuestbook} />
+                <GuestbookTab
+                  siteId={site.id}
+                  initial={initialGuestbook}
+                  fields={resolveGuestbookFields(extras)}
+                />
               </Reveal>
             ),
           },

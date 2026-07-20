@@ -73,10 +73,12 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
   const groom_profile = {
     mbti: String(formData.get("groom_mbti") ?? "").trim() || undefined,
     intro: String(formData.get("groom_intro") ?? "").trim() || undefined,
+    photo_url: String(formData.get("groom_photo_url") ?? "").trim() || undefined,
   };
   const bride_profile = {
     mbti: String(formData.get("bride_mbti") ?? "").trim() || undefined,
     intro: String(formData.get("bride_intro") ?? "").trim() || undefined,
+    photo_url: String(formData.get("bride_photo_url") ?? "").trim() || undefined,
   };
 
   let story_items: {
@@ -226,6 +228,11 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
       meal: formData.get("rsvp_field_meal") === "on",
       side: formData.get("rsvp_field_side") === "on",
       parking: formData.get("rsvp_field_parking") === "on",
+    },
+    guestbook_fields: {
+      phone: formData.get("guestbook_field_phone") === "on",
+      guest_side: formData.get("guestbook_field_guest_side") === "on",
+      relationship: formData.get("guestbook_field_relationship") === "on",
     },
     primary_tabs,
     home_visible,

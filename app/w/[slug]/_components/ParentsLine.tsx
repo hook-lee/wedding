@@ -5,7 +5,7 @@ import { Icon } from "./Icon";
 import { Button } from "@/app/_ui/Button";
 
 type Entry = { name: string; status: "alive" | "go" | "hyeon" };
-type Profile = { mbti?: string; intro?: string };
+type Profile = { mbti?: string; intro?: string; photo_url?: string };
 
 function prefix(role: "father" | "mother", status: Entry["status"]) {
   if (status === "go") return <span className="text-deceased font-semibold">故 </span>;
@@ -68,6 +68,14 @@ function ProfileModal({
         </div>
 
         <div className="p-5 space-y-2">
+          {profile.photo_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profile.photo_url}
+              alt=""
+              className="w-full aspect-square object-cover rounded-md mb-1"
+            />
+          )}
           <p className="text-lg font-semibold text-ink">{name}</p>
           {profile.mbti && <p className="text-sm text-accent">{profile.mbti}</p>}
           {profile.intro && (
@@ -109,7 +117,7 @@ export function ParentsLine({
 
   if (!father && !mother) return null;
 
-  const hasProfile = !!(profile && (profile.mbti || profile.intro));
+  const hasProfile = !!(profile && (profile.mbti || profile.intro || profile.photo_url));
 
   return (
     <p className="text-sm text-secondary">

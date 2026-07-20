@@ -14,7 +14,12 @@ import { ProfileView } from "./_components/ProfileView";
 import { MoreTab } from "./_components/MoreTab";
 import { SponsorView } from "./_components/SponsorView";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { readExtras, resolveRsvpFields, shareTitleSuffixOrDefault } from "@/lib/extras/types";
+import {
+  readExtras,
+  resolveRsvpFields,
+  resolveGuestbookFields,
+  shareTitleSuffixOrDefault,
+} from "@/lib/extras/types";
 
 const VALID: TabKey[] = ["home", "more", ...PRIMARY_KEYS];
 
@@ -108,7 +113,11 @@ export default async function PublicPage({
         )}
         {active === "gallery" && <GalleryTab urls={site.gallery_urls ?? []} />}
         {active === "guestbook" && (
-          <GuestbookTab siteId={site.id} initial={initialGuestbook ?? []} />
+          <GuestbookTab
+            siteId={site.id}
+            initial={initialGuestbook ?? []}
+            fields={resolveGuestbookFields(extras)}
+          />
         )}
         {active === "venue" && (
           <VenueView
@@ -143,9 +152,21 @@ export default async function PublicPage({
         )}
         {active === "profile" && (
           <ProfileView
-            groom={(site.groom_profile as unknown as { mbti?: string; intro?: string }) ?? {}}
+            groom={
+              (site.groom_profile as unknown as {
+                mbti?: string;
+                intro?: string;
+                photo_url?: string;
+              }) ?? {}
+            }
             groomName={site.groom_name}
-            bride={(site.bride_profile as unknown as { mbti?: string; intro?: string }) ?? {}}
+            bride={
+              (site.bride_profile as unknown as {
+                mbti?: string;
+                intro?: string;
+                photo_url?: string;
+              }) ?? {}
+            }
             brideName={site.bride_name}
           />
         )}

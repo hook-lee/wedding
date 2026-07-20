@@ -8,21 +8,27 @@ import { Field } from "@/app/_ui/Field";
 import { Input } from "@/app/_ui/Input";
 import { Textarea } from "@/app/_ui/Textarea";
 import { Button } from "@/app/_ui/Button";
+import type { GuestbookFields } from "@/lib/extras/types";
 
 type Entry = {
   id: string;
   guest_name: string;
   message: string;
   reply: string | null;
+  phone: string | null;
+  guest_side: "groom" | "bride" | null;
+  relationship: string | null;
   created_at: string;
 };
 
 export function GuestbookTab({
   siteId,
   initial,
+  fields,
 }: {
   siteId: string;
   initial: Entry[];
+  fields: Required<GuestbookFields>;
 }) {
   const [entries, setEntries] = useState<Entry[]>(initial);
   const [pending, setPending] = useState(false);
@@ -85,6 +91,31 @@ export function GuestbookTab({
           <Field label="이름">
             <Input name="name" required maxLength={30} placeholder="이름" />
           </Field>
+          {fields.relationship && (
+            <Field label="관계 (선택)">
+              <Input name="relationship" maxLength={20} placeholder="예: 친구, 직장동료" />
+            </Field>
+          )}
+          {fields.guest_side && (
+            <fieldset>
+              <legend className="text-sm text-secondary font-medium mb-1">
+                신랑측·신부측
+              </legend>
+              <div className="flex gap-3">
+                <label className="flex-1 flex items-center justify-center gap-2 min-h-[44px] px-3 bg-bg border border-border rounded-md cursor-pointer text-ink">
+                  <input type="radio" name="guest_side" value="groom" required /> 신랑측
+                </label>
+                <label className="flex-1 flex items-center justify-center gap-2 min-h-[44px] px-3 bg-bg border border-border rounded-md cursor-pointer text-ink">
+                  <input type="radio" name="guest_side" value="bride" required /> 신부측
+                </label>
+              </div>
+            </fieldset>
+          )}
+          {fields.phone && (
+            <Field label="연락처 (선택)">
+              <Input name="phone" placeholder="010-0000-0000" />
+            </Field>
+          )}
           <Field label="축하 메시지" hint="최대 200자">
             <Textarea
               name="message"
@@ -109,7 +140,25 @@ export function GuestbookTab({
         {entries.map((e) => (
           <li key={e.id}>
             <Card className="p-4 sm:p-5 space-y-1">
-              <p className="text-sm font-semibold text-ink">{e.guest_name}</p>
+              <p className="text-sm font-semibold text-ink">
+                {e.guest_name}
+                {(e.guest_side || e.relationship) && (
+                  <span className="text-xs text-muted font-normal">
+                    {" "}
+                    ·{" "}
+                    {[
+                      e.guest_side === "groom"
+                        ? "신랑측"
+                        : e.guest_side === "bride"
+                          ? "신부측"
+                          : null,
+                      e.relationship,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                )}
+              </p>
               <p className="text-sm text-secondary whitespace-pre-line">
                 {e.message}
               </p>

@@ -18,19 +18,21 @@ import { ThemeSection } from "./_components/ThemeSection";
 import { SectionOrderSection } from "./_components/SectionOrderSection";
 import { TabOrderSection } from "./_components/TabOrderSection";
 import { RsvpFieldsSection } from "./_components/RsvpFieldsSection";
+import { GuestbookFieldsSection } from "./_components/GuestbookFieldsSection";
 import { SponsorSection } from "./_components/SponsorSection";
 import type { ParentsBlock } from "@/lib/parents/types";
 import {
   readExtras,
   resolveSectionOrder,
   resolveRsvpFields,
+  resolveGuestbookFields,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
 import { enabledPrimaryKeys, resolvePrimaryTabs } from "@/app/w/[slug]/_lib/tabs";
 
 type Track = { order: number; url: string; title: string; artist: string | null };
-type Profile = { mbti?: string; intro?: string };
+type Profile = { mbti?: string; intro?: string; photo_url?: string };
 type StoryItem = {
   date: string;
   title: string;
@@ -137,6 +139,7 @@ export default async function AdminHome() {
           bride={(site.bride_profile as unknown as Profile) ?? {}}
         />
         <StorySection items={(site.story_items as unknown as StoryItem[]) ?? []} />
+        <GuestbookFieldsSection fields={resolveGuestbookFields(extras)} />
         <RsvpFieldsSection
           fields={resolveRsvpFields(extras)}
           promptEnabled={extras.rsvp_prompt_enabled ?? false}

@@ -41,6 +41,15 @@ export type RsvpFields = {
   parking?: boolean;
 };
 
+// Which extra questions the guestbook asks a guest, beyond 이름 and 축하
+// 메시지 (never included here — those two are what makes an entry an
+// entry, so they always show and aren't user-togglable). Mirrors RsvpFields.
+export type GuestbookFields = {
+  phone?: boolean;
+  guest_side?: boolean;
+  relationship?: boolean;
+};
+
 export type SiteExtras = {
   transit_subway?: string;
   transit_bus?: string;
@@ -51,6 +60,7 @@ export type SiteExtras = {
   share_title_suffix?: string;
   section_order?: SectionKey[];
   rsvp_fields?: RsvpFields;
+  guestbook_fields?: GuestbookFields;
   // Which content types are pinned to the bottom tab bar (up to
   // MAX_PRIMARY_TABS, from app/w/[slug]/_lib/tabs.ts PRIMARY_KEYS), and in
   // what order. Anything enabled-but-not-chosen falls into the "더보기" tab.
@@ -122,6 +132,17 @@ export function readExtras(raw: unknown): SiteExtras {
             parking: (obj.rsvp_fields as Record<string, unknown>).parking === true,
           }
         : undefined,
+    guestbook_fields:
+      obj.guestbook_fields &&
+      typeof obj.guestbook_fields === "object" &&
+      !Array.isArray(obj.guestbook_fields)
+        ? {
+            phone: (obj.guestbook_fields as Record<string, unknown>).phone === true,
+            guest_side: (obj.guestbook_fields as Record<string, unknown>).guest_side === true,
+            relationship:
+              (obj.guestbook_fields as Record<string, unknown>).relationship === true,
+          }
+        : undefined,
     primary_tabs: Array.isArray(obj.primary_tabs)
       ? (obj.primary_tabs as unknown[]).map((k) => String(k))
       : undefined,
@@ -188,6 +209,20 @@ export function resolveRsvpFields(extras: SiteExtras): Required<RsvpFields> {
     meal: f.meal ?? false,
     side: f.side ?? false,
     parking: f.parking ?? false,
+  };
+}
+
+/**
+ * Fully-resolved guestbook field visibility. All three are new additions
+ * with no prior default, so — unlike RsvpFields' legacy fields — they all
+ * default OFF until a couple opts in.
+ */
+export function resolveGuestbookFields(extras: SiteExtras): Required<GuestbookFields> {
+  const f = extras.guestbook_fields ?? {};
+  return {
+    phone: f.phone ?? false,
+    guest_side: f.guest_side ?? false,
+    relationship: f.relationship ?? false,
   };
 }
 

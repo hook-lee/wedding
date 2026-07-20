@@ -84,6 +84,9 @@ export type Database = {
           guest_name: string;
           message: string;
           reply: string | null;
+          phone: string | null;
+          guest_side: "groom" | "bride" | null;
+          relationship: string | null;
           created_at: string;
         };
         Insert: {
@@ -92,6 +95,9 @@ export type Database = {
           guest_name: string;
           message: string;
           reply?: string | null;
+          phone?: string | null;
+          guest_side?: "groom" | "bride" | null;
+          relationship?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["guestbook"]["Insert"]>;

@@ -1,6 +1,6 @@
 import { Card } from "@/app/_ui/Card";
 
-type Profile = { mbti?: string; intro?: string };
+type Profile = { mbti?: string; intro?: string; photo_url?: string };
 
 function ProfileCard({
   label,
@@ -11,9 +11,17 @@ function ProfileCard({
   name: string;
   p: Profile;
 }) {
-  if (!p.mbti && !p.intro) return null;
+  if (!p.mbti && !p.intro && !p.photo_url) return null;
   return (
     <Card className="space-y-1">
+      {p.photo_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={p.photo_url}
+          alt=""
+          className="w-full aspect-square object-cover rounded-md mb-2"
+        />
+      )}
       <p className="text-xs text-muted">{label}</p>
       <p className="text-base font-semibold text-ink">{name}</p>
       {p.mbti && <p className="text-sm text-accent">{p.mbti}</p>}

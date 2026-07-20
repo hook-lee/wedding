@@ -78,11 +78,19 @@ export function MoreTab({
       {active === "profile" && (
         <ProfileView
           groom={
-            (site.groom_profile as unknown as { mbti?: string; intro?: string }) ?? {}
+            (site.groom_profile as unknown as {
+              mbti?: string;
+              intro?: string;
+              photo_url?: string;
+            }) ?? {}
           }
           groomName={site.groom_name}
           bride={
-            (site.bride_profile as unknown as { mbti?: string; intro?: string }) ?? {}
+            (site.bride_profile as unknown as {
+              mbti?: string;
+              intro?: string;
+              photo_url?: string;
+            }) ?? {}
           }
           brideName={site.bride_name}
         />

@@ -43,12 +43,31 @@ export default async function GuestbookAdmin() {
             >
               <div className="flex justify-between gap-3">
                 <div className="flex-1 min-w-0 space-y-1">
-                  <p className="text-sm font-semibold text-ink">{e.guest_name}</p>
+                  <p className="text-sm font-semibold text-ink">
+                    {e.guest_name}
+                    {(e.guest_side || e.relationship) && (
+                      <span className="text-xs text-muted font-normal">
+                        {" "}
+                        ·{" "}
+                        {[
+                          e.guest_side === "groom"
+                            ? "신랑측"
+                            : e.guest_side === "bride"
+                              ? "신부측"
+                              : null,
+                          e.relationship,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                    )}
+                  </p>
                   <p className="text-sm text-secondary whitespace-pre-line leading-relaxed">
                     {e.message}
                   </p>
                   <p className="text-xs text-muted pt-1">
                     {formatKstDateTime(e.created_at)}
+                    {e.phone && <span> · {e.phone}</span>}
                   </p>
                 </div>
                 <form action={deleteGuestbookEntry.bind(null, e.id)} className="self-start">
