@@ -64,13 +64,17 @@ export function Calendar({ weddingAt, slug, title, location }: Props) {
         })}
       </div>
 
-      {/* Two separate buttons instead of one auto-detected link — .ics
-          download reliably triggers Apple Calendar's add sheet, but Android
-          has no equivalent for .ics; Google Calendar's own link (a plain
-          page navigation, not a file) is what reliably works there,
-          especially inside in-app browsers like KakaoTalk that often block
-          or mishandle downloads outright. Letting guests pick avoids
-          fragile user-agent guessing. */}
+      {/* Two separate buttons instead of one auto-detected link.
+          Google Calendar's own link is a plain page navigation (not a
+          file), so it survives in-app browsers — but it needs the guest
+          already signed into Google in that browser tab, which an in-app
+          WebView (KakaoTalk 등) often isn't. The .ics download is the
+          fallback: it's NOT Apple-only — Samsung Calendar, Outlook, and
+          basically every calendar app can import a standalone .ics file
+          (Samsung: 캘린더 앱 메뉴 → 가져오기), it's just that iOS Safari is
+          the one platform that turns it into a one-tap "add to calendar"
+          instead of a manual import. Letting guests pick both avoids
+          fragile user-agent guessing either way. */}
       <div className="mt-5 grid grid-cols-2 gap-2">
         <a
           href={buildGoogleCalendarUrl({
@@ -91,9 +95,12 @@ export function Calendar({ weddingAt, slug, title, location }: Props) {
           className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 bg-ink text-bg rounded-pill text-xs sm:text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
         >
           <Icon name="calendarPlus" className="w-4 h-4 flex-shrink-0" />
-          Apple 캘린더
+          iOS·삼성 캘린더
         </a>
       </div>
+      <p className="mt-2 text-center text-[11px] text-muted">
+        구글 캘린더 미로그인 상태면, 오른쪽 버튼으로 저장 후 캘린더 앱에서 가져오기 해주세요
+      </p>
     </div>
   );
 }
