@@ -26,10 +26,15 @@ export async function GET(
   return new Response(ics, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      // "inline" (not "attachment") — iOS Safari's native "Add to Calendar"
-      // sheet only triggers when it can preview the file in-page; forcing a
-      // download instead just saves the raw .ics to Files with no prompt.
-      "Content-Disposition": `inline; filename="wedding-${slug}.ics"`,
+      // "attachment", not "inline" — reverted. text/calendar has no in-page
+      // renderer, so "inline" makes several mobile browsers just dump the
+      // raw VCALENDAR text on screen instead of downloading anything —
+      // worse than the original behavior, not better. "attachment" is what
+      // every mainstream "add to calendar" implementation (Eventbrite-style)
+      // actually uses: it forces a real file into Downloads/Files, which is
+      // what both Safari's QuickLook handoff and Samsung Calendar's Import
+      // flow need to have something to grab in the first place.
+      "Content-Disposition": `attachment; filename="wedding-${slug}.ics"`,
       "Cache-Control": "no-store",
     },
   });
