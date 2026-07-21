@@ -1,17 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
 import { Icon } from "./Icon";
 import { buildGoogleCalendarUrl } from "@/lib/calendar/ics";
-
-// KakaoTalk's (and Instagram/Facebook/LINE's) built-in in-app browser has no
-// download handling at all — a file response (the .ics route) just gets
-// silently dropped, no matter what Content-Disposition it sends. A plain
-// page navigation (the Google Calendar link) still works fine there, so the
-// only real fix for the .ics path is telling the guest to leave the in-app
-// browser first.
-function isInAppBrowser(ua: string): boolean {
-  return /kakaotalk|instagram|fban|fbav|line\//i.test(ua);
-}
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -24,11 +13,6 @@ type Props = {
 };
 
 export function Calendar({ weddingAt, slug, title, location }: Props) {
-  const [inApp, setInApp] = useState(false);
-  useEffect(() => {
-    setInApp(isInAppBrowser(navigator.userAgent));
-  }, []);
-
   const kstDate = new Date(new Date(weddingAt).getTime() + KST_OFFSET_MS);
   const year = kstDate.getUTCFullYear();
   const month = kstDate.getUTCMonth();
@@ -114,16 +98,6 @@ export function Calendar({ weddingAt, slug, title, location }: Props) {
           iOS·삼성 캘린더
         </a>
       </div>
-      {inApp ? (
-        <p className="mt-2 text-center text-[11px] text-accent leading-relaxed">
-          카카오톡 등 인앱 브라우저에서는 iOS·삼성 캘린더 저장이 안 열릴 수 있어요.
-          우측 상단 &apos;•••&apos; → &apos;다른 브라우저로 열기&apos;를 눌러 다시 시도해주세요.
-        </p>
-      ) : (
-        <p className="mt-2 text-center text-[11px] text-muted">
-          구글 캘린더 미로그인 상태면, 오른쪽 버튼으로 저장 후 캘린더 앱에서 가져오기 해주세요
-        </p>
-      )}
     </div>
   );
 }
