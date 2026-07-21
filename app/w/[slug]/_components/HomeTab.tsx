@@ -191,7 +191,15 @@ export function HomeTab({ site, initialGuestbook }: Props) {
             node: (
               <Reveal key="calendar">
                 <SectionTitle icon="calendar" label="캘린더" anchor="calendar" />
-                <Calendar weddingAt={site.wedding_at!} slug={site.slug} />
+                <Calendar
+                  weddingAt={site.wedding_at!}
+                  slug={site.slug}
+                  title={`${namesText} 결혼식`}
+                  location={
+                    [site.venue_name, site.venue_address].filter(Boolean).join(", ") ||
+                    "결혼식장"
+                  }
+                />
                 <div className="mt-6">
                   <Countdown targetIso={site.wedding_at!} />
                 </div>

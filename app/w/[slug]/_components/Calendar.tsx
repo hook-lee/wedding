@@ -1,5 +1,6 @@
 "use client";
 import { Icon } from "./Icon";
+import { buildGoogleCalendarUrl } from "@/lib/calendar/ics";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -7,9 +8,11 @@ const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 type Props = {
   weddingAt: string;
   slug: string;
+  title: string;
+  location: string;
 };
 
-export function Calendar({ weddingAt, slug }: Props) {
+export function Calendar({ weddingAt, slug, title, location }: Props) {
   const kstDate = new Date(new Date(weddingAt).getTime() + KST_OFFSET_MS);
   const year = kstDate.getUTCFullYear();
   const month = kstDate.getUTCMonth();
@@ -61,13 +64,36 @@ export function Calendar({ weddingAt, slug }: Props) {
         })}
       </div>
 
-      <a
-        href={`/w/${slug}/calendar`}
-        className="mt-5 w-full inline-flex items-center justify-center gap-2 min-h-[44px] px-5 bg-ink text-bg rounded-pill text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
-      >
-        <Icon name="calendarPlus" className="w-4 h-4" />
-        캘린더에 저장
-      </a>
+      {/* Two separate buttons instead of one auto-detected link — .ics
+          download reliably triggers Apple Calendar's add sheet, but Android
+          has no equivalent for .ics; Google Calendar's own link (a plain
+          page navigation, not a file) is what reliably works there,
+          especially inside in-app browsers like KakaoTalk that often block
+          or mishandle downloads outright. Letting guests pick avoids
+          fragile user-agent guessing. */}
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        <a
+          href={buildGoogleCalendarUrl({
+            title,
+            location,
+            description: `${title}에 초대합니다`,
+            startIso: weddingAt,
+          })}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 bg-ink text-bg rounded-pill text-xs sm:text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
+        >
+          <Icon name="calendarPlus" className="w-4 h-4 flex-shrink-0" />
+          Google 캘린더
+        </a>
+        <a
+          href={`/w/${slug}/calendar`}
+          className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 bg-ink text-bg rounded-pill text-xs sm:text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
+        >
+          <Icon name="calendarPlus" className="w-4 h-4 flex-shrink-0" />
+          Apple 캘린더
+        </a>
+      </div>
     </div>
   );
 }

@@ -26,7 +26,10 @@ export async function GET(
   return new Response(ics, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": `attachment; filename="wedding-${slug}.ics"`,
+      // "inline" (not "attachment") — iOS Safari's native "Add to Calendar"
+      // sheet only triggers when it can preview the file in-page; forcing a
+      // download instead just saves the raw .ics to Files with no prompt.
+      "Content-Disposition": `inline; filename="wedding-${slug}.ics"`,
       "Cache-Control": "no-store",
     },
   });
