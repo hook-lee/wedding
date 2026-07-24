@@ -35,6 +35,11 @@ export async function GET(
       // showed a dead-end preview with only a "완료(Done)" button and no
       // actual add action.
       "Content-Disposition": `attachment; filename="wedding-${slug}.ics"`,
+      // Explicit Content-Length instead of leaving it to chunked transfer
+      // encoding — Safari's calendar-file recognition/preview generation
+      // reads more reliably off a response with a known-upfront byte
+      // length than one streamed without one.
+      "Content-Length": String(Buffer.byteLength(ics, "utf-8")),
       "Cache-Control": "no-store",
     },
   });
