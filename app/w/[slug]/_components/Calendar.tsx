@@ -7,12 +7,11 @@ const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
 type Props = {
   weddingAt: string;
-  slug: string;
   title: string;
   location: string;
 };
 
-export function Calendar({ weddingAt, slug, title, location }: Props) {
+export function Calendar({ weddingAt, title, location }: Props) {
   const kstDate = new Date(new Date(weddingAt).getTime() + KST_OFFSET_MS);
   const year = kstDate.getUTCFullYear();
   const month = kstDate.getUTCMonth();
@@ -64,40 +63,30 @@ export function Calendar({ weddingAt, slug, title, location }: Props) {
         })}
       </div>
 
-      {/* Two separate buttons instead of one auto-detected link.
-          Google Calendar's own link is a plain page navigation (not a
-          file), so it survives in-app browsers — but it needs the guest
-          already signed into Google in that browser tab, which an in-app
-          WebView (KakaoTalk 등) often isn't. The .ics download is the
-          fallback: it's NOT Apple-only — Samsung Calendar, Outlook, and
-          basically every calendar app can import a standalone .ics file
-          (Samsung: 캘린더 앱 메뉴 → 가져오기), it's just that iOS Safari is
-          the one platform that turns it into a one-tap "add to calendar"
-          instead of a manual import. Letting guests pick both avoids
-          fragile user-agent guessing either way. */}
-      <div className="mt-5 grid grid-cols-2 gap-2">
-        <a
-          href={buildGoogleCalendarUrl({
-            title,
-            location,
-            description: `${title}에 초대합니다`,
-            startIso: weddingAt,
-          })}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 bg-ink text-bg rounded-pill text-xs sm:text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
-        >
-          <Icon name="calendarPlus" className="w-4 h-4 flex-shrink-0" />
-          Google 캘린더
-        </a>
-        <a
-          href={`/w/${slug}/calendar.ics`}
-          className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 bg-ink text-bg rounded-pill text-xs sm:text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
-        >
-          <Icon name="calendarPlus" className="w-4 h-4 flex-shrink-0" />
-          iOS·삼성 캘린더
-        </a>
-      </div>
+      {/* Google Calendar only — it's a plain page navigation (not a file
+          download), so it works the same reliable way on iOS and Android,
+          in real browsers and in-app browsers alike. The .ics-download
+          path (native Apple/Samsung calendar apps) was dropped: iOS Safari
+          routes a downloaded .ics through preview-only, subscribe, or add
+          flows inconsistently depending on iOS version, and there's no
+          reliable way to control that from the response — see git history
+          on this file for the investigation. Guests who don't use Google
+          Calendar simply won't use this button, which beats offering a
+          second button that unpredictably breaks. */}
+      <a
+        href={buildGoogleCalendarUrl({
+          title,
+          location,
+          description: `${title}에 초대합니다`,
+          startIso: weddingAt,
+        })}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-5 w-full inline-flex items-center justify-center gap-2 min-h-[44px] px-5 bg-ink text-bg rounded-pill text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
+      >
+        <Icon name="calendarPlus" className="w-4 h-4" />
+        Google 캘린더에 저장
+      </a>
     </div>
   );
 }
