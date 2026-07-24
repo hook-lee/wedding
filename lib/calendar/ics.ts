@@ -24,6 +24,31 @@ function escapeIcs(s: string): string {
   return s.replace(/[\\;,]/g, (m) => `\\${m}`).replace(/\n/g, "\\n");
 }
 
+// RFC 5545 §3.1: content lines SHOULD NOT exceed 75 octets (not characters —
+// bytes, and a fold must never split a multi-byte UTF-8 sequence). Korean
+// venue names/addresses blow past 75 octets almost immediately, and an
+// unfolded line risks a strict .ics parser (which is what decides whether
+// iOS shows the native "Add to Calendar" sheet vs. a dumb file preview)
+// choking on the file instead of just being lenient about it.
+const FOLD_LIMIT = 75;
+
+function foldLine(line: string): string {
+  const bytes = Buffer.from(line, "utf-8");
+  if (bytes.length <= FOLD_LIMIT) return line;
+  const chunks: string[] = [];
+  let offset = 0;
+  let first = true;
+  while (offset < bytes.length) {
+    const limit = first ? FOLD_LIMIT : FOLD_LIMIT - 1; // -1 for the continuation's leading space
+    let end = Math.min(offset + limit, bytes.length);
+    while (end > offset && (bytes[end] & 0xc0) === 0x80) end--; // don't split a UTF-8 char
+    chunks.push(bytes.subarray(offset, end).toString("utf-8"));
+    offset = end;
+    first = false;
+  }
+  return chunks.join("\r\n ");
+}
+
 export function buildIcs(params: {
   title: string;
   location: string;
@@ -42,6 +67,9 @@ export function buildIcs(params: {
     "VERSION:2.0",
     "PRODID:-//wedding-zip//KR",
     "CALSCALE:GREGORIAN",
+    // Some calendar parsers (iOS included) treat METHOD as the signal that
+    // this file is a publishable/importable event rather than passive data.
+    "METHOD:PUBLISH",
     "BEGIN:VEVENT",
     `UID:wedding-${uidSeed}@wedding-zip.vercel.app`,
     `DTSTAMP:${toIcsUtc(now)}`,
@@ -52,7 +80,9 @@ export function buildIcs(params: {
     `DESCRIPTION:${escapeIcs(description)}`,
     "END:VEVENT",
     "END:VCALENDAR",
-  ].join("\r\n");
+  ]
+    .map(foldLine)
+    .join("\r\n");
 }
 
 /** Trigger browser download of an .ics file. */
