@@ -91,7 +91,7 @@ export function Calendar({ weddingAt, slug, title, location }: Props) {
           Google 캘린더
         </a>
         <a
-          href={`/w/${slug}/calendar`}
+          href={`/w/${slug}/calendar.ics`}
           className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 bg-ink text-bg rounded-pill text-xs sm:text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
         >
           <Icon name="calendarPlus" className="w-4 h-4 flex-shrink-0" />
