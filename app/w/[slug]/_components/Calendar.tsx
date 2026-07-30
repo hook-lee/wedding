@@ -5,6 +5,36 @@ import { buildGoogleCalendarUrl } from "@/lib/calendar/ics";
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
+/**
+ * Fetches the already-working .ics response from our own route, then
+ * re-delivers it as a data: URI via a synthetic click on a detached <a
+ * download>, instead of a plain <a href> navigation to the route. This
+ * mirrors add2cal/add-to-calendar-button's atcb_save_file exactly (the
+ * reference implementation for this exact problem) — a plain navigation
+ * still leaves iOS Safari to apply its own MIME-based heuristic on our
+ * server's response, which is what was landing on "subscribe" instead of
+ * "add event" even with a `download` attribute on the link. A data: URI
+ * has no server response for Safari to apply that heuristic to at all.
+ */
+async function saveIcsFile(icsUrl: string, filename: string) {
+  try {
+    const res = await fetch(icsUrl);
+    if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
+    const icsContent = await res.text();
+    const dataUrl = "data:text/calendar;charset=utf-8," + encodeURIComponent(icsContent);
+    const a = document.createElementNS("http://www.w3.org/1999/xhtml", "a") as HTMLAnchorElement;
+    a.rel = "noopener";
+    a.href = dataUrl;
+    a.target = "_self";
+    a.download = filename;
+    a.dispatchEvent(
+      new MouseEvent("click", { view: window, button: 0, bubbles: true, cancelable: false }),
+    );
+  } catch {
+    alert("캘린더 파일을 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+  }
+}
+
 type Props = {
   weddingAt: string;
   slug: string;
@@ -94,28 +124,19 @@ export function Calendar({
             </a>
           )}
           {icsEnabled && (
-            // The `download` attribute is the key difference from a plain
-            // <a href> to the same URL: without it, iOS Safari treats a
-            // navigated-to .ics response ambiguously — depending on iOS
-            // version this can show a dead-end preview or route through
-            // Settings' "Subscribe to Calendar" flow instead of adding a
-            // single event. With `download`, Safari treats it as an
-            // explicit file save (into its Downloads tray), which is the
-            // path that reliably leads to the real "Add to Calendar"
-            // EventKit sheet — confirmed against add2cal/add-to-calendar-
-            // button, the most widely used reference implementation for
-            // this exact problem, which sets the same attribute for
-            // precisely this reason.
-            <a
-              href={`/w/${slug}/calendar.ics`}
-              download={`wedding-${slug}.ics`}
+            // Not labeled "iOS·삼성" — we don't actually control or
+            // guarantee which calendar app opens it, so the button just
+            // describes the action ("등록"), not a specific OS/app.
+            <button
+              type="button"
+              onClick={() => saveIcsFile(`/w/${slug}/calendar.ics`, `wedding-${slug}.ics`)}
               className={`inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 bg-ink text-bg rounded-pill font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity ${
                 googleEnabled ? "text-xs sm:text-sm" : "w-full text-sm gap-2 px-5"
               }`}
             >
               <Icon name="calendarPlus" className="w-4 h-4 flex-shrink-0" />
-              iOS·삼성 캘린더
-            </a>
+              캘린더 등록
+            </button>
           )}
         </div>
       )}
