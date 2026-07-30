@@ -234,6 +234,10 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
       guest_side: formData.get("guestbook_field_guest_side") === "on",
       relationship: formData.get("guestbook_field_relationship") === "on",
     },
+    calendar_buttons: {
+      google: formData.get("calendar_button_google") === "on",
+      ics: formData.get("calendar_button_ics") === "on",
+    },
     primary_tabs,
     home_visible,
     rsvp_prompt_enabled: formData.get("rsvp_prompt_enabled") === "on",

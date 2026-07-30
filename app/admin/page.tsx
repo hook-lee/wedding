@@ -5,6 +5,7 @@ import { AdminWorkspace } from "./_components/AdminWorkspace";
 import { BasicInfoSection } from "./_components/BasicInfoSection";
 import { ParentsSection } from "./_components/ParentsSection";
 import { VenueSection } from "./_components/VenueSection";
+import { CalendarButtonsSection } from "./_components/CalendarButtonsSection";
 import { PhotoSection } from "./_components/PhotoSection";
 import { BgmSection } from "./_components/BgmSection";
 import { GreetingSection } from "./_components/GreetingSection";
@@ -26,6 +27,7 @@ import {
   resolveSectionOrder,
   resolveRsvpFields,
   resolveGuestbookFields,
+  resolveCalendarButtons,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
@@ -131,6 +133,7 @@ export default async function AdminHome() {
           parkingLat={site.parking_lat ?? null}
           parkingLng={site.parking_lng ?? null}
         />
+        <CalendarButtonsSection buttons={resolveCalendarButtons(extras)} />
         <TransitParkingSection extras={extras} />
         <InfoItemsSection items={extras.info_items ?? []} />
         <GreetingSection site={site} />

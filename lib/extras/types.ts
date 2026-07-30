@@ -50,6 +50,14 @@ export type GuestbookFields = {
   relationship?: boolean;
 };
 
+// Which "캘린더에 저장" buttons show on the calendar card. Both default ON
+// (unlike sponsor-style opt-ins) since calendar-save is a mainstream
+// expected feature, not a niche add-on.
+export type CalendarButtons = {
+  google?: boolean;
+  ics?: boolean;
+};
+
 export type SiteExtras = {
   transit_subway?: string;
   transit_bus?: string;
@@ -61,6 +69,7 @@ export type SiteExtras = {
   section_order?: SectionKey[];
   rsvp_fields?: RsvpFields;
   guestbook_fields?: GuestbookFields;
+  calendar_buttons?: CalendarButtons;
   // Which content types are pinned to the bottom tab bar (up to
   // MAX_PRIMARY_TABS, from app/w/[slug]/_lib/tabs.ts PRIMARY_KEYS), and in
   // what order. Anything enabled-but-not-chosen falls into the "더보기" tab.
@@ -143,6 +152,15 @@ export function readExtras(raw: unknown): SiteExtras {
               (obj.guestbook_fields as Record<string, unknown>).relationship === true,
           }
         : undefined,
+    calendar_buttons:
+      obj.calendar_buttons &&
+      typeof obj.calendar_buttons === "object" &&
+      !Array.isArray(obj.calendar_buttons)
+        ? {
+            google: (obj.calendar_buttons as Record<string, unknown>).google === true,
+            ics: (obj.calendar_buttons as Record<string, unknown>).ics === true,
+          }
+        : undefined,
     primary_tabs: Array.isArray(obj.primary_tabs)
       ? (obj.primary_tabs as unknown[]).map((k) => String(k))
       : undefined,
@@ -223,6 +241,19 @@ export function resolveGuestbookFields(extras: SiteExtras): Required<GuestbookFi
     phone: f.phone ?? false,
     guest_side: f.guest_side ?? false,
     relationship: f.relationship ?? false,
+  };
+}
+
+/**
+ * Fully-resolved calendar-button visibility. Both default ON — unlike the
+ * guestbook's new fields, these aren't niche additions; a couple has to
+ * actively opt OUT rather than opt in.
+ */
+export function resolveCalendarButtons(extras: SiteExtras): Required<CalendarButtons> {
+  const f = extras.calendar_buttons ?? {};
+  return {
+    google: f.google ?? true,
+    ics: f.ics ?? true,
   };
 }
 

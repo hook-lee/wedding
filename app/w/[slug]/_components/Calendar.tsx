@@ -7,11 +7,21 @@ const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
 type Props = {
   weddingAt: string;
+  slug: string;
   title: string;
   location: string;
+  googleEnabled: boolean;
+  icsEnabled: boolean;
 };
 
-export function Calendar({ weddingAt, title, location }: Props) {
+export function Calendar({
+  weddingAt,
+  slug,
+  title,
+  location,
+  googleEnabled,
+  icsEnabled,
+}: Props) {
   const kstDate = new Date(new Date(weddingAt).getTime() + KST_OFFSET_MS);
   const year = kstDate.getUTCFullYear();
   const month = kstDate.getUTCMonth();
@@ -63,30 +73,52 @@ export function Calendar({ weddingAt, title, location }: Props) {
         })}
       </div>
 
-      {/* Google Calendar only — it's a plain page navigation (not a file
-          download), so it works the same reliable way on iOS and Android,
-          in real browsers and in-app browsers alike. The .ics-download
-          path (native Apple/Samsung calendar apps) was dropped: iOS Safari
-          routes a downloaded .ics through preview-only, subscribe, or add
-          flows inconsistently depending on iOS version, and there's no
-          reliable way to control that from the response — see git history
-          on this file for the investigation. Guests who don't use Google
-          Calendar simply won't use this button, which beats offering a
-          second button that unpredictably breaks. */}
-      <a
-        href={buildGoogleCalendarUrl({
-          title,
-          location,
-          description: `${title}에 초대합니다`,
-          startIso: weddingAt,
-        })}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-5 w-full inline-flex items-center justify-center gap-2 min-h-[44px] px-5 bg-ink text-bg rounded-pill text-sm font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity"
-      >
-        <Icon name="calendarPlus" className="w-4 h-4" />
-        Google 캘린더에 저장
-      </a>
+      {(googleEnabled || icsEnabled) && (
+        <div className={`mt-5 ${googleEnabled && icsEnabled ? "grid grid-cols-2 gap-2" : ""}`}>
+          {googleEnabled && (
+            <a
+              href={buildGoogleCalendarUrl({
+                title,
+                location,
+                description: `${title}에 초대합니다`,
+                startIso: weddingAt,
+              })}
+              target="_blank"
+              rel="noreferrer"
+              className={`inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 bg-ink text-bg rounded-pill font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity ${
+                icsEnabled ? "text-xs sm:text-sm" : "w-full text-sm gap-2 px-5"
+              }`}
+            >
+              <Icon name="calendarPlus" className="w-4 h-4 flex-shrink-0" />
+              Google 캘린더{icsEnabled ? "" : "에 저장"}
+            </a>
+          )}
+          {icsEnabled && (
+            // The `download` attribute is the key difference from a plain
+            // <a href> to the same URL: without it, iOS Safari treats a
+            // navigated-to .ics response ambiguously — depending on iOS
+            // version this can show a dead-end preview or route through
+            // Settings' "Subscribe to Calendar" flow instead of adding a
+            // single event. With `download`, Safari treats it as an
+            // explicit file save (into its Downloads tray), which is the
+            // path that reliably leads to the real "Add to Calendar"
+            // EventKit sheet — confirmed against add2cal/add-to-calendar-
+            // button, the most widely used reference implementation for
+            // this exact problem, which sets the same attribute for
+            // precisely this reason.
+            <a
+              href={`/w/${slug}/calendar.ics`}
+              download={`wedding-${slug}.ics`}
+              className={`inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 bg-ink text-bg rounded-pill font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity ${
+                googleEnabled ? "text-xs sm:text-sm" : "w-full text-sm gap-2 px-5"
+              }`}
+            >
+              <Icon name="calendarPlus" className="w-4 h-4 flex-shrink-0" />
+              iOS·삼성 캘린더
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }

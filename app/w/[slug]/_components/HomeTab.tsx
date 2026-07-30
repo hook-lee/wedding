@@ -24,6 +24,7 @@ import {
   resolveSectionOrder,
   resolveRsvpFields,
   resolveGuestbookFields,
+  resolveCalendarButtons,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
@@ -78,6 +79,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
   const enabled = (site.sections_enabled as unknown as Record<string, boolean>) ?? {};
   const greetingVideoId = site.greeting_video_id ?? "";
   const extras = readExtras(site.extras);
+  const calendarButtons = resolveCalendarButtons(extras);
   const hasInfoItems = (extras.info_items?.length ?? 0) > 0;
   const showFlowerDecline = extras.flower_decline === true;
   const namesText = `${site.groom_name}${site.name_joiner}${site.bride_name}`;
@@ -193,11 +195,14 @@ export function HomeTab({ site, initialGuestbook }: Props) {
                 <SectionTitle icon="calendar" label="캘린더" anchor="calendar" />
                 <Calendar
                   weddingAt={site.wedding_at!}
+                  slug={site.slug}
                   title={`${namesText} 결혼식`}
                   location={
                     [site.venue_name, site.venue_address].filter(Boolean).join(", ") ||
                     "결혼식장"
                   }
+                  googleEnabled={calendarButtons.google}
+                  icsEnabled={calendarButtons.ics}
                 />
                 <div className="mt-6">
                   <Countdown targetIso={site.wedding_at!} />
