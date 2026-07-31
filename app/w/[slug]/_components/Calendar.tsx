@@ -1,35 +1,30 @@
 "use client";
 import { Icon } from "./Icon";
-import { buildGoogleCalendarUrl } from "@/lib/calendar/ics";
+import { buildGoogleCalendarUrl, downloadIcs } from "@/lib/calendar/ics";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
 /**
- * Fetches the already-working .ics response from our own route, then
- * re-delivers it as a data: URI via a synthetic click on a detached <a
- * download>, instead of a plain <a href> navigation to the route. This
- * mirrors add2cal/add-to-calendar-button's atcb_save_file exactly (the
- * reference implementation for this exact problem) — a plain navigation
- * still leaves iOS Safari to apply its own MIME-based heuristic on our
- * server's response, which is what was landing on "subscribe" instead of
- * "add event" even with a `download` attribute on the link. A data: URI
- * has no server response for Safari to apply that heuristic to at all.
+ * Fetches the .ics content from our own route, wraps it in a Blob URL, and
+ * triggers the save via a real DOM-attached <a download> + a real .click()
+ * call — not a data: URI, not a synthetic MouseEvent on a detached node.
+ * This exact mechanism (Blob + createObjectURL + appendChild + .click() +
+ * removeChild) is what a live, production webinar-registration widget
+ * (found by inspecting a real "캘린더 추가" button on k-expo.org that the
+ * user confirmed actually adds a real event, not a subscription) uses for
+ * both iOS and Android — and matches the downloadIcs() helper already
+ * sitting unused in lib/calendar/ics.ts from earlier in this project.
+ * A previous attempt using a data: URI + synthetic dispatchEvent, closely
+ * matching a different reference library, still landed on iOS's calendar-
+ * subscribe flow — so despite looking similar, the exact delivery mechanics
+ * here matter and this is the one independently verified to work.
  */
 async function saveIcsFile(icsUrl: string, filename: string) {
   try {
     const res = await fetch(icsUrl);
     if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
-    const icsContent = await res.text();
-    const dataUrl = "data:text/calendar;charset=utf-8," + encodeURIComponent(icsContent);
-    const a = document.createElementNS("http://www.w3.org/1999/xhtml", "a") as HTMLAnchorElement;
-    a.rel = "noopener";
-    a.href = dataUrl;
-    a.target = "_self";
-    a.download = filename;
-    a.dispatchEvent(
-      new MouseEvent("click", { view: window, button: 0, bubbles: true, cancelable: false }),
-    );
+    downloadIcs(await res.text(), filename);
   } catch {
     alert("캘린더 파일을 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
   }
