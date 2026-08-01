@@ -94,7 +94,7 @@ export function buildIcs(params: {
   durationHours?: number;
   uidSeed: string;
 }): string {
-  const { title, location, description, startIso, durationHours = 3, uidSeed } = params;
+  const { title, location, description, startIso, durationHours = 2, uidSeed } = params;
   const start = new Date(startIso);
   const end = new Date(start.getTime() + durationHours * 3600 * 1000);
   const now = new Date();
@@ -116,6 +116,16 @@ export function buildIcs(params: {
     `SUMMARY:${escapeIcs(title)}`,
     `LOCATION:${escapeIcs(location)}`,
     `DESCRIPTION:${escapeIcs(description)}`,
+    "BEGIN:VALARM",
+    "TRIGGER:-P1D",
+    "ACTION:DISPLAY",
+    `DESCRIPTION:${escapeIcs(title)} 하루 전입니다!`,
+    "END:VALARM",
+    "BEGIN:VALARM",
+    "TRIGGER:-PT6H",
+    "ACTION:DISPLAY",
+    `DESCRIPTION:${escapeIcs(title)} 6시간 전입니다!`,
+    "END:VALARM",
     "END:VEVENT",
     "END:VCALENDAR",
   ]
@@ -149,7 +159,7 @@ export function buildGoogleCalendarUrl(params: {
   startIso: string;
   durationHours?: number;
 }): string {
-  const { title, location, description, startIso, durationHours = 3 } = params;
+  const { title, location, description, startIso, durationHours = 2 } = params;
   const start = new Date(startIso);
   const end = new Date(start.getTime() + durationHours * 3600 * 1000);
   const qs = new URLSearchParams({
