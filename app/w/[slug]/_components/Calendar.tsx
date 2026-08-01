@@ -102,10 +102,17 @@ export function Calendar({
             <button
               type="button"
               onClick={() => {
+                // KakaoTalk iOS does not support the <a download> path. Its
+                // supported flow is a direct HTTP file response with calendar
+                // content and attachment headers (our calendar.ics route).
+                if (/KAKAOTALK/i.test(navigator.userAgent)) {
+                  window.location.assign(`/w/${encodeURIComponent(slug)}/calendar.ics`);
+                  return;
+                }
+
                 // Keep the whole download inside the original user gesture.
-                // In iOS in-app browsers (including KakaoTalk), awaiting a
-                // fetch first loses that gesture and Quick Look opens without
-                // the native "Add to Calendar" action.
+                // Safari turns this synchronous Blob download into its native
+                // Event Details sheet with the "Add to Calendar" action.
                 const blobUrl = URL.createObjectURL(
                   new Blob([icsContent], { type: "text/calendar;charset=utf-8" }),
                 );

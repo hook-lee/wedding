@@ -49,6 +49,8 @@ export function StoryTab({ items }: { items: Item[] }) {
                 <img
                   src={it.photo_url}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                   className="w-full aspect-[4/3] object-cover rounded-md shadow-card"
                   style={{ objectPosition: objectPositionOf(it.photo_position) }}
                 />
