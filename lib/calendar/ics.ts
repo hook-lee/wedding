@@ -20,6 +20,43 @@ export function toIcsUtc(d: Date): string {
   );
 }
 
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+// Local KST wall-clock time, no "Z" — paired with TZID=Asia/Seoul on the
+// property itself (DTSTART;TZID=Asia/Seoul:...). A working reference
+// implementation (a live "add to calendar" widget, confirmed by direct
+// device testing to produce a real EventKit "Add Event" sheet on iOS
+// rather than the plain-UTC version's dead-end preview) uses this form —
+// not bare UTC — so we match it instead of guessing further.
+function toIcsLocalKst(d: Date): string {
+  const kst = new Date(d.getTime() + KST_OFFSET_MS);
+  return (
+    kst.getUTCFullYear() +
+    pad(kst.getUTCMonth() + 1) +
+    pad(kst.getUTCDate()) +
+    "T" +
+    pad(kst.getUTCHours()) +
+    pad(kst.getUTCMinutes()) +
+    pad(kst.getUTCSeconds())
+  );
+}
+
+// Standard Asia/Seoul VTIMEZONE block. Korea has had a fixed UTC+9 offset
+// (no DST) since the 1988 Seoul Olympics DST trial ended — the historical
+// DTSTART below marks that transition, which is the conventional way
+// iCalendar VTIMEZONE blocks represent a timezone with no current DST.
+const VTIMEZONE_SEOUL = [
+  "BEGIN:VTIMEZONE",
+  "TZID:Asia/Seoul",
+  "BEGIN:STANDARD",
+  "DTSTART:19881009T030000",
+  "TZOFFSETFROM:+1000",
+  "TZOFFSETTO:+0900",
+  "TZNAME:KST",
+  "END:STANDARD",
+  "END:VTIMEZONE",
+];
+
 function escapeIcs(s: string): string {
   return s.replace(/[\\;,]/g, (m) => `\\${m}`).replace(/\n/g, "\\n");
 }
@@ -70,11 +107,12 @@ export function buildIcs(params: {
     // Some calendar parsers (iOS included) treat METHOD as the signal that
     // this file is a publishable/importable event rather than passive data.
     "METHOD:PUBLISH",
+    ...VTIMEZONE_SEOUL,
     "BEGIN:VEVENT",
     `UID:wedding-${uidSeed}@wedding-zip.vercel.app`,
     `DTSTAMP:${toIcsUtc(now)}`,
-    `DTSTART:${toIcsUtc(start)}`,
-    `DTEND:${toIcsUtc(end)}`,
+    `DTSTART;TZID=Asia/Seoul:${toIcsLocalKst(start)}`,
+    `DTEND;TZID=Asia/Seoul:${toIcsLocalKst(end)}`,
     `SUMMARY:${escapeIcs(title)}`,
     `LOCATION:${escapeIcs(location)}`,
     `DESCRIPTION:${escapeIcs(description)}`,
