@@ -102,11 +102,23 @@ export function Calendar({
             <button
               type="button"
               onClick={() => {
-                // KakaoTalk iOS does not support the <a download> path. Its
-                // supported flow is a direct HTTP file response with calendar
-                // content and attachment headers (our calendar.ics route).
-                if (/KAKAOTALK/i.test(navigator.userAgent)) {
-                  window.location.assign(`/w/${encodeURIComponent(slug)}/calendar.ics`);
+                const isKakao = /KAKAOTALK/i.test(navigator.userAgent);
+                const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                const icsPath = `/w/${encodeURIComponent(slug)}/calendar.ics`;
+
+                // KakaoTalk on iOS interprets a direct .ics URL as a calendar
+                // subscription. Hand the same URL to the external browser so
+                // Safari opens the native single-event import sheet instead.
+                if (isKakao && isIos) {
+                  const icsUrl = new URL(icsPath, window.location.origin).toString();
+                  window.location.href = `kakaotalk://web/openExternal?url=${encodeURIComponent(icsUrl)}`;
+                  return;
+                }
+
+                // KakaoTalk Android supports the HTTP attachment download and
+                // can hand it to an installed calendar app.
+                if (isKakao) {
+                  window.location.assign(icsPath);
                   return;
                 }
 
