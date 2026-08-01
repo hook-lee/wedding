@@ -16,6 +16,7 @@ import { Calendar } from "./Calendar";
 import { Icon } from "./Icon";
 import { daysUntil } from "@/lib/date/dday";
 import { formatKstDateTime } from "@/lib/date/kst";
+import { buildIcs } from "@/lib/calendar/ics";
 import type { Tables } from "@/lib/supabase/types";
 import type { ParentsBlock } from "@/lib/parents/types";
 import {
@@ -85,6 +86,18 @@ export function HomeTab({ site, initialGuestbook }: Props) {
   const namesText = `${site.groom_name}${site.name_joiner}${site.bride_name}`;
   const groomProfile = (site.groom_profile as unknown as Profile) ?? {};
   const brideProfile = (site.bride_profile as unknown as Profile) ?? {};
+  const calendarTitle = `${namesText} 결혼식`;
+  const calendarLocation =
+    [site.venue_name, site.venue_address].filter(Boolean).join(", ") || "결혼식장";
+  const calendarIcs = site.wedding_at
+    ? buildIcs({
+        title: calendarTitle,
+        location: calendarLocation,
+        description: `${calendarTitle}에 초대합니다`,
+        startIso: site.wedding_at,
+        uidSeed: site.slug,
+      })
+    : "";
 
   return (
     <div className="space-y-2">
@@ -196,11 +209,9 @@ export function HomeTab({ site, initialGuestbook }: Props) {
                 <Calendar
                   weddingAt={site.wedding_at!}
                   slug={site.slug}
-                  title={`${namesText} 결혼식`}
-                  location={
-                    [site.venue_name, site.venue_address].filter(Boolean).join(", ") ||
-                    "결혼식장"
-                  }
+                  icsContent={calendarIcs}
+                  title={calendarTitle}
+                  location={calendarLocation}
                   googleEnabled={calendarButtons.google}
                   icsEnabled={calendarButtons.ics}
                 />

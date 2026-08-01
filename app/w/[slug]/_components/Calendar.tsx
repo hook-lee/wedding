@@ -1,38 +1,14 @@
 "use client";
 import { Icon } from "./Icon";
-import { buildGoogleCalendarUrl, downloadIcs } from "@/lib/calendar/ics";
+import { buildGoogleCalendarUrl } from "@/lib/calendar/ics";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
-/**
- * Fetches the .ics content from our own route, wraps it in a Blob URL, and
- * triggers the save via a real DOM-attached <a download> + a real .click()
- * call — not a data: URI, not a synthetic MouseEvent on a detached node.
- * This exact mechanism (Blob + createObjectURL + appendChild + .click() +
- * removeChild) is what a live, production webinar-registration widget
- * (found by inspecting a real "캘린더 추가" button on k-expo.org that the
- * user confirmed actually adds a real event, not a subscription) uses for
- * both iOS and Android — and matches the downloadIcs() helper already
- * sitting unused in lib/calendar/ics.ts from earlier in this project.
- * A previous attempt using a data: URI + synthetic dispatchEvent, closely
- * matching a different reference library, still landed on iOS's calendar-
- * subscribe flow — so despite looking similar, the exact delivery mechanics
- * here matter and this is the one independently verified to work.
- */
-async function saveIcsFile(icsUrl: string, filename: string) {
-  try {
-    const res = await fetch(icsUrl);
-    if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
-    downloadIcs(await res.text(), filename);
-  } catch {
-    alert("캘린더 파일을 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
-  }
-}
-
 type Props = {
   weddingAt: string;
   slug: string;
+  icsContent: string;
   title: string;
   location: string;
   googleEnabled: boolean;
@@ -42,6 +18,7 @@ type Props = {
 export function Calendar({
   weddingAt,
   slug,
+  icsContent,
   title,
   location,
   googleEnabled,
@@ -124,7 +101,22 @@ export function Calendar({
             // describes the action ("등록"), not a specific OS/app.
             <button
               type="button"
-              onClick={() => saveIcsFile(`/w/${slug}/calendar.ics`, `wedding-${slug}.ics`)}
+              onClick={() => {
+                // Keep the whole download inside the original user gesture.
+                // In iOS in-app browsers (including KakaoTalk), awaiting a
+                // fetch first loses that gesture and Quick Look opens without
+                // the native "Add to Calendar" action.
+                const blobUrl = URL.createObjectURL(
+                  new Blob([icsContent], { type: "text/calendar;charset=utf-8" }),
+                );
+                const link = document.createElement("a");
+                link.href = blobUrl;
+                link.download = `wedding-${slug}.ics`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 0);
+              }}
               className={`inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 bg-ink text-bg rounded-pill font-medium shadow-card hover:opacity-90 active:opacity-80 transition-opacity ${
                 googleEnabled ? "text-xs sm:text-sm" : "w-full text-sm gap-2 px-5"
               }`}

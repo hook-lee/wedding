@@ -25,16 +25,20 @@ export async function GET(
 
   return new Response(ics, {
     headers: {
-      "Content-Type": "text/calendar; charset=utf-8",
+      "Content-Type": "text/calendar; charset=utf-8; method=PUBLISH",
       // The URL path itself must end in ".ics" — iOS Safari's recognition
-      // of a downloaded file as a calendar event (triggering the native
+      // of a served file as a calendar event (triggering the native
       // "Add to Calendar" EventKit sheet instead of a generic/QuickLook
       // file preview) depends partly on the file extension, not just the
       // Content-Type header. The old route was at /calendar with no
       // extension at all, which is the likely reason the previous version
       // showed a dead-end preview with only a "완료(Done)" button and no
       // actual add action.
+      // A real calendar attachment (reached through a direct HTTPS link) is
+      // what Safari hands to its Event Details preview. That preview exposes
+      // the native "Add to Calendar" action shown at the bottom of the sheet.
       "Content-Disposition": `attachment; filename="wedding-${slug}.ics"`,
+      "X-Content-Type-Options": "nosniff",
       // Explicit Content-Length instead of leaving it to chunked transfer
       // encoding — Safari's calendar-file recognition/preview generation
       // reads more reliably off a response with a known-upfront byte
