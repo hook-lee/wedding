@@ -106,12 +106,20 @@ export function Calendar({
                 const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
                 const icsPath = `/w/${encodeURIComponent(slug)}/calendar.ics`;
 
-                // KakaoTalk on iOS interprets a direct .ics URL as a calendar
-                // subscription. Hand the same URL to the external browser so
-                // Safari opens the native single-event import sheet instead.
+                // KakaoTalk on iOS: navigating straight to the .ics URL (even
+                // in the external browser) makes iOS treat it as a calendar
+                // *subscription* — the exact "구독하기" screen this is meant
+                // to avoid, not a one-time Add Event. The Blob-download path
+                // below is what actually produces the correct "Add to
+                // Calendar" sheet, but it only works from a real page load in
+                // Safari, not from a bare file URL. So: send the guest to
+                // *this same page* in Safari instead of straight to the .ics
+                // file — they land on the working button and tap it again.
                 if (isKakao && isIos) {
-                  const icsUrl = new URL(icsPath, window.location.origin).toString();
-                  window.location.href = `kakaotalk://web/openExternal?url=${encodeURIComponent(icsUrl)}`;
+                  alert(
+                    "사파리에서 다시 열게요. 열리면 '캘린더 등록' 버튼을 한 번 더 눌러주세요!",
+                  );
+                  window.location.href = `kakaotalk://web/openExternal?url=${encodeURIComponent(window.location.href)}`;
                   return;
                 }
 
