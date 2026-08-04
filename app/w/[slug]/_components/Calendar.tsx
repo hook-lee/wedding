@@ -102,43 +102,16 @@ export function Calendar({
             <button
               type="button"
               onClick={() => {
-                const isKakao = /KAKAOTALK/i.test(navigator.userAgent);
-                const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-                const icsPath = `/w/${encodeURIComponent(slug)}/calendar.ics`;
-
-                // KakaoTalk on iOS: navigating straight to the .ics URL (even
-                // in the external browser) makes iOS treat it as a calendar
-                // *subscription* — the exact "구독하기" screen this is meant
-                // to avoid, not a one-time Add Event. The Blob-download path
-                // below is what actually produces the correct "Add to
-                // Calendar" sheet, but it only works from a real page load in
-                // Safari, not from a bare file URL. So: send the guest to
-                // *this same page* in Safari instead of straight to the .ics
-                // file — they land on the working button and tap it again.
-                if (isKakao && isIos) {
-                  alert(
-                    "사파리에서 다시 열게요. 열리면 '캘린더 등록' 버튼을 한 번 더 눌러주세요!",
-                  );
-                  window.location.href = `kakaotalk://web/openExternal?url=${encodeURIComponent(window.location.href)}`;
-                  return;
-                }
-
-                // KakaoTalk Android supports the HTTP attachment download and
-                // can hand it to an installed calendar app.
-                if (isKakao) {
-                  window.location.assign(icsPath);
-                  return;
-                }
-
-                // Keep the whole download inside the original user gesture.
-                // Safari turns this synchronous Blob download into its native
-                // Event Details sheet with the "Add to Calendar" action.
+                // Match the working Korea Expo implementation: never navigate
+                // to the remote .ics URL, which iOS treats as a subscription.
+                // Create and click the file synchronously in the user gesture.
                 const blobUrl = URL.createObjectURL(
                   new Blob([icsContent], { type: "text/calendar;charset=utf-8" }),
                 );
                 const link = document.createElement("a");
                 link.href = blobUrl;
-                link.download = `wedding-${slug}.ics`;
+                const safeTitle = title.replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 60);
+                link.download = `${safeTitle || `wedding-${slug}`}.ics`;
                 document.body.appendChild(link);
                 link.click();
                 link.remove();
