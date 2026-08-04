@@ -26,6 +26,7 @@ import {
   resolveRsvpFields,
   resolveGuestbookFields,
   resolveCalendarButtons,
+  resolveCalendarReminders,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
@@ -96,6 +97,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
         description: `${calendarTitle}에 초대합니다`,
         startIso: site.wedding_at,
         uidSeed: site.slug,
+        reminders: resolveCalendarReminders(extras),
       })
     : "";
 

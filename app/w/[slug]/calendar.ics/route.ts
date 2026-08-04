@@ -1,5 +1,6 @@
 import { loadSite } from "../_lib/load-site";
 import { buildIcs } from "@/lib/calendar/ics";
+import { readExtras, resolveCalendarReminders } from "@/lib/extras/types";
 
 export async function GET(
   _req: Request,
@@ -21,6 +22,7 @@ export async function GET(
     description: `${title}에 초대합니다`,
     startIso: site.wedding_at,
     uidSeed: site.slug,
+    reminders: resolveCalendarReminders(readExtras(site.extras)),
   });
 
   return new Response(ics, {

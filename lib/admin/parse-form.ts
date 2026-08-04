@@ -1,10 +1,23 @@
 import { kstDateTimeLocalToUtcIso } from "@/lib/date/kst";
 import { extractYouTubeVideoId } from "@/lib/youtube/parse-url";
 import type { ParentsBlock, ParentStatus } from "@/lib/parents/types";
-import { SECTION_KEYS, type InfoItem, type SectionKey, type SiteExtras } from "@/lib/extras/types";
+import {
+  SECTION_KEYS,
+  CALENDAR_REMINDER_OFFSETS,
+  type InfoItem,
+  type SectionKey,
+  type SiteExtras,
+  type CalendarReminderOffset,
+} from "@/lib/extras/types";
 import type { Database, Tables } from "@/lib/supabase/types";
 
 const VALID_THEMES = ["ivory", "sage", "pink", "cobalt", "mocha", "ash"] as const;
+
+function asReminderOffset(v: FormDataEntryValue | null): CalendarReminderOffset {
+  return (CALENDAR_REMINDER_OFFSETS as readonly string[]).includes(String(v ?? ""))
+    ? (v as CalendarReminderOffset)
+    : "";
+}
 
 function readParentsFromForm(formData: FormData): ParentsBlock {
   const sides = ["groom", "bride"] as const;
@@ -237,6 +250,10 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     calendar_buttons: {
       google: formData.get("calendar_button_google") === "on",
       ics: formData.get("calendar_button_ics") === "on",
+    },
+    calendar_reminders: {
+      first: asReminderOffset(formData.get("calendar_reminder_first")),
+      second: asReminderOffset(formData.get("calendar_reminder_second")),
     },
     primary_tabs,
     home_visible,

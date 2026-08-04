@@ -86,6 +86,46 @@ function foldLine(line: string): string {
   return chunks.join("\r\n ");
 }
 
+// Maps an admin-facing offset token to both the RFC 5545 TRIGGER duration
+// and a Korean label for the reminder's own DISPLAY text.
+const REMINDER_TRIGGER: Record<string, string> = {
+  "10m": "-PT10M",
+  "30m": "-PT30M",
+  "1h": "-PT1H",
+  "3h": "-PT3H",
+  "6h": "-PT6H",
+  "12h": "-PT12H",
+  "1d": "-P1D",
+  "2d": "-P2D",
+  "1w": "-P1W",
+};
+const REMINDER_LABEL: Record<string, string> = {
+  "10m": "10분 전",
+  "30m": "30분 전",
+  "1h": "1시간 전",
+  "3h": "3시간 전",
+  "6h": "6시간 전",
+  "12h": "12시간 전",
+  "1d": "하루 전",
+  "2d": "이틀 전",
+  "1w": "일주일 전",
+};
+
+function buildValarms(title: string, offsets: (string | undefined)[]): string[] {
+  const lines: string[] = [];
+  for (const offset of offsets) {
+    if (!offset || !REMINDER_TRIGGER[offset]) continue;
+    lines.push(
+      "BEGIN:VALARM",
+      `TRIGGER:${REMINDER_TRIGGER[offset]}`,
+      "ACTION:DISPLAY",
+      `DESCRIPTION:${escapeIcs(title)} ${REMINDER_LABEL[offset]}입니다!`,
+      "END:VALARM",
+    );
+  }
+  return lines;
+}
+
 export function buildIcs(params: {
   title: string;
   location: string;
@@ -93,44 +133,39 @@ export function buildIcs(params: {
   startIso: string;
   durationHours?: number;
   uidSeed: string;
+  reminders?: { first?: string; second?: string };
 }): string {
-  const { title, location, description, startIso, durationHours = 2, uidSeed } = params;
+  const { title, location, description, startIso, durationHours = 2, uidSeed, reminders } =
+    params;
   const start = new Date(startIso);
   const end = new Date(start.getTime() + durationHours * 3600 * 1000);
   const now = new Date();
 
-  return [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//wedding-zip//KR",
-    "CALSCALE:GREGORIAN",
-    // Some calendar parsers (iOS included) treat METHOD as the signal that
-    // this file is a publishable/importable event rather than passive data.
-    "METHOD:PUBLISH",
-    ...VTIMEZONE_SEOUL,
-    "BEGIN:VEVENT",
-    `UID:wedding-${uidSeed}@wedding-zip.vercel.app`,
-    `DTSTAMP:${toIcsUtc(now)}`,
-    `DTSTART;TZID=Asia/Seoul:${toIcsLocalKst(start)}`,
-    `DTEND;TZID=Asia/Seoul:${toIcsLocalKst(end)}`,
-    `SUMMARY:${escapeIcs(title)}`,
-    `LOCATION:${escapeIcs(location)}`,
-    `DESCRIPTION:${escapeIcs(description)}`,
-    "BEGIN:VALARM",
-    "TRIGGER:-P1D",
-    "ACTION:DISPLAY",
-    `DESCRIPTION:${escapeIcs(title)} 하루 전입니다!`,
-    "END:VALARM",
-    "BEGIN:VALARM",
-    "TRIGGER:-PT6H",
-    "ACTION:DISPLAY",
-    `DESCRIPTION:${escapeIcs(title)} 6시간 전입니다!`,
-    "END:VALARM",
-    "END:VEVENT",
-    "END:VCALENDAR",
-  ]
-    .map(foldLine)
-    .join("\r\n") + "\r\n";
+  return (
+    [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//wedding-zip//KR",
+      "CALSCALE:GREGORIAN",
+      // Some calendar parsers (iOS included) treat METHOD as the signal that
+      // this file is a publishable/importable event rather than passive data.
+      "METHOD:PUBLISH",
+      ...VTIMEZONE_SEOUL,
+      "BEGIN:VEVENT",
+      `UID:wedding-${uidSeed}@wedding-zip.vercel.app`,
+      `DTSTAMP:${toIcsUtc(now)}`,
+      `DTSTART;TZID=Asia/Seoul:${toIcsLocalKst(start)}`,
+      `DTEND;TZID=Asia/Seoul:${toIcsLocalKst(end)}`,
+      `SUMMARY:${escapeIcs(title)}`,
+      `LOCATION:${escapeIcs(location)}`,
+      `DESCRIPTION:${escapeIcs(description)}`,
+      ...buildValarms(title, [reminders?.first ?? "1d", reminders?.second ?? "6h"]),
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ]
+      .map(foldLine)
+      .join("\r\n") + "\r\n"
+  );
 }
 
 /**

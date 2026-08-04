@@ -1,13 +1,33 @@
 "use client";
 import { Card, CardHeader } from "@/app/_ui/Card";
-import type { CalendarButtons } from "@/lib/extras/types";
+import { Select } from "@/app/_ui/Select";
+import type { CalendarButtons, CalendarReminders } from "@/lib/extras/types";
 
 const ITEMS: { key: keyof CalendarButtons; name: string; label: string }[] = [
   { key: "google", name: "calendar_button_google", label: "Google 캘린더 버튼" },
   { key: "ics", name: "calendar_button_ics", label: "iOS·삼성 캘린더 버튼" },
 ];
 
-export function CalendarButtonsSection({ buttons }: { buttons: Required<CalendarButtons> }) {
+const REMINDER_OPTIONS: { value: string; label: string }[] = [
+  { value: "", label: "사용 안 함" },
+  { value: "10m", label: "10분 전" },
+  { value: "30m", label: "30분 전" },
+  { value: "1h", label: "1시간 전" },
+  { value: "3h", label: "3시간 전" },
+  { value: "6h", label: "6시간 전" },
+  { value: "12h", label: "12시간 전" },
+  { value: "1d", label: "하루 전" },
+  { value: "2d", label: "이틀 전" },
+  { value: "1w", label: "일주일 전" },
+];
+
+export function CalendarButtonsSection({
+  buttons,
+  reminders,
+}: {
+  buttons: Required<CalendarButtons>;
+  reminders: Required<CalendarReminders>;
+}) {
   return (
     <Card>
       <CardHeader
@@ -30,6 +50,28 @@ export function CalendarButtonsSection({ buttons }: { buttons: Required<Calendar
             <span className="text-sm text-ink">{item.label}</span>
           </label>
         ))}
+      </div>
+
+      <div>
+        <p className="text-sm text-secondary font-medium mb-2">
+          알림 시간 (캘린더 등록 버튼에만 적용)
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <Select name="calendar_reminder_first" defaultValue={reminders.first} aria-label="첫 번째 알림">
+            {REMINDER_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </Select>
+          <Select name="calendar_reminder_second" defaultValue={reminders.second} aria-label="두 번째 알림">
+            {REMINDER_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </Select>
+        </div>
       </div>
     </Card>
   );

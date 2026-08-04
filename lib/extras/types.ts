@@ -58,6 +58,34 @@ export type CalendarButtons = {
   ics?: boolean;
 };
 
+// How long before the wedding each calendar reminder fires. "" means that
+// reminder slot is turned off. Only used by the .ics button — Google
+// Calendar's quick-add URL has no equivalent custom-reminder parameter.
+export const CALENDAR_REMINDER_OFFSETS = [
+  "",
+  "10m",
+  "30m",
+  "1h",
+  "3h",
+  "6h",
+  "12h",
+  "1d",
+  "2d",
+  "1w",
+] as const;
+export type CalendarReminderOffset = (typeof CALENDAR_REMINDER_OFFSETS)[number];
+
+export type CalendarReminders = {
+  first?: CalendarReminderOffset;
+  second?: CalendarReminderOffset;
+};
+
+function asReminderOffset(v: unknown): CalendarReminderOffset | undefined {
+  return (CALENDAR_REMINDER_OFFSETS as readonly string[]).includes(String(v))
+    ? (v as CalendarReminderOffset)
+    : undefined;
+}
+
 export type SiteExtras = {
   transit_subway?: string;
   transit_bus?: string;
@@ -70,6 +98,7 @@ export type SiteExtras = {
   rsvp_fields?: RsvpFields;
   guestbook_fields?: GuestbookFields;
   calendar_buttons?: CalendarButtons;
+  calendar_reminders?: CalendarReminders;
   // Which content types are pinned to the bottom tab bar (up to
   // MAX_PRIMARY_TABS, from app/w/[slug]/_lib/tabs.ts PRIMARY_KEYS), and in
   // what order. Anything enabled-but-not-chosen falls into the "더보기" tab.
@@ -159,6 +188,19 @@ export function readExtras(raw: unknown): SiteExtras {
         ? {
             google: (obj.calendar_buttons as Record<string, unknown>).google === true,
             ics: (obj.calendar_buttons as Record<string, unknown>).ics === true,
+          }
+        : undefined,
+    calendar_reminders:
+      obj.calendar_reminders &&
+      typeof obj.calendar_reminders === "object" &&
+      !Array.isArray(obj.calendar_reminders)
+        ? {
+            first: asReminderOffset(
+              (obj.calendar_reminders as Record<string, unknown>).first,
+            ),
+            second: asReminderOffset(
+              (obj.calendar_reminders as Record<string, unknown>).second,
+            ),
           }
         : undefined,
     primary_tabs: Array.isArray(obj.primary_tabs)
@@ -254,6 +296,20 @@ export function resolveCalendarButtons(extras: SiteExtras): Required<CalendarBut
   return {
     google: f.google ?? true,
     ics: f.ics ?? true,
+  };
+}
+
+/**
+ * Fully-resolved calendar reminder offsets. Defaults match what shipped
+ * before this was made configurable (하루 전 + 6시간 전), so turning the
+ * setting on for the first time doesn't silently remove reminders a couple
+ * already has.
+ */
+export function resolveCalendarReminders(extras: SiteExtras): Required<CalendarReminders> {
+  const r = extras.calendar_reminders ?? {};
+  return {
+    first: r.first ?? "1d",
+    second: r.second ?? "6h",
   };
 }
 

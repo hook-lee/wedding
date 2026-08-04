@@ -28,6 +28,7 @@ import {
   resolveRsvpFields,
   resolveGuestbookFields,
   resolveCalendarButtons,
+  resolveCalendarReminders,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
@@ -133,7 +134,10 @@ export default async function AdminHome() {
           parkingLat={site.parking_lat ?? null}
           parkingLng={site.parking_lng ?? null}
         />
-        <CalendarButtonsSection buttons={resolveCalendarButtons(extras)} />
+        <CalendarButtonsSection
+          buttons={resolveCalendarButtons(extras)}
+          reminders={resolveCalendarReminders(extras)}
+        />
         <TransitParkingSection extras={extras} />
         <InfoItemsSection items={extras.info_items ?? []} />
         <GreetingSection site={site} />
