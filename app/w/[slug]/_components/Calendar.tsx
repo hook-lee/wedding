@@ -102,17 +102,31 @@ export function Calendar({
             <button
               type="button"
               onClick={() => {
-                // Match the working Korea Expo implementation: never navigate
-                // to the remote .ics URL, which iOS treats as a subscription.
-                // Create and click the file synchronously in the user gesture.
-                const blobUrl = URL.createObjectURL(
-                  new Blob([icsContent], { type: "text/calendar;charset=utf-8" }),
-                );
                 const link = document.createElement("a");
-                link.href = blobUrl;
                 const safeTitle = title.replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 60);
                 link.download = `${safeTitle || `wedding-${slug}`}.ics`;
                 document.body.appendChild(link);
+
+                const isKakaoIos = /KAKAOTALK/i.test(navigator.userAgent) &&
+                  /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+                if (isKakaoIos) {
+                  // Kakao's iOS WebView does not support Blob URLs with the
+                  // download attribute, but explicitly supports data URLs.
+                  const bytes = new TextEncoder().encode(icsContent);
+                  let binary = "";
+                  for (const byte of bytes) binary += String.fromCharCode(byte);
+                  link.href = `data:text/calendar;charset=utf-8;base64,${btoa(binary)}`;
+                  link.click();
+                  link.remove();
+                  return;
+                }
+
+                // Safari and Android browsers handle a normal Blob download.
+                const blobUrl = URL.createObjectURL(
+                  new Blob([icsContent], { type: "text/calendar;charset=utf-8" }),
+                );
+                link.href = blobUrl;
                 link.click();
                 link.remove();
                 setTimeout(() => URL.revokeObjectURL(blobUrl), 0);
