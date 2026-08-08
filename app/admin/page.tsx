@@ -6,6 +6,8 @@ import { BasicInfoSection } from "./_components/BasicInfoSection";
 import { ParentsSection } from "./_components/ParentsSection";
 import { VenueSection } from "./_components/VenueSection";
 import { CalendarButtonsSection } from "./_components/CalendarButtonsSection";
+import { MapContactSection } from "./_components/MapContactSection";
+import { GalleryStyleSection } from "./_components/GalleryStyleSection";
 import { PhotoSection } from "./_components/PhotoSection";
 import { BgmSection } from "./_components/BgmSection";
 import { GreetingSection } from "./_components/GreetingSection";
@@ -29,6 +31,10 @@ import {
   resolveGuestbookFields,
   resolveCalendarButtons,
   resolveCalendarReminders,
+  resolveFontFamily,
+  resolveGalleryStyle,
+  resolveMapApps,
+  resolveContact,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
@@ -138,6 +144,10 @@ export default async function AdminHome() {
           buttons={resolveCalendarButtons(extras)}
           reminders={resolveCalendarReminders(extras)}
         />
+        <MapContactSection
+          mapApps={resolveMapApps(extras)}
+          contact={resolveContact(extras)}
+        />
         <TransitParkingSection extras={extras} />
         <InfoItemsSection items={extras.info_items ?? []} />
         <GreetingSection site={site} />
@@ -146,6 +156,7 @@ export default async function AdminHome() {
           bride={(site.bride_profile as unknown as Profile) ?? {}}
         />
         <StorySection items={(site.story_items as unknown as StoryItem[]) ?? []} />
+        <GalleryStyleSection style={resolveGalleryStyle(extras)} />
         <GuestbookFieldsSection fields={resolveGuestbookFields(extras)} />
         <RsvpFieldsSection
           fields={resolveRsvpFields(extras)}
@@ -169,6 +180,7 @@ export default async function AdminHome() {
         <TabOrderSection initial={primaryTabsInitial} />
         <ThemeSection
           theme={site.theme}
+          fontFamily={resolveFontFamily(extras)}
           sectionsEnabled={sectionsEnabled}
           published={site.published}
         />

@@ -64,6 +64,35 @@
   --color-accent: #6B6B6B;
 }
 
+/* === Invitation font overrides (runtime via [data-font]) ===
+   Mirrors the [data-theme] mechanism above: the admin picks one, the public
+   page + preview set the attribute, and only that font's files get fetched
+   (the others' @font-face rules go unmatched, so the browser never downloads
+   them). "pretendard" is the default and needs no rule. */
+[data-font="nanum-myeongjo"] {
+  --font-sans: var(--font-nanum-myeongjo), "Nanum Myeongjo", serif;
+}
+[data-font="gowun-batang"] {
+  --font-sans: var(--font-gowun-batang), "Gowun Batang", serif;
+}
+[data-font="gowun-dodum"] {
+  --font-sans: var(--font-gowun-dodum), "Gowun Dodum", sans-serif;
+}
+[data-font="nanum-pen"] {
+  --font-sans: var(--font-nanum-pen), "Nanum Pen Script", cursive;
+  /* Handwriting runs visually much smaller than the other families at the
+     same px size — nudge it up so body copy stays readable. */
+  font-size: 1.15em;
+}
+
+/* The <body> font-family below resolves --font-sans once, at :root. A
+   [data-font] on a nested wrapper (public page, admin preview) only
+   redefines the variable for that subtree, so it needs to re-apply the
+   family itself for the change to take effect. */
+[data-font] {
+  font-family: var(--font-sans);
+}
+
 /* Fixed warm brown for 故/顯考/顯妣 - independent of theme */
 .text-deceased { color: #8B5A3C; }
 

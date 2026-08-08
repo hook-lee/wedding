@@ -9,6 +9,7 @@ import { ProfileView } from "./ProfileView";
 import { InfoView } from "./InfoView";
 import { FlowerDeclineView } from "./FlowerDeclineView";
 import { SponsorView } from "./SponsorView";
+import { ContactView } from "./ContactView";
 import { RsvpPromptModal } from "./RsvpPromptModal";
 import { Reveal } from "./Reveal";
 import { Countdown } from "./Countdown";
@@ -27,6 +28,9 @@ import {
   resolveGuestbookFields,
   resolveCalendarButtons,
   resolveCalendarReminders,
+  resolveMapApps,
+  resolveGalleryStyle,
+  resolveContact,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
@@ -82,6 +86,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
   const greetingVideoId = site.greeting_video_id ?? "";
   const extras = readExtras(site.extras);
   const calendarButtons = resolveCalendarButtons(extras);
+  const contact = resolveContact(extras);
   const hasInfoItems = (extras.info_items?.length ?? 0) > 0;
   const showFlowerDecline = extras.flower_decline === true;
   const namesText = `${site.groom_name}${site.name_joiner}${site.bride_name}`;
@@ -237,7 +242,10 @@ export function HomeTab({ site, initialGuestbook }: Props) {
             node: (
               <Reveal key="gallery">
                 <SectionTitle icon="image" label="사진첩" anchor="gallery" />
-                <GalleryTab urls={site.gallery_urls ?? []} />
+                <GalleryTab
+                  urls={site.gallery_urls ?? []}
+                  style={resolveGalleryStyle(extras)}
+                />
               </Reveal>
             ),
           },
@@ -275,6 +283,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
                   transitSubway={extras.transit_subway}
                   transitBus={extras.transit_bus}
                   parkingNotes={extras.parking_notes}
+                  mapApps={resolveMapApps(extras)}
                 />
               </Reveal>
             ),
@@ -350,6 +359,20 @@ export function HomeTab({ site, initialGuestbook }: Props) {
           sections[key].visible && isHomeVisible(extras, key) ? sections[key].node : null,
         );
       })()}
+
+      {/* 연락처 — 섹션 순서와 무관하게 항상 맨 끝. 하객이 마지막에 찾는
+          정보라 본문 흐름 중간에 끼우지 않는다. */}
+      {contact.enabled && (
+        <Reveal>
+          <div className="pt-10">
+            <ContactView
+              contact={contact}
+              groomName={site.groom_name}
+              brideName={site.bride_name}
+            />
+          </div>
+        </Reveal>
+      )}
 
       <div className="h-16" />
     </div>

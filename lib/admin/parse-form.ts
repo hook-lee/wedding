@@ -4,10 +4,14 @@ import type { ParentsBlock, ParentStatus } from "@/lib/parents/types";
 import {
   SECTION_KEYS,
   CALENDAR_REMINDER_OFFSETS,
+  FONT_FAMILIES,
+  GALLERY_STYLES,
   type InfoItem,
   type SectionKey,
   type SiteExtras,
   type CalendarReminderOffset,
+  type FontFamily,
+  type GalleryStyle,
 } from "@/lib/extras/types";
 import type { Database, Tables } from "@/lib/supabase/types";
 
@@ -254,6 +258,26 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     calendar_reminders: {
       first: asReminderOffset(formData.get("calendar_reminder_first")),
       second: asReminderOffset(formData.get("calendar_reminder_second")),
+    },
+    font_family: (FONT_FAMILIES as readonly string[]).includes(
+      String(formData.get("font_family") ?? ""),
+    )
+      ? (formData.get("font_family") as FontFamily)
+      : "pretendard",
+    gallery_style: (GALLERY_STYLES as readonly string[]).includes(
+      String(formData.get("gallery_style") ?? ""),
+    )
+      ? (formData.get("gallery_style") as GalleryStyle)
+      : "grid",
+    map_apps: {
+      naver: formData.get("map_app_naver") === "on",
+      kakao: formData.get("map_app_kakao") === "on",
+      tmap: formData.get("map_app_tmap") === "on",
+    },
+    contact: {
+      enabled: formData.get("contact_enabled") === "on",
+      groom_phone: String(formData.get("contact_groom_phone") ?? "").trim(),
+      bride_phone: String(formData.get("contact_bride_phone") ?? "").trim(),
     },
     primary_tabs,
     home_visible,

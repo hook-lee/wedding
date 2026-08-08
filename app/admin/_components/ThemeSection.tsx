@@ -1,4 +1,15 @@
 import { Card, CardHeader } from "@/app/_ui/Card";
+import type { FontFamily } from "@/lib/extras/types";
+
+// `css` renders each option's label in the font it selects, so the picker
+// doubles as its own preview. Values match [data-font] in globals.css.
+const FONTS: { key: FontFamily; label: string; hint: string; css: string }[] = [
+  { key: "pretendard", label: "프리텐다드", hint: "모던 고딕", css: "var(--font-pretendard)" },
+  { key: "nanum-myeongjo", label: "나눔명조", hint: "클래식 명조", css: "var(--font-nanum-myeongjo)" },
+  { key: "gowun-batang", label: "고운바탕", hint: "우아한 명조", css: "var(--font-gowun-batang)" },
+  { key: "gowun-dodum", label: "고운돋움", hint: "부드러운 고딕", css: "var(--font-gowun-dodum)" },
+  { key: "nanum-pen", label: "나눔손글씨", hint: "손글씨", css: "var(--font-nanum-pen)" },
+];
 
 const THEMES = [
   { key: "ivory", label: "🪶 Ivory" },
@@ -21,10 +32,12 @@ const SECTIONS = [
 
 export function ThemeSection({
   theme,
+  fontFamily,
   sectionsEnabled,
   published,
 }: {
   theme: string;
+  fontFamily: FontFamily;
   sectionsEnabled: Record<string, boolean>;
   published: boolean;
 }) {
@@ -46,6 +59,29 @@ export function ThemeSection({
               />
               <span className="inline-flex items-center min-h-[44px] px-4 rounded-pill border border-border peer-checked:bg-ink peer-checked:text-bg text-sm transition-colors">
                 {t.label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="text-sm text-secondary font-medium mb-2">글꼴</p>
+        <div className="grid grid-cols-2 gap-2">
+          {FONTS.map((f) => (
+            <label key={f.key} className="cursor-pointer">
+              <input
+                type="radio"
+                name="font_family"
+                value={f.key}
+                defaultChecked={fontFamily === f.key}
+                className="peer sr-only"
+              />
+              <span className="flex flex-col justify-center min-h-[56px] px-4 py-2 rounded-md border border-border peer-checked:border-ink peer-checked:bg-bg transition-colors">
+                <span className="text-base text-ink" style={{ fontFamily: f.css }}>
+                  {f.label}
+                </span>
+                <span className="text-[11px] text-muted">{f.hint}</span>
               </span>
             </label>
           ))}

@@ -58,6 +58,37 @@ export type CalendarButtons = {
   ics?: boolean;
 };
 
+// Invitation body font. Keys match the [data-font] selectors in globals.css
+// and the CSS variables declared in app/fonts.ts.
+export const FONT_FAMILIES = [
+  "pretendard",
+  "nanum-myeongjo",
+  "gowun-batang",
+  "gowun-dodum",
+  "nanum-pen",
+] as const;
+export type FontFamily = (typeof FONT_FAMILIES)[number];
+
+// Which map apps get a 길찾기 button. Multiple can be on at once — Korean
+// guests are split across Naver/Kakao/T맵 with no clear majority, so letting
+// the couple offer several beats guessing one.
+export const MAP_APPS = ["naver", "kakao", "tmap"] as const;
+export type MapApp = (typeof MAP_APPS)[number];
+export type MapApps = Partial<Record<MapApp, boolean>>;
+
+// Gallery presentation. "grid" is the original 3-column layout — kept as the
+// default so existing sites don't change appearance.
+export const GALLERY_STYLES = ["grid", "swipe", "masonry", "film"] as const;
+export type GalleryStyle = (typeof GALLERY_STYLES)[number];
+
+// Direct 전화/문자 buttons for each side. Numbers live here rather than on
+// wedding_sites because they're optional contact info, not core site data.
+export type ContactInfo = {
+  enabled?: boolean;
+  groom_phone?: string;
+  bride_phone?: string;
+};
+
 // How long before the wedding each calendar reminder fires. "" means that
 // reminder slot is turned off. Only used by the .ics button — Google
 // Calendar's quick-add URL has no equivalent custom-reminder parameter.
@@ -99,6 +130,10 @@ export type SiteExtras = {
   guestbook_fields?: GuestbookFields;
   calendar_buttons?: CalendarButtons;
   calendar_reminders?: CalendarReminders;
+  font_family?: FontFamily;
+  map_apps?: MapApps;
+  gallery_style?: GalleryStyle;
+  contact?: ContactInfo;
   // Which content types are pinned to the bottom tab bar (up to
   // MAX_PRIMARY_TABS, from app/w/[slug]/_lib/tabs.ts PRIMARY_KEYS), and in
   // what order. Anything enabled-but-not-chosen falls into the "더보기" tab.
@@ -201,6 +236,35 @@ export function readExtras(raw: unknown): SiteExtras {
             second: asReminderOffset(
               (obj.calendar_reminders as Record<string, unknown>).second,
             ),
+          }
+        : undefined,
+    font_family: (FONT_FAMILIES as readonly string[]).includes(String(obj.font_family))
+      ? (obj.font_family as FontFamily)
+      : undefined,
+    gallery_style: (GALLERY_STYLES as readonly string[]).includes(String(obj.gallery_style))
+      ? (obj.gallery_style as GalleryStyle)
+      : undefined,
+    map_apps:
+      obj.map_apps && typeof obj.map_apps === "object" && !Array.isArray(obj.map_apps)
+        ? Object.fromEntries(
+            MAP_APPS.filter((k) => k in (obj.map_apps as Record<string, unknown>)).map((k) => [
+              k,
+              (obj.map_apps as Record<string, unknown>)[k] === true,
+            ]),
+          )
+        : undefined,
+    contact:
+      obj.contact && typeof obj.contact === "object" && !Array.isArray(obj.contact)
+        ? {
+            enabled: (obj.contact as Record<string, unknown>).enabled === true,
+            groom_phone:
+              typeof (obj.contact as Record<string, unknown>).groom_phone === "string"
+                ? ((obj.contact as Record<string, unknown>).groom_phone as string)
+                : undefined,
+            bride_phone:
+              typeof (obj.contact as Record<string, unknown>).bride_phone === "string"
+                ? ((obj.contact as Record<string, unknown>).bride_phone as string)
+                : undefined,
           }
         : undefined,
     primary_tabs: Array.isArray(obj.primary_tabs)
@@ -310,6 +374,40 @@ export function resolveCalendarReminders(extras: SiteExtras): Required<CalendarR
   return {
     first: r.first ?? "1d",
     second: r.second ?? "6h",
+  };
+}
+
+/** Body font for the invitation. Defaults to the original Pretendard. */
+export function resolveFontFamily(extras: SiteExtras): FontFamily {
+  return extras.font_family ?? "pretendard";
+}
+
+/** Gallery layout. Defaults to the original 3-column grid. */
+export function resolveGalleryStyle(extras: SiteExtras): GalleryStyle {
+  return extras.gallery_style ?? "grid";
+}
+
+/**
+ * Which 길찾기 buttons to show. Defaults to Naver + Kakao — that's what the
+ * previous single button already did under the hood (Naver app first, Kakao
+ * web fallback), just split into two explicit choices.
+ */
+export function resolveMapApps(extras: SiteExtras): Required<MapApps> {
+  const m = extras.map_apps ?? {};
+  return {
+    naver: m.naver ?? true,
+    kakao: m.kakao ?? true,
+    tmap: m.tmap ?? false,
+  };
+}
+
+/** 전화/문자 buttons. Off by default — phone numbers are opt-in. */
+export function resolveContact(extras: SiteExtras): Required<ContactInfo> {
+  const c = extras.contact ?? {};
+  return {
+    enabled: c.enabled ?? false,
+    groom_phone: c.groom_phone ?? "",
+    bride_phone: c.bride_phone ?? "",
   };
 }
 

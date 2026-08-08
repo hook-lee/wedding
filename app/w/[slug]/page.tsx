@@ -18,6 +18,8 @@ import {
   readExtras,
   resolveRsvpFields,
   resolveGuestbookFields,
+  resolveMapApps,
+  resolveGalleryStyle,
   shareTitleSuffixOrDefault,
 } from "@/lib/extras/types";
 
@@ -111,7 +113,9 @@ export default async function PublicPage({
             }
           />
         )}
-        {active === "gallery" && <GalleryTab urls={site.gallery_urls ?? []} />}
+        {active === "gallery" && (
+          <GalleryTab urls={site.gallery_urls ?? []} style={resolveGalleryStyle(extras)} />
+        )}
         {active === "guestbook" && (
           <GuestbookTab
             siteId={site.id}
@@ -136,6 +140,7 @@ export default async function PublicPage({
             transitSubway={extras.transit_subway}
             transitBus={extras.transit_bus}
             parkingNotes={extras.parking_notes}
+            mapApps={resolveMapApps(extras)}
           />
         )}
         {active === "rsvp" && (

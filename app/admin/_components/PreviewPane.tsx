@@ -1,5 +1,6 @@
 "use client";
 import { HomeTab } from "@/app/w/[slug]/_components/HomeTab";
+import { readExtras, resolveFontFamily } from "@/lib/extras/types";
 import type { Tables } from "@/lib/supabase/types";
 
 /**
@@ -13,6 +14,7 @@ export function PreviewPane({ draft }: { draft: Tables<"wedding_sites"> }) {
     <div
       className="bg-bg overflow-y-auto h-full"
       data-theme={draft.theme}
+      data-font={resolveFontFamily(readExtras(draft.extras))}
       style={{ colorScheme: "light" }}
     >
       <div className="px-4 sm:px-5 pb-10">

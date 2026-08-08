@@ -4,6 +4,8 @@ import { KakaoMap } from "./KakaoMap";
 import { Card } from "@/app/_ui/Card";
 import { Button } from "@/app/_ui/Button";
 import { Icon } from "./Icon";
+import { mapLinks, MAP_APP_LABELS } from "@/lib/maps/links";
+import type { MapApp, MapApps } from "@/lib/extras/types";
 
 type Place = {
   name: string;
@@ -18,6 +20,7 @@ type Props = {
   transitSubway?: string;
   transitBus?: string;
   parkingNotes?: string;
+  mapApps: Required<MapApps>;
 };
 
 function isMobile() {
@@ -26,26 +29,19 @@ function isMobile() {
 }
 
 /**
- * Navigation strategy:
- * - Mobile: try Naver Map app (nmap://route/car), fallback to Kakao Map web after 1.5s
- * - Desktop / no app: open Kakao Map web with one-tap directions
- *
- * Kakao web (`map.kakao.com/link/to/...`) is used as the web fallback because
- * the Naver web URL format keeps changing and currently breaks on desktop.
+ * On mobile, try the native app scheme first and fall back to the web URL if
+ * nothing handled it (an uninstalled app's scheme just does nothing, so the
+ * timer is the only way to detect it). Desktop goes straight to web.
  */
-function navigateTo(lat: number, lng: number, name: string) {
-  const naverApp = `nmap://route/car?dlat=${lat}&dlng=${lng}&dname=${encodeURIComponent(
-    name,
-  )}&appname=wedding-zip`;
-  const kakaoWeb = `https://map.kakao.com/link/to/${encodeURIComponent(name)},${lat},${lng}`;
-
-  if (isMobile()) {
-    window.location.href = naverApp;
+function navigateWith(app: MapApp, lat: number, lng: number, name: string) {
+  const links = mapLinks(app, { lat, lng, name });
+  if (isMobile() && links.app !== links.web) {
+    window.location.href = links.app;
     setTimeout(() => {
-      window.location.href = kakaoWeb;
+      window.location.href = links.web;
     }, 1500);
   } else {
-    window.location.href = kakaoWeb;
+    window.location.href = links.web;
   }
 }
 
@@ -55,8 +51,31 @@ export function VenueView({
   transitSubway,
   transitBus,
   parkingNotes,
+  mapApps,
 }: Props) {
   const [copied, setCopied] = useState<string | null>(null);
+  const enabledApps = (Object.keys(MAP_APP_LABELS) as MapApp[]).filter((a) => mapApps[a]);
+
+  /** One 길찾기 button per map app the couple turned on. */
+  function DirectionButtons({ place, fallbackName }: { place: Place; fallbackName: string }) {
+    if (!enabledApps.length) return null;
+    return (
+      <div className="flex gap-2 pt-2">
+        {enabledApps.map((a) => (
+          <Button
+            key={a}
+            type="button"
+            onClick={() => navigateWith(a, place.lat!, place.lng!, place.name || fallbackName)}
+            variant="primary"
+            className="flex-1 px-2 text-xs gap-1"
+          >
+            <Icon name="navigation" className="w-3.5 h-3.5 flex-shrink-0" />
+            {MAP_APP_LABELS[a]}
+          </Button>
+        ))}
+      </div>
+    );
+  }
 
   async function copyAddress(addr: string, key: string) {
     if (!addr) return;
@@ -96,8 +115,8 @@ export function VenueView({
           {venue.address && (
             <p className="text-sm text-secondary">{venue.address}</p>
           )}
-          <div className="flex gap-2 pt-2">
-            {venue.address && (
+          {venue.address && (
+            <div className="flex gap-2 pt-2">
               <Button
                 type="button"
                 onClick={() => copyAddress(venue.address, "venue")}
@@ -113,21 +132,9 @@ export function VenueView({
                   </>
                 )}
               </Button>
-            )}
-            {hasVenueCoords && (
-              <Button
-                type="button"
-                onClick={() =>
-                  navigateTo(venue.lat!, venue.lng!, venue.name || "예식장")
-                }
-                variant="primary"
-                className="flex-1 px-3 text-xs gap-1.5"
-              >
-                <Icon name="navigation" className="w-3.5 h-3.5" />
-                길찾기
-              </Button>
-            )}
-          </div>
+            </div>
+          )}
+          {hasVenueCoords && <DirectionButtons place={venue} fallbackName="예식장" />}
         </Card>
       )}
 
@@ -144,8 +151,8 @@ export function VenueView({
           {parking.address && (
             <p className="text-sm text-secondary">{parking.address}</p>
           )}
-          <div className="flex gap-2 pt-2">
-            {parking.address && (
+          {parking.address && (
+            <div className="flex gap-2 pt-2">
               <Button
                 type="button"
                 onClick={() => copyAddress(parking.address, "parking")}
@@ -161,25 +168,17 @@ export function VenueView({
                   </>
                 )}
               </Button>
-            )}
-            <Button
-              type="button"
-              onClick={() =>
-                navigateTo(parking.lat!, parking.lng!, parking.name || "주차장")
-              }
-              variant="primary"
-              className="flex-1 px-3 text-xs gap-1.5"
-            >
-              <Icon name="navigation" className="w-3.5 h-3.5" />
-              길찾기
-            </Button>
-          </div>
+            </div>
+          )}
+          <DirectionButtons place={parking} fallbackName="주차장" />
         </Card>
       )}
 
-      <p className="text-[10px] text-muted text-center pt-1">
-        모바일은 네이버지도 앱 우선, 앱이 없으면 카카오맵 웹으로 이동합니다.
-      </p>
+      {enabledApps.length > 0 && (
+        <p className="text-[10px] text-muted text-center pt-1">
+          앱이 설치되어 있지 않으면 웹 지도로 열립니다.
+        </p>
+      )}
 
       {/* 교통편·주차 안내 (extras) */}
       {transitSubway?.trim() && (

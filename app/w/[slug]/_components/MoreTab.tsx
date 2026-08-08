@@ -5,7 +5,7 @@ import { RsvpView } from "./RsvpView";
 import { AccountView } from "./AccountView";
 import { ProfileView } from "./ProfileView";
 import { SponsorView } from "./SponsorView";
-import { readExtras, resolveRsvpFields } from "@/lib/extras/types";
+import { readExtras, resolveRsvpFields, resolveMapApps } from "@/lib/extras/types";
 import { TAB_LABELS, type PrimaryKey } from "../_lib/tabs";
 
 /**
@@ -61,6 +61,7 @@ export function MoreTab({
           transitSubway={extras.transit_subway}
           transitBus={extras.transit_bus}
           parkingNotes={extras.parking_notes}
+          mapApps={resolveMapApps(extras)}
         />
       )}
       {active === "rsvp" && (
