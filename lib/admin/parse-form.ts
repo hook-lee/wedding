@@ -139,6 +139,7 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     account: formData.get("section_account") === "on",
     profile: formData.get("section_profile") === "on",
     sponsor: formData.get("section_sponsor") === "on",
+    photo_share: formData.get("section_photo_share") === "on",
   };
 
   const published = formData.get("published") === "on";
@@ -278,6 +279,11 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
       enabled: formData.get("contact_enabled") === "on",
       groom_phone: String(formData.get("contact_groom_phone") ?? "").trim(),
       bride_phone: String(formData.get("contact_bride_phone") ?? "").trim(),
+    },
+    photo_share: {
+      enabled: formData.get("photo_share_enabled") === "on",
+      open_at_wedding: formData.get("photo_share_open_at_wedding") === "on",
+      note: String(formData.get("photo_share_note") ?? "").trim(),
     },
     primary_tabs,
     home_visible,

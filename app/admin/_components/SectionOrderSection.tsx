@@ -35,6 +35,7 @@ const LABELS: Record<SectionKey, { label: string; icon: IconName }> = {
   account: { label: "마음 전하기", icon: "heart" },
   profile: { label: "신랑·신부 프로필", icon: "user" },
   sponsor: { label: "스폰서", icon: "award" },
+  photo_share: { label: "사진 공유하기", icon: "image" },
 };
 
 // Sections gated by a separate master switch ("표시할 섹션" checkboxes in
@@ -48,6 +49,7 @@ const MASTER_GATED: SectionKey[] = [
   "account",
   "profile",
   "sponsor",
+  "photo_share",
 ];
 
 function Row({

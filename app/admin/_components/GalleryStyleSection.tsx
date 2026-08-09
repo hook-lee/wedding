@@ -2,11 +2,14 @@
 import { Card, CardHeader } from "@/app/_ui/Card";
 import type { GalleryStyle } from "@/lib/extras/types";
 
-const STYLES: { key: GalleryStyle; label: string; hint: string }[] = [
+const STYLES: { key: GalleryStyle; label: string; hint: string; showy?: boolean }[] = [
   { key: "grid", label: "격자", hint: "3열 타일 · 한눈에 많이" },
   { key: "swipe", label: "슬라이드", hint: "가로로 넘기는 큰 카드" },
   { key: "masonry", label: "매거진", hint: "원본 비율 2열 · 잡지 느낌" },
   { key: "film", label: "필름", hint: "크게 한 장 + 아래 썸네일" },
+  { key: "sphere", label: "구체 ✨", hint: "돌아가는 3D 지구본", showy: true },
+  { key: "coverflow", label: "커버플로우 ✨", hint: "입체로 넘기는 앨범", showy: true },
+  { key: "polaroid", label: "폴라로이드 ✨", hint: "쌓인 인화 사진 넘기기", showy: true },
 ];
 
 export function GalleryStyleSection({ style }: { style: GalleryStyle }) {
@@ -30,6 +33,7 @@ export function GalleryStyleSection({ style }: { style: GalleryStyle }) {
               <span className="text-sm font-medium text-ink">{s.label}</span>
               <span className="text-[11px] text-muted">{s.hint}</span>
             </span>
+            {s.showy && <span className="sr-only">화려한 스타일</span>}
           </label>
         ))}
       </div>

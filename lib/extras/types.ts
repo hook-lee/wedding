@@ -19,6 +19,7 @@ export const SECTION_KEYS = [
   "account",
   "profile",
   "sponsor",
+  "photo_share",
 ] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
@@ -78,7 +79,15 @@ export type MapApps = Partial<Record<MapApp, boolean>>;
 
 // Gallery presentation. "grid" is the original 3-column layout — kept as the
 // default so existing sites don't change appearance.
-export const GALLERY_STYLES = ["grid", "swipe", "masonry", "film"] as const;
+export const GALLERY_STYLES = [
+  "grid",
+  "swipe",
+  "masonry",
+  "film",
+  "sphere",
+  "coverflow",
+  "polaroid",
+] as const;
 export type GalleryStyle = (typeof GALLERY_STYLES)[number];
 
 // Direct 전화/문자 buttons for each side. Numbers live here rather than on
@@ -88,6 +97,20 @@ export type ContactInfo = {
   groom_phone?: string;
   bride_phone?: string;
 };
+
+/**
+ * Day-of photo sharing: guests upload the photos they took at the wedding.
+ * `open_at_wedding` keeps the uploader hidden until the ceremony actually
+ * starts — the point is candid shots from the day, not pre-wedding uploads.
+ */
+export type PhotoShare = {
+  enabled?: boolean;
+  open_at_wedding?: boolean;
+  note?: string;
+};
+
+/** Hard cap on guest uploads per site — a public endpoint needs a ceiling. */
+export const MAX_SHARED_PHOTOS = 300;
 
 // How long before the wedding each calendar reminder fires. "" means that
 // reminder slot is turned off. Only used by the .ics button — Google
@@ -134,6 +157,7 @@ export type SiteExtras = {
   map_apps?: MapApps;
   gallery_style?: GalleryStyle;
   contact?: ContactInfo;
+  photo_share?: PhotoShare;
   // Which content types are pinned to the bottom tab bar (up to
   // MAX_PRIMARY_TABS, from app/w/[slug]/_lib/tabs.ts PRIMARY_KEYS), and in
   // what order. Anything enabled-but-not-chosen falls into the "더보기" tab.
@@ -264,6 +288,18 @@ export function readExtras(raw: unknown): SiteExtras {
             bride_phone:
               typeof (obj.contact as Record<string, unknown>).bride_phone === "string"
                 ? ((obj.contact as Record<string, unknown>).bride_phone as string)
+                : undefined,
+          }
+        : undefined,
+    photo_share:
+      obj.photo_share && typeof obj.photo_share === "object" && !Array.isArray(obj.photo_share)
+        ? {
+            enabled: (obj.photo_share as Record<string, unknown>).enabled === true,
+            open_at_wedding:
+              (obj.photo_share as Record<string, unknown>).open_at_wedding === true,
+            note:
+              typeof (obj.photo_share as Record<string, unknown>).note === "string"
+                ? ((obj.photo_share as Record<string, unknown>).note as string)
                 : undefined,
           }
         : undefined,
@@ -399,6 +435,36 @@ export function resolveMapApps(extras: SiteExtras): Required<MapApps> {
     kakao: m.kakao ?? true,
     tmap: m.tmap ?? false,
   };
+}
+
+/**
+ * Photo sharing settings. Off by default; when on, it waits for the ceremony
+ * unless the couple explicitly opens it early.
+ */
+export function resolvePhotoShare(extras: SiteExtras): Required<PhotoShare> {
+  const p = extras.photo_share ?? {};
+  return {
+    enabled: p.enabled ?? false,
+    open_at_wedding: p.open_at_wedding ?? true,
+    note: p.note ?? "",
+  };
+}
+
+/**
+ * Is the uploader open right now? Gated on the wedding start when the couple
+ * chose that. Called on both the server (to reject writes) and the client (to
+ * hide the button), so it takes the time as an argument rather than reading
+ * the clock itself.
+ */
+export function isPhotoShareOpen(
+  share: Required<PhotoShare>,
+  weddingAt: string | null,
+  now: Date = new Date(),
+): boolean {
+  if (!share.enabled) return false;
+  if (!share.open_at_wedding || !weddingAt) return true;
+  const start = new Date(weddingAt).getTime();
+  return Number.isFinite(start) ? now.getTime() >= start : true;
 }
 
 /** 전화/문자 buttons. Off by default — phone numbers are opt-in. */

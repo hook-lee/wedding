@@ -10,6 +10,7 @@ import { InfoView } from "./InfoView";
 import { FlowerDeclineView } from "./FlowerDeclineView";
 import { SponsorView } from "./SponsorView";
 import { ContactView } from "./ContactView";
+import { PhotoShareView } from "./PhotoShareView";
 import { RsvpPromptModal } from "./RsvpPromptModal";
 import { Reveal } from "./Reveal";
 import { Countdown } from "./Countdown";
@@ -31,6 +32,8 @@ import {
   resolveMapApps,
   resolveGalleryStyle,
   resolveContact,
+  resolvePhotoShare,
+  isPhotoShareOpen,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
@@ -55,9 +58,12 @@ type GuestbookEntry = {
 };
 type IconName = React.ComponentProps<typeof Icon>["name"];
 
+type SharedPhoto = { id: string; url: string; uploader_name: string | null };
+
 type Props = {
   site: Tables<"wedding_sites">;
   initialGuestbook: GuestbookEntry[];
+  initialSharedPhotos?: SharedPhoto[];
 };
 
 function SectionTitle({
@@ -78,7 +84,7 @@ function SectionTitle({
   );
 }
 
-export function HomeTab({ site, initialGuestbook }: Props) {
+export function HomeTab({ site, initialGuestbook, initialSharedPhotos = [] }: Props) {
   const dday = site.wedding_at ? daysUntil(site.wedding_at) : null;
   const dateText = site.wedding_at ? formatKstDateTime(site.wedding_at) : "";
   const parents = (site.parents as unknown as ParentsBlock) ?? {};
@@ -87,6 +93,7 @@ export function HomeTab({ site, initialGuestbook }: Props) {
   const extras = readExtras(site.extras);
   const calendarButtons = resolveCalendarButtons(extras);
   const contact = resolveContact(extras);
+  const photoShare = resolvePhotoShare(extras);
   const hasInfoItems = (extras.info_items?.length ?? 0) > 0;
   const showFlowerDecline = extras.flower_decline === true;
   const namesText = `${site.groom_name}${site.name_joiner}${site.bride_name}`;
@@ -350,6 +357,21 @@ export function HomeTab({ site, initialGuestbook }: Props) {
                   <span className="block h-px bg-border" />
                 </div>
                 <SponsorView extras={extras} />
+              </Reveal>
+            ),
+          },
+          photo_share: {
+            visible: !!enabled.photo_share && photoShare.enabled,
+            node: (
+              <Reveal key="photo_share">
+                <SectionTitle icon="image" label="사진 공유하기" anchor="photo-share" />
+                <PhotoShareView
+                  slug={site.slug}
+                  initial={initialSharedPhotos}
+                  isOpen={isPhotoShareOpen(photoShare, site.wedding_at)}
+                  weddingAt={site.wedding_at}
+                  note={photoShare.note}
+                />
               </Reveal>
             ),
           },

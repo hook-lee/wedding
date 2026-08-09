@@ -9,7 +9,8 @@ export type PrimaryKey =
   | "rsvp"
   | "account"
   | "profile"
-  | "sponsor";
+  | "sponsor"
+  | "photo_share";
 export type TabKey = "home" | PrimaryKey | "more";
 
 export const PRIMARY_KEYS: PrimaryKey[] = [
@@ -21,6 +22,7 @@ export const PRIMARY_KEYS: PrimaryKey[] = [
   "account",
   "profile",
   "sponsor",
+  "photo_share",
 ];
 
 // Bottom bar has 5 physical slots: home + up to this many primary picks + more.
@@ -37,6 +39,7 @@ export const TAB_LABELS: Record<TabKey, { iconName: string; label: string }> = {
   account: { iconName: "heart", label: "마음전하기" },
   profile: { iconName: "user", label: "프로필" },
   sponsor: { iconName: "award", label: "스폰서" },
+  photo_share: { iconName: "image", label: "사진 공유" },
   more: { iconName: "more", label: "더보기" },
 };
 
@@ -50,6 +53,7 @@ export function enabledPrimaryKeys(sectionsEnabled: Record<string, boolean>): Pr
   if (sectionsEnabled.account) keys.push("account");
   if (sectionsEnabled.profile) keys.push("profile");
   if (sectionsEnabled.sponsor) keys.push("sponsor");
+  if (sectionsEnabled.photo_share) keys.push("photo_share");
   return keys;
 }
 

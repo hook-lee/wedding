@@ -103,6 +103,24 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["guestbook"]["Insert"]>;
         Relationships: [];
       };
+      shared_photos: {
+        Row: {
+          id: string;
+          site_id: string;
+          url: string;
+          uploader_name: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          site_id: string;
+          url: string;
+          uploader_name?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["shared_photos"]["Insert"]>;
+        Relationships: [];
+      };
       rsvp: {
         Row: {
           id: string;

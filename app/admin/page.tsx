@@ -8,6 +8,7 @@ import { VenueSection } from "./_components/VenueSection";
 import { CalendarButtonsSection } from "./_components/CalendarButtonsSection";
 import { MapContactSection } from "./_components/MapContactSection";
 import { GalleryStyleSection } from "./_components/GalleryStyleSection";
+import { PhotoShareSection } from "./_components/PhotoShareSection";
 import { PhotoSection } from "./_components/PhotoSection";
 import { BgmSection } from "./_components/BgmSection";
 import { GreetingSection } from "./_components/GreetingSection";
@@ -35,6 +36,7 @@ import {
   resolveGalleryStyle,
   resolveMapApps,
   resolveContact,
+  resolvePhotoShare,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
@@ -93,6 +95,12 @@ export default async function AdminHome() {
               className="text-secondary hover:text-ink underline underline-offset-2"
             >
               RSVP
+            </Link>
+            <Link
+              href="/admin/photos"
+              className="text-secondary hover:text-ink underline underline-offset-2"
+            >
+              하객 사진
             </Link>
             <form action="/admin/logout" method="POST" className="m-0">
               <button
@@ -157,6 +165,7 @@ export default async function AdminHome() {
         />
         <StorySection items={(site.story_items as unknown as StoryItem[]) ?? []} />
         <GalleryStyleSection style={resolveGalleryStyle(extras)} />
+        <PhotoShareSection share={resolvePhotoShare(extras)} />
         <GuestbookFieldsSection fields={resolveGuestbookFields(extras)} />
         <RsvpFieldsSection
           fields={resolveRsvpFields(extras)}

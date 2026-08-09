@@ -5,7 +5,14 @@ import { RsvpView } from "./RsvpView";
 import { AccountView } from "./AccountView";
 import { ProfileView } from "./ProfileView";
 import { SponsorView } from "./SponsorView";
-import { readExtras, resolveRsvpFields, resolveMapApps } from "@/lib/extras/types";
+import { PhotoShareView } from "./PhotoShareView";
+import {
+  readExtras,
+  resolveRsvpFields,
+  resolveMapApps,
+  resolvePhotoShare,
+  isPhotoShareOpen,
+} from "@/lib/extras/types";
 import { TAB_LABELS, type PrimaryKey } from "../_lib/tabs";
 
 /**
@@ -97,6 +104,15 @@ export function MoreTab({
         />
       )}
       {active === "sponsor" && <SponsorView extras={extras} />}
+      {active === "photo_share" && (
+        <PhotoShareView
+          slug={site.slug}
+          initial={[]}
+          isOpen={isPhotoShareOpen(resolvePhotoShare(extras), site.wedding_at)}
+          weddingAt={site.wedding_at}
+          note={resolvePhotoShare(extras).note}
+        />
+      )}
     </div>
   );
 }

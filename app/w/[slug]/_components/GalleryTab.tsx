@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type { GalleryStyle } from "@/lib/extras/types";
+import {
+  SphereLayout,
+  CoverflowLayout,
+  PolaroidLayout,
+  type LayoutProps,
+} from "./GalleryLayouts";
 
 const PREVIEW_COUNT = 12;
-
-type LayoutProps = {
-  urls: string[];
-  onOpen: (i: number) => void;
-};
 
 /** 격자 — 3열 정사각 타일. 기본값이자 가장 많은 사진을 한눈에 보여준다. */
 function GridLayout({ urls, onOpen }: LayoutProps) {
@@ -125,6 +126,9 @@ const LAYOUTS: Record<GalleryStyle, (p: LayoutProps) => React.ReactElement> = {
   swipe: SwipeLayout,
   masonry: MasonryLayout,
   film: FilmLayout,
+  sphere: SphereLayout,
+  coverflow: CoverflowLayout,
+  polaroid: PolaroidLayout,
 };
 
 export function GalleryTab({

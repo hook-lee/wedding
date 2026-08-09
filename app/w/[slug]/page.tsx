@@ -13,6 +13,7 @@ import { AccountView } from "./_components/AccountView";
 import { ProfileView } from "./_components/ProfileView";
 import { MoreTab } from "./_components/MoreTab";
 import { SponsorView } from "./_components/SponsorView";
+import { PhotoShareView } from "./_components/PhotoShareView";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   readExtras,
@@ -20,6 +21,8 @@ import {
   resolveGuestbookFields,
   resolveMapApps,
   resolveGalleryStyle,
+  resolvePhotoShare,
+  isPhotoShareOpen,
   shareTitleSuffixOrDefault,
 } from "@/lib/extras/types";
 
@@ -82,6 +85,16 @@ export default async function PublicPage({
         .limit(50)
     : { data: null };
 
+  const needsSharedPhotos = active === "home" || active === "photo_share";
+  const { data: initialSharedPhotos } = needsSharedPhotos
+    ? await supabase
+        .from("shared_photos")
+        .select("id, url, uploader_name")
+        .eq("site_id", site.id)
+        .order("created_at", { ascending: false })
+        .limit(120)
+    : { data: null };
+
   // Splash only shows on the entry view (no ?tab=). For direct deep links to a
   // specific tab (카톡 공유 등), skip the entrance.
   const showSplash = !tab;
@@ -98,7 +111,11 @@ export default async function PublicPage({
         }
       >
         {active === "home" && (
-          <HomeTab site={site} initialGuestbook={initialGuestbook ?? []} />
+          <HomeTab
+            site={site}
+            initialGuestbook={initialGuestbook ?? []}
+            initialSharedPhotos={initialSharedPhotos ?? []}
+          />
         )}
         {active === "story" && (
           <StoryTab
@@ -176,6 +193,15 @@ export default async function PublicPage({
           />
         )}
         {active === "sponsor" && <SponsorView extras={extras} />}
+        {active === "photo_share" && (
+          <PhotoShareView
+            slug={site.slug}
+            initial={initialSharedPhotos ?? []}
+            isOpen={isPhotoShareOpen(resolvePhotoShare(extras), site.wedding_at)}
+            weddingAt={site.wedding_at}
+            note={resolvePhotoShare(extras).note}
+          />
+        )}
         {active === "more" && (
           <MoreTab
             site={site}

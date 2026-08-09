@@ -28,6 +28,7 @@ const SECTIONS = [
   { key: "account", label: "💝 마음전하기", defaultOn: true },
   { key: "profile", label: "👤 프로필", defaultOn: true },
   { key: "sponsor", label: "🤝 스폰서", defaultOn: false },
+  { key: "photo_share", label: "📸 사진 공유", defaultOn: false },
 ];
 
 export function ThemeSection({
