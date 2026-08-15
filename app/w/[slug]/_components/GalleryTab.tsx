@@ -81,10 +81,18 @@ function FilmLayout({ urls, onOpen }: LayoutProps) {
   const stripRef = useRef<HTMLDivElement>(null);
   const current = Math.min(active, urls.length - 1);
 
-  // 썸네일을 눌러 이동했을 때 선택된 칸이 화면 밖이면 따라 스크롤
+  // 선택된 썸네일을 스트립 가운데로. scrollIntoView를 쓰면 안 된다 —
+  // 그건 조상 요소(=페이지)까지 같이 스크롤해서, 첫 렌더 때 방문자를
+  // 사진첩으로 끌어내린다(스플래시 뒤에서 일어나면 '청첩장 열기'를 누르자마자
+  // 사진첩이 떠 있는 것처럼 보인다). 스트립 자신만 움직이게 한다.
   useEffect(() => {
-    const el = stripRef.current?.children[current] as HTMLElement | undefined;
-    el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    const strip = stripRef.current;
+    const el = strip?.children[current] as HTMLElement | undefined;
+    if (!strip || !el) return;
+    strip.scrollTo({
+      left: el.offsetLeft - strip.clientWidth / 2 + el.offsetWidth / 2,
+      behavior: "smooth",
+    });
   }, [current]);
 
   return (
