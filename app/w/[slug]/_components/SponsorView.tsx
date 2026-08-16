@@ -1,5 +1,4 @@
 import { sponsorTitleLabel, type SiteExtras } from "@/lib/extras/types";
-import { resizedPhoto, PHOTO_WIDTHS } from "@/lib/images/resize";
 
 export function SponsorView({ extras }: { extras: SiteExtras }) {
   const logos = extras.sponsor_logos ?? [];
@@ -23,7 +22,7 @@ export function SponsorView({ extras }: { extras: SiteExtras }) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={resizedPhoto(logo.url, PHOTO_WIDTHS.thumb)}
+                src={logo.url}
                 alt=""
                 className="max-h-full max-w-[140px] object-contain"
                 style={{ transform: `scale(${(logo.scale ?? 100) / 100})` }}

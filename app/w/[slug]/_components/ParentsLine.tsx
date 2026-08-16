@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
 import { Button } from "@/app/_ui/Button";
-import { resizedPhoto, PHOTO_WIDTHS } from "@/lib/images/resize";
 
 type Entry = { name: string; status: "alive" | "go" | "hyeon" };
 type Profile = { mbti?: string; intro?: string; photo_url?: string };
@@ -72,7 +71,7 @@ function ProfileModal({
           {profile.photo_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={resizedPhoto(profile.photo_url, PHOTO_WIDTHS.card)}
+              src={profile.photo_url}
               alt=""
               className="w-full aspect-square object-cover rounded-md mb-1"
             />

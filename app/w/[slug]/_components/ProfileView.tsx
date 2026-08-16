@@ -1,5 +1,4 @@
 import { Card } from "@/app/_ui/Card";
-import { resizedPhoto, PHOTO_WIDTHS } from "@/lib/images/resize";
 
 type Profile = { mbti?: string; intro?: string; photo_url?: string };
 
@@ -18,7 +17,7 @@ function ProfileCard({
       {p.photo_url && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={resizedPhoto(p.photo_url, PHOTO_WIDTHS.card)}
+          src={p.photo_url}
           alt=""
           className="w-full aspect-square object-cover rounded-md mb-2"
         />

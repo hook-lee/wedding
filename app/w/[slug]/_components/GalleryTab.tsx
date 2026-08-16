@@ -7,7 +7,6 @@ import {
   PolaroidLayout,
   type LayoutProps,
 } from "./GalleryLayouts";
-import { resizedPhoto, PHOTO_WIDTHS } from "@/lib/images/resize";
 
 const PREVIEW_COUNT = 12;
 
@@ -18,7 +17,7 @@ function GridLayout({ urls, onOpen }: LayoutProps) {
       {urls.map((u, i) => (
         <button key={u + i} onClick={() => onOpen(i)} className="aspect-[4/5]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={resizedPhoto(u, PHOTO_WIDTHS.thumb)} alt="" className="w-full h-full object-cover" loading="lazy" />
+          <img src={u} alt="" className="w-full h-full object-cover" loading="lazy" />
         </button>
       ))}
     </div>
@@ -40,7 +39,7 @@ function SwipeLayout({ urls, onOpen }: LayoutProps) {
             className="snap-center shrink-0 w-[78%] aspect-[3/4] rounded-lg overflow-hidden shadow-card"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={resizedPhoto(u, PHOTO_WIDTHS.thumb)} alt="" className="w-full h-full object-cover" loading="lazy" />
+            <img src={u} alt="" className="w-full h-full object-cover" loading="lazy" />
           </button>
         ))}
       </div>
@@ -66,12 +65,7 @@ function MasonryLayout({ urls, onOpen }: LayoutProps) {
           className="block w-full mb-1.5 break-inside-avoid rounded-md overflow-hidden bg-border/40 min-h-[120px]"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={resizedPhoto(u, PHOTO_WIDTHS.card)}
-            alt=""
-            className="w-full h-auto"
-            loading="lazy"
-          />
+          <img src={u} alt="" className="w-full h-auto" loading="lazy" />
         </button>
       ))}
     </div>
@@ -108,11 +102,7 @@ function FilmLayout({ urls, onOpen }: LayoutProps) {
         className="block w-full aspect-[4/5] rounded-lg overflow-hidden shadow-card"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={resizedPhoto(urls[current], PHOTO_WIDTHS.card)}
-          alt=""
-          className="w-full h-full object-cover"
-        />
+        <img src={urls[current]} alt="" className="w-full h-full object-cover" />
       </button>
       <div
         ref={stripRef}
@@ -128,7 +118,7 @@ function FilmLayout({ urls, onOpen }: LayoutProps) {
             }`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={resizedPhoto(u, PHOTO_WIDTHS.thumb)} alt="" className="w-full h-full object-cover" loading="lazy" />
+            <img src={u} alt="" className="w-full h-full object-cover" loading="lazy" />
           </button>
         ))}
       </div>
@@ -223,7 +213,7 @@ export function GalleryTab({
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={resizedPhoto(urls[open], PHOTO_WIDTHS.full)}
+            src={urls[open]}
             alt=""
             className="max-w-full max-h-full object-contain"
           />

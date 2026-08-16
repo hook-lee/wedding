@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { resizedPhoto, PHOTO_WIDTHS } from "@/lib/images/resize";
 
 export type LayoutProps = {
   urls: string[];
@@ -118,7 +117,7 @@ export function SphereLayout({ urls, onOpen }: LayoutProps) {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={resizedPhoto(t.url, PHOTO_WIDTHS.thumb)}
+                  src={t.url}
                   alt=""
                   draggable={false}
                   className="w-full h-full object-cover pointer-events-none"
@@ -202,7 +201,7 @@ export function CoverflowLayout({ urls, onOpen }: LayoutProps) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={resizedPhoto(u, PHOTO_WIDTHS.card)}
+                src={u}
                 alt=""
                 draggable={false}
                 className="w-full h-full object-cover"
@@ -253,7 +252,7 @@ export function PolaroidLayout({ urls, onOpen }: LayoutProps) {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={resizedPhoto(urls[idx], PHOTO_WIDTHS.card)}
+                  src={urls[idx]}
                   alt=""
                   draggable={false}
                   className="w-full h-full object-cover"
