@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { resizedPhoto, PHOTO_WIDTHS } from "@/lib/images/resize";
 
 type Pos = { x: number; y: number };
 // Legacy string values from before drag-positioning existed — still read so
@@ -48,7 +47,7 @@ export function StoryTab({ items }: { items: Item[] }) {
               {it.photo_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={resizedPhoto(it.photo_url, PHOTO_WIDTHS.card)}
+                  src={it.photo_url}
                   alt=""
                   loading="lazy"
                   decoding="async"

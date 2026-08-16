@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { formatKstDateTime } from "@/lib/date/kst";
-import { resizedPhoto, PHOTO_WIDTHS } from "@/lib/images/resize";
 
 type Props = {
   groomName: string;
@@ -85,11 +84,7 @@ export function SplashOverlay(p: Props) {
           style={{ animation: "wd-photo-in 900ms ease-out 300ms forwards" }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={resizedPhoto(p.mainPhotoUrl, PHOTO_WIDTHS.hero)}
-            alt=""
-            className="w-full h-full object-cover"
-          />
+          <img src={p.mainPhotoUrl} alt="" className="w-full h-full object-cover" />
         </div>
       )}
 
