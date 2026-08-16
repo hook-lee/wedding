@@ -1,12 +1,8 @@
 "use client";
-import { useActionState, useState } from "react";
+import { useState, useTransition } from "react";
 import { Card, CardHeader } from "@/app/_ui/Card";
 import { Button } from "@/app/_ui/Button";
-import {
-  generateInvite,
-  kickCollaborator,
-  type InviteState,
-} from "@/app/admin/collaborators/actions";
+import { generateInvite, kickCollaborator } from "@/app/admin/collaborators/actions";
 import type { Collaborator } from "@/lib/db/collaborators";
 
 export function CollaboratorSection({
@@ -18,15 +14,28 @@ export function CollaboratorSection({
   collaborators: Collaborator[];
   ownerEmail: string | null;
 }) {
-  const [state, action, pending] = useActionState<InviteState | null>(
-    generateInvite,
-    null,
-  );
+  // Everything here calls the server action directly from an onClick rather
+  // than through a <form>. This card renders inside the admin's main save
+  // form, and nested <form> elements are invalid HTML — the browser drops the
+  // inner one, so a nested submit button would trigger a full site save
+  // instead of the invite action.
+  const [pending, startTransition] = useTransition();
+  const [code, setCode] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  function makeInvite() {
+    setError(null);
+    startTransition(async () => {
+      const result = await generateInvite(null);
+      if (result.error) setError(result.error);
+      else setCode(result.code ?? null);
+    });
+  }
+
   const link =
-    state?.code && typeof window !== "undefined"
-      ? `${window.location.origin}/invite/${state.code}`
+    code && typeof window !== "undefined"
+      ? `${window.location.origin}/invite/${code}`
       : null;
 
   async function copy() {
@@ -64,25 +73,31 @@ export function CollaboratorSection({
               {c.email ?? c.user_id.slice(0, 8)}
             </span>
             {isOwner && (
-              <form action={kickCollaborator.bind(null, c.user_id)}>
-                <button
-                  type="submit"
-                  className="text-xs text-red-600 hover:text-red-700 underline underline-offset-2 min-h-[32px] px-1"
-                >
-                  내보내기
-                </button>
-              </form>
+              <button
+                type="button"
+                onClick={() => startTransition(() => kickCollaborator(c.user_id))}
+                disabled={pending}
+                className="text-xs text-red-600 hover:text-red-700 underline underline-offset-2 min-h-[32px] px-1"
+              >
+                내보내기
+              </button>
             )}
           </div>
         ))}
       </div>
 
       {isOwner ? (
-        <form action={action} className="space-y-2">
-          <Button type="submit" variant="secondary" disabled={pending} className="w-full">
+        <div className="space-y-2">
+          <Button
+            type="button"
+            onClick={makeInvite}
+            variant="secondary"
+            disabled={pending}
+            className="w-full"
+          >
             {pending ? "만드는 중..." : "초대 링크 만들기"}
           </Button>
-          {state?.error && <p className="text-xs text-red-600">{state.error}</p>}
+          {error && <p className="text-xs text-red-600">{error}</p>}
           {link && (
             <div className="space-y-2">
               <input
@@ -106,7 +121,7 @@ export function CollaboratorSection({
               </p>
             </div>
           )}
-        </form>
+        </div>
       ) : (
         <p className="text-[11px] text-muted">
           초대는 청첩장을 만든 사람만 보낼 수 있어요.
