@@ -103,6 +103,42 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["guestbook"]["Insert"]>;
         Relationships: [];
       };
+      site_collaborators: {
+        Row: {
+          site_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          site_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["site_collaborators"]["Insert"]>;
+        Relationships: [];
+      };
+      site_invites: {
+        Row: {
+          code: string;
+          site_id: string;
+          created_by: string;
+          created_at: string;
+          expires_at: string;
+          used_at: string | null;
+          used_by: string | null;
+        };
+        Insert: {
+          code: string;
+          site_id: string;
+          created_by: string;
+          created_at?: string;
+          expires_at?: string;
+          used_at?: string | null;
+          used_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["site_invites"]["Insert"]>;
+        Relationships: [];
+      };
       shared_photos: {
         Row: {
           id: string;

@@ -1,14 +1,18 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { loginAction } from "./actions";
 import { Field } from "@/app/_ui/Field";
 import { Input } from "@/app/_ui/Input";
 import { Button } from "@/app/_ui/Button";
 
-export default function LoginPage() {
+function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  // Set when arriving from an invite link, so login lands back on it
+  // instead of dropping the partner on a blank admin page.
+  const next = useSearchParams().get("redirect");
 
   async function handle(formData: FormData) {
     setPending(true);
@@ -19,6 +23,7 @@ export default function LoginPage() {
 
   return (
     <form action={handle} className="space-y-5">
+      {next && <input type="hidden" name="redirect" value={next} />}
       <header className="space-y-2 mb-2">
         <h1 className="text-2xl font-semibold text-ink">로그인</h1>
         <p className="text-sm text-secondary">
@@ -62,12 +67,22 @@ export default function LoginPage() {
       <p className="text-sm text-center text-secondary">
         처음 오셨나요?{" "}
         <Link
-          href="/signup"
+          href={next ? `/signup?redirect=${encodeURIComponent(next)}` : "/signup"}
           className="text-ink underline underline-offset-2 hover:opacity-80"
         >
           가입하기
         </Link>
       </p>
     </form>
+  );
+}
+
+// useSearchParams()를 쓰는 컴포넌트는 Suspense 경계가 있어야
+// Next.js가 이 페이지를 정적으로 미리 렌더링할 수 있다.
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/require-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
+import { resolveAdminSite } from "@/lib/db/wedding-site";
 import { extractYouTubeVideoId } from "@/lib/youtube/parse-url";
 
 type Track = {
@@ -17,7 +17,7 @@ const MAX_TRACKS = 5;
 
 export async function POST(req: Request) {
   const user = await requireUser();
-  const site = await getOrCreateSiteForOwner(user.id);
+  const site = await resolveAdminSite(user.id);
   const body = (await req.json()) as {
     action: "delete" | "add-youtube" | "add-audio";
     url?: string;

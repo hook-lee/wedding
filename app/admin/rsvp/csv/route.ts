@@ -1,5 +1,5 @@
 import { requireUser } from "@/lib/auth/require-user";
-import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
+import { resolveAdminSite } from "@/lib/db/wedding-site";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatKstDateTime } from "@/lib/date/kst";
 import { readExtras } from "@/lib/extras/types";
@@ -15,7 +15,7 @@ function escape(s: string): string {
 
 export async function GET() {
   const user = await requireUser();
-  const site = await getOrCreateSiteForOwner(user.id);
+  const site = await resolveAdminSite(user.id);
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("rsvp").select("*").eq("site_id", site.id)

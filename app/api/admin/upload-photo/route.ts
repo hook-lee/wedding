@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/require-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
+import { resolveAdminSite } from "@/lib/db/wedding-site";
 import crypto from "node:crypto";
 
 export const runtime = "nodejs";
@@ -32,7 +32,7 @@ const EXT_BY_MIME: Record<string, string> = {
 
 export async function POST(req: Request) {
   const user = await requireUser();
-  const site = await getOrCreateSiteForOwner(user.id);
+  const site = await resolveAdminSite(user.id);
 
   const form = await req.formData();
   const file = form.get("file") as File | null;

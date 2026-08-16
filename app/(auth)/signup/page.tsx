@@ -1,14 +1,17 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { signupAction } from "./actions";
 import { Field } from "@/app/_ui/Field";
 import { Input } from "@/app/_ui/Input";
 import { Button } from "@/app/_ui/Button";
 
-export default function SignupPage() {
+function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  // Carried over from an invite link so signup lands back on it.
+  const next = useSearchParams().get("redirect");
 
   async function handle(formData: FormData) {
     setPending(true);
@@ -19,6 +22,7 @@ export default function SignupPage() {
 
   return (
     <form action={handle} className="space-y-5">
+      {next && <input type="hidden" name="redirect" value={next} />}
       <header className="space-y-2 mb-2">
         <h1 className="text-2xl font-semibold text-ink">내 청첩장 만들기</h1>
         <p className="text-sm text-secondary">
@@ -70,5 +74,15 @@ export default function SignupPage() {
         </Link>
       </p>
     </form>
+  );
+}
+
+// useSearchParams()를 쓰는 컴포넌트는 Suspense 경계가 있어야
+// Next.js가 이 페이지를 정적으로 미리 렌더링할 수 있다.
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
   );
 }

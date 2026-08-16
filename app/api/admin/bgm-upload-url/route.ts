@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/require-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
+import { resolveAdminSite } from "@/lib/db/wedding-site";
 import crypto from "node:crypto";
 
 const MAX_TRACKS = 5;
@@ -40,7 +40,7 @@ const EXT_TO_MIME: Record<string, string> = {
 
 export async function POST(req: Request) {
   const user = await requireUser();
-  const site = await getOrCreateSiteForOwner(user.id);
+  const site = await resolveAdminSite(user.id);
   const tracks = (site.bgm_tracks as unknown as { order: number }[]) ?? [];
   if (tracks.length >= MAX_TRACKS)
     return NextResponse.json({ error: "최대 5곡" }, { status: 400 });

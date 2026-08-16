@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/require-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
+import { resolveAdminSite } from "@/lib/db/wedding-site";
 
 /**
  * Save a new ordering of the gallery. The client sends the full URL array in
@@ -11,7 +11,7 @@ import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
  */
 export async function POST(req: Request) {
   const user = await requireUser();
-  const site = await getOrCreateSiteForOwner(user.id);
+  const site = await resolveAdminSite(user.id);
   const { urls } = (await req.json()) as { urls: unknown };
 
   if (!Array.isArray(urls) || urls.some((u) => typeof u !== "string")) {

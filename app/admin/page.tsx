@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/require-user";
-import { getOrCreateSiteForOwner } from "@/lib/db/wedding-site";
+import { resolveAdminSite } from "@/lib/db/wedding-site";
 import { AdminWorkspace } from "./_components/AdminWorkspace";
 import { BasicInfoSection } from "./_components/BasicInfoSection";
 import { ParentsSection } from "./_components/ParentsSection";
@@ -24,6 +24,8 @@ import { TabOrderSection } from "./_components/TabOrderSection";
 import { RsvpFieldsSection } from "./_components/RsvpFieldsSection";
 import { GuestbookFieldsSection } from "./_components/GuestbookFieldsSection";
 import { SponsorSection } from "./_components/SponsorSection";
+import { CollaboratorSection } from "./_components/CollaboratorSection";
+import { listCollaborators, isSiteOwner } from "@/lib/db/collaborators";
 import type { ParentsBlock } from "@/lib/parents/types";
 import {
   readExtras,
@@ -59,7 +61,7 @@ type AccountInfo = {
 
 export default async function AdminHome() {
   const user = await requireUser();
-  const site = await getOrCreateSiteForOwner(user.id);
+  const site = await resolveAdminSite(user.id);
   const isLive = site.slug && !site.slug.startsWith("draft-");
   const extras = readExtras(site.extras);
   const sectionsEnabled =
@@ -68,6 +70,10 @@ export default async function AdminHome() {
     extras.primary_tabs,
     enabledPrimaryKeys(sectionsEnabled),
   );
+  const [collaborators, owner] = await Promise.all([
+    listCollaborators(site.id),
+    isSiteOwner(site.id, user.id),
+  ]);
   const sectionOrder = resolveSectionOrder(extras);
   const sectionVisible = Object.fromEntries(
     sectionOrder.map((k) => [k, isHomeVisible(extras, k)]),
@@ -187,6 +193,11 @@ export default async function AdminHome() {
           sectionsEnabled={sectionsEnabled}
         />
         <TabOrderSection initial={primaryTabsInitial} />
+        <CollaboratorSection
+          isOwner={owner}
+          collaborators={collaborators}
+          ownerEmail={owner ? (user.email ?? null) : null}
+        />
         <ThemeSection
           theme={site.theme}
           fontFamily={resolveFontFamily(extras)}
