@@ -19,6 +19,7 @@ import { Icon } from "./Icon";
 import { daysUntil } from "@/lib/date/dday";
 import { formatKstDateTime } from "@/lib/date/kst";
 import { buildIcs } from "@/lib/calendar/ics";
+import { resizedPhoto, PHOTO_WIDTHS } from "@/lib/images/resize";
 import type { Tables } from "@/lib/supabase/types";
 import type { ParentsBlock } from "@/lib/parents/types";
 import {
@@ -138,7 +139,7 @@ export function HomeTab({ site, initialGuestbook, initialSharedPhotos = [] }: Pr
           <Reveal delay={100}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={site.main_photo_url}
+              src={resizedPhoto(site.main_photo_url, PHOTO_WIDTHS.hero)}
               alt=""
               className="w-full max-w-xs mx-auto aspect-[4/5] object-cover rounded-sm"
             />
