@@ -4,6 +4,7 @@ import { Card } from "@/app/_ui/Card";
 import { Input } from "@/app/_ui/Input";
 import { Icon } from "./Icon";
 import { formatKstDateTime } from "@/lib/date/kst";
+import { resizedPhoto, PHOTO_WIDTHS } from "@/lib/images/resize";
 
 type SharedPhoto = { id: string; url: string; uploader_name: string | null };
 
@@ -117,7 +118,7 @@ export function PhotoShareView({
               <button key={p.id} onClick={() => setLightbox(i)} className="aspect-square">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={p.url}
+                  src={resizedPhoto(p.url, PHOTO_WIDTHS.thumb)}
                   alt=""
                   className="w-full h-full object-cover"
                   loading="lazy"
@@ -135,7 +136,7 @@ export function PhotoShareView({
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={photos[lightbox].url}
+            src={resizedPhoto(photos[lightbox].url, PHOTO_WIDTHS.full)}
             alt=""
             className="max-w-full max-h-[85vh] object-contain"
           />
