@@ -29,7 +29,9 @@ export function TabShell({
           <BgmPlayer tracks={bgmTracks} />
         </div>
       </header>
-      <div className="px-4 sm:px-5">{children}</div>
+      {/* Top padding belongs here, not in each tab: the sticky header has a
+          border, so any tab without its own pt- ended up glued to that line. */}
+      <div className="px-4 sm:px-5 pt-6">{children}</div>
       <TabBar slug={slug} tabs={tabs} active={active} />
     </div>
   );

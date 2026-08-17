@@ -127,7 +127,7 @@ export function HomeTab({ site, initialGuestbook, initialSharedPhotos = [] }: Pr
         />
       )}
       {/* === 메인 === */}
-      <div id="main" className="text-center space-y-4 pt-4">
+      <div id="main" className="text-center space-y-4">
         {dday !== null && dday >= 0 && (
           <Reveal>
             <span className="inline-block bg-ink text-bg px-3 py-1 rounded-pill text-xs tracking-widest">
