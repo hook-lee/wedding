@@ -6,14 +6,38 @@ import { AccountView } from "./AccountView";
 import { ProfileView } from "./ProfileView";
 import { SponsorView } from "./SponsorView";
 import { PhotoShareView } from "./PhotoShareView";
+import { StoryTab } from "./StoryTab";
+import { GalleryTab } from "./GalleryTab";
+import { GuestbookTab } from "./GuestbookTab";
 import {
   readExtras,
   resolveRsvpFields,
+  resolveGuestbookFields,
   resolveMapApps,
+  resolveGalleryStyle,
   resolvePhotoShare,
   isPhotoShareOpen,
 } from "@/lib/extras/types";
 import { TAB_LABELS, type PrimaryKey } from "../_lib/tabs";
+
+type StoryItem = {
+  date: string;
+  title: string;
+  body: string;
+  photo_url?: string;
+  photo_position?: { x: number; y: number };
+};
+type GuestbookEntry = {
+  id: string;
+  guest_name: string;
+  message: string;
+  reply: string | null;
+  phone: string | null;
+  guest_side: "groom" | "bride" | null;
+  relationship: string | null;
+  created_at: string;
+};
+type SharedPhoto = { id: string; url: string; uploader_name: string | null };
 
 /**
  * Catch-all "더보기" tab: whatever content the couple didn't pin to the
@@ -25,10 +49,14 @@ export function MoreTab({
   site,
   items,
   sub,
+  initialGuestbook = [],
+  initialSharedPhotos = [],
 }: {
   site: Tables<"wedding_sites">;
   items: PrimaryKey[];
   sub: PrimaryKey | null;
+  initialGuestbook?: GuestbookEntry[];
+  initialSharedPhotos?: SharedPhoto[];
 }) {
   const extras = readExtras(site.extras);
   const active: PrimaryKey | null =
@@ -51,6 +79,23 @@ export function MoreTab({
           </Link>
         ))}
       </nav>
+      {/* story / gallery / guestbook were missing here: the pill nav listed
+          them but nothing rendered, so picking one showed an empty tab.
+          Every PrimaryKey needs a branch — anything not pinned to the bottom
+          bar lands in 더보기. */}
+      {active === "story" && (
+        <StoryTab items={(site.story_items as unknown as StoryItem[]) ?? []} />
+      )}
+      {active === "gallery" && (
+        <GalleryTab urls={site.gallery_urls ?? []} style={resolveGalleryStyle(extras)} />
+      )}
+      {active === "guestbook" && (
+        <GuestbookTab
+          siteId={site.id}
+          initial={initialGuestbook}
+          fields={resolveGuestbookFields(extras)}
+        />
+      )}
       {active === "venue" && (
         <VenueView
           venue={{
@@ -107,7 +152,7 @@ export function MoreTab({
       {active === "photo_share" && (
         <PhotoShareView
           slug={site.slug}
-          initial={[]}
+          initial={initialSharedPhotos}
           isOpen={isPhotoShareOpen(resolvePhotoShare(extras), site.wedding_at)}
           weddingAt={site.wedding_at}
           note={resolvePhotoShare(extras).note}

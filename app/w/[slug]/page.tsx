@@ -75,7 +75,10 @@ export default async function PublicPage({
   const active: TabKey = tabs.includes(requested) ? requested : "home";
 
   const supabase = await createSupabaseServerClient();
-  const needsGuestbook = active === "home" || active === "guestbook";
+  // "more" is included because anything not pinned to the bottom bar renders
+  // inside it — the guestbook and shared photos can both live there.
+  const needsGuestbook =
+    active === "home" || active === "guestbook" || active === "more";
   const { data: initialGuestbook } = needsGuestbook
     ? await supabase
         .from("guestbook")
@@ -85,7 +88,8 @@ export default async function PublicPage({
         .limit(50)
     : { data: null };
 
-  const needsSharedPhotos = active === "home" || active === "photo_share";
+  const needsSharedPhotos =
+    active === "home" || active === "photo_share" || active === "more";
   const { data: initialSharedPhotos } = needsSharedPhotos
     ? await supabase
         .from("shared_photos")
@@ -207,6 +211,8 @@ export default async function PublicPage({
             site={site}
             items={moreItems}
             sub={(sub as PrimaryKey | undefined) ?? null}
+            initialGuestbook={initialGuestbook ?? []}
+            initialSharedPhotos={initialSharedPhotos ?? []}
           />
         )}
       </TabShell>
