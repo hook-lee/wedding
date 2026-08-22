@@ -28,7 +28,8 @@ type IconName =
   | "eye"
   | "eyeOff"
   | "award"
-  | "phone";
+  | "phone"
+  | "instagram";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: (
@@ -161,6 +162,13 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <circle cx="12" cy="8" r="6" />
       <path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5" />
+    </>
+  ),
+  instagram: (
+    <>
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
     </>
   ),
   phone: (

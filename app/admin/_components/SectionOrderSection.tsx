@@ -35,6 +35,7 @@ const LABELS: Record<SectionKey, { label: string; icon: IconName }> = {
   account: { label: "마음 전하기", icon: "heart" },
   profile: { label: "신랑·신부 프로필", icon: "user" },
   sponsor: { label: "스폰서", icon: "award" },
+  instagram: { label: "인스타그램", icon: "instagram" },
   photo_share: { label: "사진 공유하기", icon: "image" },
 };
 

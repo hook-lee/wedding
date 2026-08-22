@@ -1,5 +1,6 @@
 import { kstDateTimeLocalToUtcIso } from "@/lib/date/kst";
 import { extractYouTubeVideoId } from "@/lib/youtube/parse-url";
+import { normalizeInstagram } from "@/lib/social/instagram";
 import type { ParentsBlock, ParentStatus } from "@/lib/parents/types";
 import {
   SECTION_KEYS,
@@ -279,6 +280,11 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
       enabled: formData.get("contact_enabled") === "on",
       groom_phone: String(formData.get("contact_groom_phone") ?? "").trim(),
       bride_phone: String(formData.get("contact_bride_phone") ?? "").trim(),
+    },
+    instagram: {
+      enabled: formData.get("instagram_enabled") === "on",
+      username: normalizeInstagram(String(formData.get("instagram_username") ?? "")),
+      note: String(formData.get("instagram_note") ?? "").trim(),
     },
     photo_share: {
       enabled: formData.get("photo_share_enabled") === "on",

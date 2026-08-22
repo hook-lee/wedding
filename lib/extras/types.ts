@@ -3,6 +3,7 @@
  * flower-decline notice) stored as a single jsonb column. Centralizing the
  * shape here lets server actions, admin UI, and the public site agree.
  */
+import { normalizeInstagram } from "@/lib/social/instagram";
 
 export type InfoItem = { title: string; body: string };
 
@@ -13,6 +14,7 @@ export const SECTION_KEYS = [
   "story",
   "gallery",
   "guestbook",
+  "instagram",
   "info",
   "extras_info",
   "rsvp",
@@ -103,6 +105,17 @@ export type ContactInfo = {
  * `open_at_wedding` keeps the uploader hidden until the ceremony actually
  * starts — the point is candid shots from the day, not pre-wedding uploads.
  */
+/**
+ * The couple's shared Instagram. `username` is stored as a bare handle
+ * (normalizeInstagram strips @ and any pasted URL); an empty one hides the
+ * section regardless of `enabled`, since there is nothing to link to.
+ */
+export type Instagram = {
+  enabled?: boolean;
+  username?: string;
+  note?: string;
+};
+
 export type PhotoShare = {
   enabled?: boolean;
   open_at_wedding?: boolean;
@@ -158,6 +171,7 @@ export type SiteExtras = {
   gallery_style?: GalleryStyle;
   contact?: ContactInfo;
   photo_share?: PhotoShare;
+  instagram?: Instagram;
   // Which content types are pinned to the bottom tab bar (up to
   // MAX_PRIMARY_TABS, from app/w/[slug]/_lib/tabs.ts PRIMARY_KEYS), and in
   // what order. Anything enabled-but-not-chosen falls into the "더보기" tab.
@@ -303,6 +317,20 @@ export function readExtras(raw: unknown): SiteExtras {
                 : undefined,
           }
         : undefined,
+    instagram:
+      obj.instagram && typeof obj.instagram === "object" && !Array.isArray(obj.instagram)
+        ? {
+            enabled: (obj.instagram as Record<string, unknown>).enabled === true,
+            username:
+              typeof (obj.instagram as Record<string, unknown>).username === "string"
+                ? ((obj.instagram as Record<string, unknown>).username as string)
+                : undefined,
+            note:
+              typeof (obj.instagram as Record<string, unknown>).note === "string"
+                ? ((obj.instagram as Record<string, unknown>).note as string)
+                : undefined,
+          }
+        : undefined,
     primary_tabs: Array.isArray(obj.primary_tabs)
       ? (obj.primary_tabs as unknown[]).map((k) => String(k))
       : undefined,
@@ -347,10 +375,33 @@ export function readExtras(raw: unknown): SiteExtras {
  * unknown keys, then appends any canonical keys missing from it (covers new
  * sections added after a site was first saved, and malformed/partial data).
  */
+/**
+ * Saved order wins, but a section added after the couple last dragged their
+ * list still has to land somewhere. Appending to the end puts a new section
+ * below everything — usually wrong, since SECTION_KEYS already encodes where
+ * it belongs. So each unsaved key is inserted after its nearest canonical
+ * predecessor that the couple does have, and only falls back to the end when
+ * it has none.
+ */
 export function resolveSectionOrder(extras: SiteExtras): SectionKey[] {
   const saved = (extras.section_order ?? []).filter((k, i, arr) => arr.indexOf(k) === i);
-  const missing = SECTION_KEYS.filter((k) => !saved.includes(k));
-  return [...saved, ...missing];
+  if (saved.length === 0) return [...SECTION_KEYS];
+
+  const out = [...saved];
+  for (const key of SECTION_KEYS) {
+    if (out.includes(key)) continue;
+    const canonical = SECTION_KEYS.indexOf(key);
+    let at = out.length;
+    for (let i = canonical - 1; i >= 0; i--) {
+      const pos = out.indexOf(SECTION_KEYS[i]);
+      if (pos !== -1) {
+        at = pos + 1;
+        break;
+      }
+    }
+    out.splice(at, 0, key);
+  }
+  return out;
 }
 
 /**
@@ -441,6 +492,15 @@ export function resolveMapApps(extras: SiteExtras): Required<MapApps> {
  * Photo sharing settings. Off by default; when on, it waits for the ceremony
  * unless the couple explicitly opens it early.
  */
+export function resolveInstagram(extras: SiteExtras): Required<Instagram> {
+  const i = extras.instagram ?? {};
+  return {
+    enabled: i.enabled ?? false,
+    username: normalizeInstagram(i.username ?? ""),
+    note: i.note ?? "",
+  };
+}
+
 export function resolvePhotoShare(extras: SiteExtras): Required<PhotoShare> {
   const p = extras.photo_share ?? {};
   return {

@@ -11,6 +11,7 @@ import { FlowerDeclineView } from "./FlowerDeclineView";
 import { SponsorView } from "./SponsorView";
 import { ContactView } from "./ContactView";
 import { PhotoShareView } from "./PhotoShareView";
+import { InstagramView } from "./InstagramView";
 import { RsvpPromptModal } from "./RsvpPromptModal";
 import { Reveal } from "./Reveal";
 import { Countdown } from "./Countdown";
@@ -35,6 +36,7 @@ import {
   resolveContact,
   resolvePhotoShare,
   isPhotoShareOpen,
+  resolveInstagram,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
@@ -95,6 +97,7 @@ export function HomeTab({ site, initialGuestbook, initialSharedPhotos = [] }: Pr
   const calendarButtons = resolveCalendarButtons(extras);
   const contact = resolveContact(extras);
   const photoShare = resolvePhotoShare(extras);
+  const instagram = resolveInstagram(extras);
   const hasInfoItems = (extras.info_items?.length ?? 0) > 0;
   const showFlowerDecline = extras.flower_decline === true;
   const namesText = `${site.groom_name}${site.name_joiner}${site.bride_name}`;
@@ -358,6 +361,17 @@ export function HomeTab({ site, initialGuestbook, initialSharedPhotos = [] }: Pr
                   <span className="block h-px bg-border" />
                 </div>
                 <SponsorView extras={extras} />
+              </Reveal>
+            ),
+          },
+          instagram: {
+            // No master switch in "표시할 섹션" for this one: a link with no
+            // handle has nothing to point at, so the handle is the second gate.
+            visible: instagram.enabled && !!instagram.username,
+            node: (
+              <Reveal key="instagram">
+                <SectionTitle icon="instagram" label="인스타그램" anchor="instagram" />
+                <InstagramView username={instagram.username} note={instagram.note} />
               </Reveal>
             ),
           },
