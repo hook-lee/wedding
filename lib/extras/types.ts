@@ -116,6 +116,35 @@ export type Instagram = {
   note?: string;
 };
 
+export const POPUP_ACTIONS = ["none", "rsvp", "link"] as const;
+export type PopupAction = (typeof POPUP_ACTIONS)[number];
+
+/**
+ * Where a popup button can send a guest. `tab` is the fallback used when that
+ * section is hidden on the home screen, so the button still goes somewhere.
+ * "calendar" has no tab of its own — it only ever lives on home.
+ */
+export const POPUP_LINK_TARGETS = {
+  info: { label: "오시는길", tab: "venue" },
+  calendar: { label: "캘린더", tab: null },
+  story: { label: "우리 스토리", tab: "story" },
+  gallery: { label: "사진첩", tab: "gallery" },
+  guestbook: { label: "방명록", tab: "guestbook" },
+  account: { label: "마음 전하기", tab: "account" },
+} as const;
+export type PopupLinkTarget = keyof typeof POPUP_LINK_TARGETS;
+
+/** The one popup shown on entry. Everything but the switch is optional. */
+export type PopupConfig = {
+  enabled?: boolean;
+  title?: string;
+  image_url?: string;
+  body?: string;
+  action?: PopupAction;
+  link_target?: PopupLinkTarget;
+  link_label?: string;
+};
+
 export type PhotoShare = {
   enabled?: boolean;
   open_at_wedding?: boolean;
@@ -171,6 +200,7 @@ export type SiteExtras = {
   gallery_style?: GalleryStyle;
   contact?: ContactInfo;
   photo_share?: PhotoShare;
+  popup?: PopupConfig;
   instagram?: Instagram;
   // Which content types are pinned to the bottom tab bar (up to
   // MAX_PRIMARY_TABS, from app/w/[slug]/_lib/tabs.ts PRIMARY_KEYS), and in
@@ -183,6 +213,7 @@ export type SiteExtras = {
   home_visible?: Partial<Record<SectionKey, boolean>>;
   // Show a "참석 의사 전달" prompt modal right after the splash entrance,
   // nudging guests toward the RSVP section. Off by default.
+  /** @deprecated Read-only legacy flag — resolvePopup() migrates it to `popup`. */
   rsvp_prompt_enabled?: boolean;
   // Sponsor/supporter logo strip — entirely optional, most weddings won't
   // use it (gated by sections_enabled.sponsor, default off).
@@ -316,6 +347,26 @@ export function readExtras(raw: unknown): SiteExtras {
                 ? ((obj.photo_share as Record<string, unknown>).note as string)
                 : undefined,
           }
+        : undefined,
+    popup:
+      obj.popup && typeof obj.popup === "object" && !Array.isArray(obj.popup)
+        ? (() => {
+            const p = obj.popup as Record<string, unknown>;
+            const str = (k: string) => (typeof p[k] === "string" ? (p[k] as string) : undefined);
+            return {
+              enabled: p.enabled === true,
+              title: str("title"),
+              image_url: str("image_url"),
+              body: str("body"),
+              action: (POPUP_ACTIONS as readonly string[]).includes(String(p.action))
+                ? (p.action as PopupAction)
+                : undefined,
+              link_target: Object.keys(POPUP_LINK_TARGETS).includes(String(p.link_target))
+                ? (p.link_target as PopupLinkTarget)
+                : undefined,
+              link_label: str("link_label"),
+            };
+          })()
         : undefined,
     instagram:
       obj.instagram && typeof obj.instagram === "object" && !Array.isArray(obj.instagram)
@@ -492,6 +543,45 @@ export function resolveMapApps(extras: SiteExtras): Required<MapApps> {
  * Photo sharing settings. Off by default; when on, it waits for the ceremony
  * unless the couple explicitly opens it early.
  */
+/** The copy the hard-coded RSVP popup used before popups were configurable. */
+const LEGACY_RSVP_POPUP_BODY =
+  "축하의 마음으로 참석해주시는 모든 분들을 귀하게 모실 수 있도록 참석 의사를 전달 부탁드립니다.";
+
+/**
+ * Sites saved before the popup became configurable have no `popup` object, so
+ * they inherit the old RSVP prompt verbatim — switch, title, copy and action.
+ * Without that, the couple's next save would quietly delete a popup their
+ * guests are seeing right now.
+ */
+export function resolvePopup(extras: SiteExtras): Required<PopupConfig> {
+  const p = extras.popup;
+  if (!p) {
+    return {
+      enabled: extras.rsvp_prompt_enabled === true,
+      title: "참석 의사 전달",
+      image_url: "",
+      body: LEGACY_RSVP_POPUP_BODY,
+      action: "rsvp",
+      link_target: "info",
+      link_label: "",
+    };
+  }
+  return {
+    enabled: p.enabled ?? false,
+    title: p.title ?? "",
+    image_url: p.image_url ?? "",
+    body: p.body ?? "",
+    action: p.action ?? "none",
+    link_target: p.link_target ?? "info",
+    link_label: p.link_label ?? "",
+  };
+}
+
+/** An enabled popup with nothing in it is the same as no popup. */
+export function hasPopupContent(p: Required<PopupConfig>): boolean {
+  return Boolean(p.title.trim() || p.body.trim() || p.image_url.trim());
+}
+
 export function resolveInstagram(extras: SiteExtras): Required<Instagram> {
   const i = extras.instagram ?? {};
   return {

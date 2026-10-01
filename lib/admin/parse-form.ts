@@ -7,6 +7,10 @@ import {
   CALENDAR_REMINDER_OFFSETS,
   FONT_FAMILIES,
   GALLERY_STYLES,
+  POPUP_ACTIONS,
+  POPUP_LINK_TARGETS,
+  type PopupAction,
+  type PopupLinkTarget,
   type InfoItem,
   type SectionKey,
   type SiteExtras,
@@ -281,6 +285,23 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
       groom_phone: String(formData.get("contact_groom_phone") ?? "").trim(),
       bride_phone: String(formData.get("contact_bride_phone") ?? "").trim(),
     },
+    popup: {
+      enabled: formData.get("popup_enabled") === "on",
+      title: String(formData.get("popup_title") ?? "").trim(),
+      image_url: String(formData.get("popup_image_url") ?? "").trim(),
+      body: String(formData.get("popup_body") ?? "").trim(),
+      action: (POPUP_ACTIONS as readonly string[]).includes(
+        String(formData.get("popup_action")),
+      )
+        ? (formData.get("popup_action") as PopupAction)
+        : "none",
+      link_target: Object.keys(POPUP_LINK_TARGETS).includes(
+        String(formData.get("popup_link_target")),
+      )
+        ? (formData.get("popup_link_target") as PopupLinkTarget)
+        : "info",
+      link_label: String(formData.get("popup_link_label") ?? "").trim(),
+    },
     instagram: {
       enabled: formData.get("instagram_enabled") === "on",
       username: normalizeInstagram(String(formData.get("instagram_username") ?? "")),
@@ -293,7 +314,9 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     },
     primary_tabs,
     home_visible,
-    rsvp_prompt_enabled: formData.get("rsvp_prompt_enabled") === "on",
+    // rsvp_prompt_enabled is deliberately not written any more: the popup
+    // owns that switch now. It survives in readExtras purely so sites saved
+    // before this change can still be migrated by resolvePopup().
     sponsor_title,
     sponsor_logos,
     sponsor_slogan: String(formData.get("sponsor_slogan") ?? "").trim(),

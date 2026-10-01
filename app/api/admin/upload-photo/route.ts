@@ -63,6 +63,7 @@ export async function POST(req: Request) {
   else if (kind === "story") path = `${site.id}/story/${crypto.randomUUID()}.${ext}`;
   else if (kind === "sponsor") path = `${site.id}/sponsor/${crypto.randomUUID()}.${ext}`;
   else if (kind === "profile") path = `${site.id}/profile/${crypto.randomUUID()}.${ext}`;
+  else if (kind === "popup") path = `${site.id}/popup/${crypto.randomUUID()}.${ext}`;
   else path = `${site.id}/gallery/${crypto.randomUUID()}.${ext}`;
 
   const buf = Buffer.from(await file.arrayBuffer());

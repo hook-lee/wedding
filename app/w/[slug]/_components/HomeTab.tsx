@@ -12,7 +12,7 @@ import { SponsorView } from "./SponsorView";
 import { ContactView } from "./ContactView";
 import { PhotoShareView } from "./PhotoShareView";
 import { InstagramView } from "./InstagramView";
-import { RsvpPromptModal } from "./RsvpPromptModal";
+import { PopupModal } from "./PopupModal";
 import { Reveal } from "./Reveal";
 import { Countdown } from "./Countdown";
 import { Calendar } from "./Calendar";
@@ -37,6 +37,8 @@ import {
   resolvePhotoShare,
   isPhotoShareOpen,
   resolveInstagram,
+  resolvePopup,
+  hasPopupContent,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
@@ -98,6 +100,7 @@ export function HomeTab({ site, initialGuestbook, initialSharedPhotos = [] }: Pr
   const contact = resolveContact(extras);
   const photoShare = resolvePhotoShare(extras);
   const instagram = resolveInstagram(extras);
+  const popup = resolvePopup(extras);
   const hasInfoItems = (extras.info_items?.length ?? 0) > 0;
   const showFlowerDecline = extras.flower_decline === true;
   const namesText = `${site.groom_name}${site.name_joiner}${site.bride_name}`;
@@ -119,16 +122,22 @@ export function HomeTab({ site, initialGuestbook, initialSharedPhotos = [] }: Pr
 
   return (
     <div className="space-y-2">
-      {enabled.rsvp && extras.rsvp_prompt_enabled && (
-        <RsvpPromptModal
-          slug={site.slug}
-          siteId={site.id}
-          namesText={namesText}
-          dateText={dateText}
-          venueName={site.venue_name}
-          fields={resolveRsvpFields(extras)}
-        />
-      )}
+      {/* One popup, whatever the couple put in it. The RSVP prompt is now
+          just the "rsvp" action rather than a popup of its own, so it still
+          needs the RSVP section to be on. */}
+      {popup.enabled &&
+        hasPopupContent(popup) &&
+        (popup.action !== "rsvp" || enabled.rsvp) && (
+          <PopupModal
+            slug={site.slug}
+            siteId={site.id}
+            popup={popup}
+            namesText={namesText}
+            dateText={dateText}
+            venueName={site.venue_name}
+            fields={resolveRsvpFields(extras)}
+          />
+        )}
       {/* === 메인 === */}
       <div id="main" className="text-center space-y-4">
         {dday !== null && dday >= 0 && (

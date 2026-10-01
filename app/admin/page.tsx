@@ -10,6 +10,7 @@ import { MapContactSection } from "./_components/MapContactSection";
 import { GalleryStyleSection } from "./_components/GalleryStyleSection";
 import { PhotoShareSection } from "./_components/PhotoShareSection";
 import { InstagramSection } from "./_components/InstagramSection";
+import { PopupSection } from "./_components/PopupSection";
 import { PhotoSection } from "./_components/PhotoSection";
 import { BgmSection } from "./_components/BgmSection";
 import { GreetingSection } from "./_components/GreetingSection";
@@ -41,6 +42,7 @@ import {
   resolveContact,
   resolvePhotoShare,
   resolveInstagram,
+  resolvePopup,
   isHomeVisible,
   type SectionKey,
 } from "@/lib/extras/types";
@@ -176,10 +178,8 @@ export default async function AdminHome() {
         <PhotoShareSection share={resolvePhotoShare(extras)} />
         <GuestbookFieldsSection fields={resolveGuestbookFields(extras)} />
         <InstagramSection instagram={resolveInstagram(extras)} />
-        <RsvpFieldsSection
-          fields={resolveRsvpFields(extras)}
-          promptEnabled={extras.rsvp_prompt_enabled ?? false}
-        />
+        <RsvpFieldsSection fields={resolveRsvpFields(extras)} />
+        <PopupSection popup={resolvePopup(extras)} />
         <AccountSection info={(site.account_info as unknown as AccountInfo) ?? {}} />
         <FlowerDeclineSection
           enabled={extras.flower_decline ?? false}
