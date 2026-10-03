@@ -58,3 +58,28 @@ describe("admin form → popup settings", () => {
     expect(extras.rsvp_prompt_enabled).toBeUndefined();
   });
 });
+
+describe("popup video", () => {
+  it("stores only the id from any YouTube URL shape", () => {
+    for (const url of [
+      "https://youtu.be/dQw4w9WgXcQ",
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "dQw4w9WgXcQ",
+    ]) {
+      expect(popupFrom(formWith({ popup_enabled: "on", popup_video_url: url })).video_id).toBe(
+        "dQw4w9WgXcQ",
+      );
+    }
+  });
+
+  it("stays empty when the field is blank or not a YouTube link", () => {
+    expect(popupFrom(formWith({ popup_video_url: "" })).video_id).toBe("");
+    expect(popupFrom(formWith({ popup_video_url: "https://vimeo.com/123" })).video_id).toBe("");
+  });
+
+  it("counts a video-only popup as having content", async () => {
+    const { hasPopupContent } = await import("@/lib/extras/types");
+    const p = popupFrom(formWith({ popup_enabled: "on", popup_video_url: "https://youtu.be/dQw4w9WgXcQ" }));
+    expect(hasPopupContent(p)).toBe(true);
+  });
+});

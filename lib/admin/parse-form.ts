@@ -289,6 +289,8 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
       enabled: formData.get("popup_enabled") === "on",
       title: String(formData.get("popup_title") ?? "").trim(),
       image_url: String(formData.get("popup_image_url") ?? "").trim(),
+      video_id:
+        extractYouTubeVideoId(String(formData.get("popup_video_url") ?? "")) ?? "",
       body: String(formData.get("popup_body") ?? "").trim(),
       action: (POPUP_ACTIONS as readonly string[]).includes(
         String(formData.get("popup_action")),

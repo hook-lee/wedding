@@ -114,6 +114,22 @@ export function PopupSection({ popup }: { popup: Required<PopupConfig> }) {
       </div>
 
       <div>
+        <p className="text-sm text-secondary font-medium mb-1">영상 (선택)</p>
+        <Input
+          name="popup_video_url"
+          defaultValue={popup.video_id ? `https://youtu.be/${popup.video_id}` : ""}
+          placeholder="유튜브 주소 붙여넣기"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+        />
+        <p className="text-[11px] text-muted mt-1">
+          영상을 넣으면 이미지 대신 영상이 나와요. 소리는 하객이 직접 눌러야 나오니
+          배경음악과 겹치지 않아요.
+        </p>
+      </div>
+
+      <div>
         <p className="text-sm text-secondary font-medium mb-1">설명글 (선택)</p>
         <Textarea
           name="popup_body"

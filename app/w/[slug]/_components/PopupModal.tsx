@@ -133,13 +133,29 @@ export function PopupModal({
         <div className="overflow-y-auto p-5">
           {!showForm ? (
             <div className="space-y-4 text-center">
-              {popup.image_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={resizedPhoto(popup.image_url, PHOTO_WIDTHS.card)}
-                  alt=""
-                  className="w-full rounded-md object-contain max-h-[40vh]"
-                />
+              {/* One media slot: a video wins over a still, because stacking
+                  both in a popup this size turns it into a scroll. Never
+                  autoplayed — the BGM is already running and a second audio
+                  source on entry is the fastest way to get a tab closed. */}
+              {popup.video_id ? (
+                <div className="aspect-video rounded-md overflow-hidden">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${popup.video_id}?modestbranding=1&rel=0&playsinline=1`}
+                    className="w-full h-full"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="안내 영상"
+                  />
+                </div>
+              ) : (
+                popup.image_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={resizedPhoto(popup.image_url, PHOTO_WIDTHS.card)}
+                    alt=""
+                    className="w-full rounded-md object-contain max-h-[40vh]"
+                  />
+                )
               )}
 
               {body && (

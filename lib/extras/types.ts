@@ -139,6 +139,8 @@ export type PopupConfig = {
   enabled?: boolean;
   title?: string;
   image_url?: string;
+  /** YouTube id only — stored parsed, same as greeting_video_id. */
+  video_id?: string;
   body?: string;
   action?: PopupAction;
   link_target?: PopupLinkTarget;
@@ -357,6 +359,7 @@ export function readExtras(raw: unknown): SiteExtras {
               enabled: p.enabled === true,
               title: str("title"),
               image_url: str("image_url"),
+              video_id: str("video_id"),
               body: str("body"),
               action: (POPUP_ACTIONS as readonly string[]).includes(String(p.action))
                 ? (p.action as PopupAction)
@@ -560,6 +563,7 @@ export function resolvePopup(extras: SiteExtras): Required<PopupConfig> {
       enabled: extras.rsvp_prompt_enabled === true,
       title: "참석 의사 전달",
       image_url: "",
+      video_id: "",
       body: LEGACY_RSVP_POPUP_BODY,
       action: "rsvp",
       link_target: "info",
@@ -570,6 +574,7 @@ export function resolvePopup(extras: SiteExtras): Required<PopupConfig> {
     enabled: p.enabled ?? false,
     title: p.title ?? "",
     image_url: p.image_url ?? "",
+    video_id: p.video_id ?? "",
     body: p.body ?? "",
     action: p.action ?? "none",
     link_target: p.link_target ?? "info",
@@ -579,7 +584,7 @@ export function resolvePopup(extras: SiteExtras): Required<PopupConfig> {
 
 /** An enabled popup with nothing in it is the same as no popup. */
 export function hasPopupContent(p: Required<PopupConfig>): boolean {
-  return Boolean(p.title.trim() || p.body.trim() || p.image_url.trim());
+  return Boolean(p.title.trim() || p.body.trim() || p.image_url.trim() || p.video_id.trim());
 }
 
 export function resolveInstagram(extras: SiteExtras): Required<Instagram> {
