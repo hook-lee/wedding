@@ -9,10 +9,31 @@ import {
   type PopupAction,
   type PopupConfig,
   type PopupLinkTarget,
+  type PopupTiming,
 } from "@/lib/extras/types";
+
+const TIMINGS: {
+  key: PopupTiming;
+  label: string;
+  hint: string;
+  recommended?: boolean;
+}[] = [
+  {
+    key: "after",
+    label: "'청첩장 열기'를 누른 뒤",
+    hint: "하객이 들어온 다음에 떠요. 첫 화면을 가리지 않아요.",
+    recommended: true,
+  },
+  {
+    key: "before",
+    label: "'청첩장 열기'를 누르기 전",
+    hint: "들어오자마자 떠서 아무도 놓치지 않아요. 대신 하객이 청첩장을 보기 전에 팝업부터 닫아야 해요.",
+  },
+];
 
 export function PopupSection({ popup }: { popup: Required<PopupConfig> }) {
   const [action, setAction] = useState<PopupAction>(popup.action);
+  const [timing, setTiming] = useState<PopupTiming>(popup.timing);
   const [imageUrl, setImageUrl] = useState(popup.image_url);
   const [busy, setBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -68,15 +89,40 @@ export function PopupSection({ popup }: { popup: Required<PopupConfig> }) {
       </label>
 
       <div>
-        <p className="text-sm text-secondary font-medium mb-1">보여줄 시점</p>
-        <Select name="popup_timing" defaultValue={popup.timing}>
-          <option value="after">청첩장 열기를 누른 뒤 (추천)</option>
-          <option value="before">청첩장 열기 전, 첫 화면에</option>
-        </Select>
-        <p className="text-[11px] text-muted mt-1">
-          &apos;첫 화면에&apos;로 두면 누구도 놓치지 않지만, 하객이 청첩장을 보기도 전에
-          팝업부터 닫아야 해요. 꼭 먼저 알려야 할 내용일 때만 쓰는 걸 권해요.
-        </p>
+        <p className="text-sm text-secondary font-medium mb-1">팝업 띄우는 시점</p>
+        {/* Both options stay on screen with their consequence spelled out. A
+            dropdown hid whichever one wasn't selected, which made this the
+            easiest setting in the form to misread. */}
+        <div className="space-y-2">
+          {TIMINGS.map((t) => (
+            <label
+              key={t.key}
+              className={`flex gap-2.5 p-3 rounded-md cursor-pointer border transition-colors ${
+                timing === t.key ? "border-ink bg-bg" : "border-border bg-surface"
+              }`}
+            >
+              <input
+                type="radio"
+                name="popup_timing"
+                value={t.key}
+                checked={timing === t.key}
+                onChange={() => setTiming(t.key)}
+                className="w-4 h-4 mt-0.5 flex-shrink-0"
+              />
+              <span className="min-w-0">
+                <span className="block text-sm text-ink font-medium">
+                  {t.label}
+                  {t.recommended && (
+                    <span className="ml-1.5 text-[10px] text-muted font-normal">추천</span>
+                  )}
+                </span>
+                <span className="block text-[11px] text-muted mt-0.5 leading-relaxed">
+                  {t.hint}
+                </span>
+              </span>
+            </label>
+          ))}
+        </div>
       </div>
 
       <div>
