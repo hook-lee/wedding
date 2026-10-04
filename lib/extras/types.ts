@@ -116,6 +116,14 @@ export type Instagram = {
   note?: string;
 };
 
+/**
+ * When the popup appears. "after" waits for the guest to tap 청첩장 열기;
+ * "before" puts it over the splash so it is the first thing they see, at the
+ * cost of greeting them with a dialog before any of the invitation.
+ */
+export const POPUP_TIMINGS = ["after", "before"] as const;
+export type PopupTiming = (typeof POPUP_TIMINGS)[number];
+
 export const POPUP_ACTIONS = ["none", "rsvp", "link"] as const;
 export type PopupAction = (typeof POPUP_ACTIONS)[number];
 
@@ -137,6 +145,7 @@ export type PopupLinkTarget = keyof typeof POPUP_LINK_TARGETS;
 /** The one popup shown on entry. Everything but the switch is optional. */
 export type PopupConfig = {
   enabled?: boolean;
+  timing?: PopupTiming;
   title?: string;
   image_url?: string;
   /** YouTube id only — stored parsed, same as greeting_video_id. */
@@ -357,6 +366,9 @@ export function readExtras(raw: unknown): SiteExtras {
             const str = (k: string) => (typeof p[k] === "string" ? (p[k] as string) : undefined);
             return {
               enabled: p.enabled === true,
+              timing: (POPUP_TIMINGS as readonly string[]).includes(String(p.timing))
+                ? (p.timing as PopupTiming)
+                : undefined,
               title: str("title"),
               image_url: str("image_url"),
               video_id: str("video_id"),
@@ -561,6 +573,7 @@ export function resolvePopup(extras: SiteExtras): Required<PopupConfig> {
   if (!p) {
     return {
       enabled: extras.rsvp_prompt_enabled === true,
+      timing: "after",
       title: "참석 의사 전달",
       image_url: "",
       video_id: "",
@@ -572,6 +585,7 @@ export function resolvePopup(extras: SiteExtras): Required<PopupConfig> {
   }
   return {
     enabled: p.enabled ?? false,
+    timing: p.timing ?? "after",
     title: p.title ?? "",
     image_url: p.image_url ?? "",
     video_id: p.video_id ?? "",

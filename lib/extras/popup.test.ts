@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolvePopup, hasPopupContent } from "./types";
+import { resolvePopup, hasPopupContent, readExtras } from "./types";
 
 describe("resolvePopup — migrating the old RSVP prompt", () => {
   it("keeps a live RSVP popup alive for sites saved before popups were configurable", () => {
@@ -57,5 +57,24 @@ describe("hasPopupContent", () => {
     expect(
       hasPopupContent(resolvePopup({ popup: { enabled: true, title: "   ", body: "\n" } })),
     ).toBe(false);
+  });
+});
+
+describe("popup timing", () => {
+  it("defaults to after entry, including for migrated sites", () => {
+    expect(resolvePopup({}).timing).toBe("after");
+    expect(resolvePopup({ rsvp_prompt_enabled: true }).timing).toBe("after");
+    expect(resolvePopup({ popup: { enabled: true } }).timing).toBe("after");
+  });
+
+  it("reads back the splash-first choice", () => {
+    expect(resolvePopup({ popup: { enabled: true, timing: "before" } }).timing).toBe("before");
+  });
+
+  it("falls back to after when the stored value is junk", () => {
+    // Sanitising happens in readExtras, so go through it rather than handing
+    // resolvePopup an object no real row could contain.
+    const p = resolvePopup(readExtras({ popup: { enabled: true, timing: "whenever" } }));
+    expect(p.timing).toBe("after");
   });
 });

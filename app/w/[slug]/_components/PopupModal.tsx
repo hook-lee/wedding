@@ -50,19 +50,32 @@ export function PopupModal({
   // That also keeps YouTube's player off the page until someone wants it.
   const [playing, setPlaying] = useState(false);
 
-  useEffect(() => {
-    function onEnter() {
+useEffect(() => {
+    function dismissedToday() {
       try {
-        if (localStorage.getItem(todayKstKey(slug))) return;
+        return Boolean(localStorage.getItem(todayKstKey(slug)));
       } catch {
-        /* localStorage unavailable — just show it */
+        return false; // localStorage unavailable — just show it
       }
+    }
+
+    // "before": open over the splash, without waiting to be let in. The short
+    // delay lets the splash paint first, so the popup lands on the invitation
+    // rather than on a blank page mid-hydration.
+    if (popup.timing === "before") {
+      if (dismissedToday()) return;
+      const t = setTimeout(() => setOpen(true), 400);
+      return () => clearTimeout(t);
+    }
+
+    function onEnter() {
+      if (dismissedToday()) return;
       // Wait for the splash fade-out (700ms) so the popup doesn't fight it.
       setTimeout(() => setOpen(true), 750);
     }
     window.addEventListener("wedding-bgm-start", onEnter);
     return () => window.removeEventListener("wedding-bgm-start", onEnter);
-  }, [slug]);
+  }, [slug, popup.timing]);
 
   useEffect(() => {
     if (!open) return;
@@ -109,7 +122,9 @@ export function PopupModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+      // Above the splash's z-[60]: in "before" mode the splash is still on
+      // screen underneath, and a popup rendered behind it would be invisible.
+      className="fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-4"
       onClick={() => setOpen(false)}
       role="dialog"
       aria-modal="true"

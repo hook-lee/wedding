@@ -8,6 +8,8 @@ import {
   FONT_FAMILIES,
   GALLERY_STYLES,
   POPUP_ACTIONS,
+  POPUP_TIMINGS,
+  type PopupTiming,
   POPUP_LINK_TARGETS,
   type PopupAction,
   type PopupLinkTarget,
@@ -287,6 +289,9 @@ export function parseAdminFormFields(formData: FormData): ParsedAdminFields {
     },
     popup: {
       enabled: formData.get("popup_enabled") === "on",
+      timing: (POPUP_TIMINGS as readonly string[]).includes(String(formData.get("popup_timing")))
+        ? (formData.get("popup_timing") as PopupTiming)
+        : "after",
       title: String(formData.get("popup_title") ?? "").trim(),
       image_url: String(formData.get("popup_image_url") ?? "").trim(),
       video_id:

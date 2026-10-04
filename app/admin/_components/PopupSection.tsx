@@ -68,6 +68,18 @@ export function PopupSection({ popup }: { popup: Required<PopupConfig> }) {
       </label>
 
       <div>
+        <p className="text-sm text-secondary font-medium mb-1">보여줄 시점</p>
+        <Select name="popup_timing" defaultValue={popup.timing}>
+          <option value="after">청첩장 열기를 누른 뒤 (추천)</option>
+          <option value="before">청첩장 열기 전, 첫 화면에</option>
+        </Select>
+        <p className="text-[11px] text-muted mt-1">
+          &apos;첫 화면에&apos;로 두면 누구도 놓치지 않지만, 하객이 청첩장을 보기도 전에
+          팝업부터 닫아야 해요. 꼭 먼저 알려야 할 내용일 때만 쓰는 걸 권해요.
+        </p>
+      </div>
+
+      <div>
         <p className="text-sm text-secondary font-medium mb-1">제목 (선택)</p>
         <Input name="popup_title" defaultValue={popup.title} placeholder="예) 주차 안내" />
       </div>
