@@ -5,6 +5,7 @@ import { validateSlug } from "@/lib/slug/validate";
 import { isSlugAvailable, resolveAdminSite } from "@/lib/db/wedding-site";
 import { revalidatePath } from "next/cache";
 import { parseAdminFormFields } from "@/lib/admin/parse-form";
+import { isUnreadableYouTubeInput } from "@/lib/youtube/parse-url";
 
 export type SaveResult = { ok?: true; error?: string };
 
@@ -20,6 +21,19 @@ export async function saveAdminForm(
 
   const v = validateSlug(slug);
   if (!v.ok) return { error: v.reason };
+
+  // Refuse rather than quietly blanking the field, which is how an
+  // unsupported URL shape used to present itself: the link "disappeared".
+  for (const [field, label] of [
+    ["popup_video_url", "팝업 영상"],
+    ["greeting_video_url", "인사말 영상"],
+  ] as const) {
+    if (isUnreadableYouTubeInput(String(formData.get(field) ?? ""))) {
+      return {
+        error: `${label} 주소를 알아보지 못했어요. 유튜브 주소가 맞는지 확인해주세요. (예: https://youtu.be/... )`,
+      };
+    }
+  }
 
   // Target the resolved site rather than owner_id — an invited partner edits
   // a site they don't own, and matching on owner_id would silently update

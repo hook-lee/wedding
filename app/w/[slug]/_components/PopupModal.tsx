@@ -46,6 +46,9 @@ export function PopupModal({
   // false = the couple's content, true = the RSVP form swapped in place so the
   // guest answers without the popup closing and scrolling away under them.
   const [showForm, setShowForm] = useState(false);
+  // The popup opens over music, so the video stays a poster until tapped.
+  // That also keeps YouTube's player off the page until someone wants it.
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     function onEnter() {
@@ -138,14 +141,42 @@ export function PopupModal({
                   autoplayed — the BGM is already running and a second audio
                   source on entry is the fastest way to get a tab closed. */}
               {popup.video_id ? (
-                <div className="aspect-video rounded-md overflow-hidden">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${popup.video_id}?modestbranding=1&rel=0&playsinline=1`}
-                    className="w-full h-full"
-                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title="안내 영상"
-                  />
+                <div className="aspect-video rounded-md overflow-hidden bg-black">
+                  {playing ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${popup.video_id}?autoplay=1&modestbranding=1&rel=0&playsinline=1`}
+                      className="w-full h-full"
+                      allow="autoplay; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="안내 영상"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setPlaying(true)}
+                      className="relative w-full h-full group"
+                      aria-label="영상 재생"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`https://img.youtube.com/vi/${popup.video_id}/maxresdefault.jpg`}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        // maxres only exists for videos uploaded at 1080p+;
+                        // hq is generated for every video, so it is the floor.
+                        onError={(e) => {
+                          e.currentTarget.src = `https://img.youtube.com/vi/${popup.video_id}/hqdefault.jpg`;
+                        }}
+                      />
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <span className="w-14 h-14 rounded-full bg-black/60 group-hover:bg-black/75 transition-colors flex items-center justify-center">
+                          <svg viewBox="0 0 24 24" className="w-6 h-6 ml-0.5" fill="white" aria-hidden="true">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </span>
+                      </span>
+                    </button>
+                  )}
                 </div>
               ) : (
                 popup.image_url && (
